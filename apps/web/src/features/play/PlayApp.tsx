@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BookOpen, Box, CircleHelp, Library, MoreVertical, Plus, RefreshCw, RotateCcw, ScrollText, Send, Settings, Swords, X } from "lucide-react";
+import { BookOpen, CircleHelp, Library, MoreVertical, RefreshCw, RotateCcw, ScrollText, Send, Settings, X } from "lucide-react";
 import { CharacterRail } from "./components/CharacterRail.js";
 import { Composer } from "./components/Composer.js";
 import { MessageList } from "./components/MessageList.js";
@@ -46,12 +46,12 @@ export function PlayApp() {
   } = useGameStore();
 
   const [showRules, setShowRules] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const storyPackage = storyPackages.find((p) => p.id === editingPackageId);
   const labels = useLabels();
   const uiConfig = storyPackage?.uiConfig;
   const showCharacterPanel = uiConfig?.layout?.showCharacterPanel !== false;
   const showQuickActions = uiConfig?.layout?.showQuickActions !== false;
-  const showDiceButton = uiConfig?.layout?.showDiceButton !== false;
   const showAutoPlay = uiConfig?.layout?.showAutoPlay !== false;
 
   useEffect(() => {
@@ -77,38 +77,59 @@ export function PlayApp() {
     }
   }
 
+  const isCompleted = gameState?.status === "completed";
+
   return (
     <UiConfigContext.Provider value={uiConfig ?? {} as UiConfig}>
       <main className="play-shell" style={themeVars(uiConfig)}>
         <aside className="play-nav" aria-label="主导航">
           <div className="window-dots" aria-hidden="true"><span /><span /><span /></div>
-          <a className="nav-logo" href="/admin/story-packages" aria-label="故事管理"><BookOpen size={28} /></a>
+          <a className="nav-logo" href="/admin/story-packages" aria-label="故事管理" title="故事管理">
+            <BookOpen size={28} />
+          </a>
           <div className="nav-stack">
-            <a href="/admin/story-packages" aria-label="故事管理"><Library size={24} /></a>
-            <button aria-label="新建"><Plus size={25} /></button>
+            <a href="/admin/story-packages" aria-label="故事管理" title="故事管理">
+              <Library size={24} />
+            </a>
           </div>
           <div className="nav-stack nav-bottom">
-            <button aria-label="设置" onClick={handleSettings}><Settings size={22} /></button>
-            <button aria-label="查看规则" onClick={() => setShowRules(true)}><CircleHelp size={22} /></button>
+            <button aria-label="设置" onClick={handleSettings} title="设置"><Settings size={22} /></button>
+            <button aria-label="查看规则" onClick={() => setShowRules(true)} title="查看规则"><CircleHelp size={22} /></button>
           </div>
         </aside>
 
         <section className="play-main">
           <header className="play-topbar">
-            <div>
+            <div className="play-topbar-left">
               <p className="play-kicker">{labels.interactiveStory}</p>
               <h1>{gameState?.scenario.title ?? "正在载入故事"}</h1>
             </div>
             <div className="play-toolbar">
-              <a className="paper-button" href="/admin/story-packages"><BookOpen size={16} /> {labels.storyManagement}</a>
-              <span className="paper-button"><Swords size={16} /> {labels.round} {gameState?.round ?? 0}</span>
-              <button className="paper-button" onClick={() => setShowRules(true)}><CircleHelp size={16} /> {labels.viewRules}</button>
+              <span className={`status-badge ${isCompleted ? "completed" : ""}`}>
+                {isCompleted ? labels.statusCompleted : `${labels.round} ${gameState?.round ?? 0}`}
+              </span>
+              <button className="paper-icon" onClick={() => setShowRules(true)} aria-label="查看规则" title="查看规则">
+                <CircleHelp size={18} />
+              </button>
               {editingPackageId ? (
                 <button className="paper-icon" onClick={() => void start(editingPackageId)} aria-label="重置剧情" title="重置剧情">
                   <RefreshCw size={18} />
                 </button>
               ) : null}
-              <button className="paper-icon" aria-label="更多"><MoreVertical size={18} /></button>
+              <div className="more-menu-wrap">
+                <button className="paper-icon" aria-label="更多" title="更多操作" onClick={() => setShowMoreMenu(!showMoreMenu)}>
+                  <MoreVertical size={18} />
+                </button>
+                {showMoreMenu && (
+                  <div className="more-menu" onClick={() => setShowMoreMenu(false)}>
+                    <a href="/admin/story-packages">{labels.storyManagement}</a>
+                    <button onClick={() => { setShowRules(true); setShowMoreMenu(false); }}>{labels.viewRules}</button>
+                    {editingPackageId ? (
+                      <button onClick={() => { void start(editingPackageId); setShowMoreMenu(false); }}>重置剧情</button>
+                    ) : null}
+                  </div>
+                )}
+              </div>
             </div>
           </header>
 
@@ -118,7 +139,12 @@ export function PlayApp() {
             gridTemplateColumns: showCharacterPanel ? undefined : "minmax(0, 1fr)"
           }}>
             {showCharacterPanel && (
-              <CharacterRail characters={characters} states={gameState?.characters ?? []} lastSpeakerId={gameState?.lastSpeakerId ?? null} />
+              <CharacterRail
+                characters={characters}
+                states={gameState?.characters ?? []}
+                lastSpeakerId={gameState?.lastSpeakerId ?? null}
+                initialStates={gameState?.scenario?.initialStates}
+              />
             )}
 
             <section className="story-stage" aria-label="故事互动区">
@@ -126,18 +152,17 @@ export function PlayApp() {
               <div className="play-composer-shell">
                 <div className="quick-actions">
                   {showQuickActions && (
-                    <button onClick={() => void continueStory()} disabled={isSending || !sessionId}>
+                    <button className="btn-continue" onClick={() => void continueStory()} disabled={isSending || !sessionId}>
                       <ScrollText size={17} /> {labels.continue}
                     </button>
                   )}
                   {showAutoPlay && (
-                    <button className={isAutoPlaying ? "toggle active" : "toggle"} onClick={() => setAutoPlay(!isAutoPlaying)} disabled={!sessionId}>
+                    <button className={`btn-auto ${isAutoPlaying ? "active" : ""}`} onClick={() => setAutoPlay(!isAutoPlaying)} disabled={!sessionId}>
                       <RotateCcw size={17} /> {labels.autoPlay}
                     </button>
                   )}
                 </div>
                 <Composer icon={<Send size={19} />} />
-                {showDiceButton ? <button className="dice-button" aria-label="随机事件"><Box size={20} /></button> : null}
               </div>
             </section>
           </section>
@@ -168,7 +193,7 @@ export function PlayApp() {
               <h3>{labels.currentStatus}</h3>
               <p className="rule-line">{labels.round}: {gameState?.round ?? 0}</p>
               <p className="rule-line">{labels.currentStage}: {gameState?.scenario?.currentStage ?? "无"}</p>
-              <p className="rule-line">状态: {gameState?.status === "completed" ? labels.statusCompleted : labels.statusActive}</p>
+              <p className="rule-line">状态: {isCompleted ? labels.statusCompleted : labels.statusActive}</p>
             </div>
           </div>
         )}

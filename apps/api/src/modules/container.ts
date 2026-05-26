@@ -6,6 +6,7 @@ import { ConfigurableLlmProvider } from "../resources/llm/configurableLlmProvide
 import { DeepSeekLlmProvider } from "../resources/llm/deepSeekLlmProvider.js";
 import { LlmConfigService } from "../resources/llm/llmConfigService.js";
 import { MockLlmProvider } from "../resources/llm/mockLlmProvider.js";
+import { AuditLogService } from "../services/auditLogService.js";
 import { CharacterService } from "../services/characterService.js";
 import { AgentService } from "../services/agentService.js";
 import { DialogueEngine } from "../services/dialogueEngine.js";
@@ -18,6 +19,7 @@ import { ScenarioService } from "../services/scenarioService.js";
 import { SkillService } from "../services/skillService.js";
 import { StoryPackageService } from "../services/storyPackageService.js";
 
+const auditLogService = new AuditLogService();
 const characterService = new CharacterService(characters);
 const skillService = new SkillService(skills);
 const knowledgeBaseService = new KnowledgeBaseService(knowledgeDocuments);
@@ -28,6 +30,7 @@ const gameStateService = new GameStateService(scenarioService);
 const agentService = new AgentService(characterService, knowledgeBaseService);
 const promptService = new PromptService(characterService, agentService);
 const ruleChecker = new RuleChecker();
+export const auditLogService = auditLogService;
 export const llmConfigService = new LlmConfigService();
 const llmProvider = new ConfigurableLlmProvider(llmConfigService, {
   mock: new MockLlmProvider(),
@@ -44,5 +47,6 @@ export const dialogueEngine = new DialogueEngine(
   ruleChecker,
   llmProvider,
   storyPackageService,
-  knowledgeBaseService
+  knowledgeBaseService,
+  auditLogService
 );

@@ -10,6 +10,8 @@ import type {
 } from "@story-game/shared";
 import { characterIds } from "@story-game/shared";
 import type { LlmProvider } from "../resources/llm/llmProvider.js";
+import { createModuleLogger } from "../utils/logger.js";
+import type { AuditLogService } from "./auditLogService.js";
 import { CharacterService } from "./characterService.js";
 import { GameStateService } from "./gameStateService.js";
 import { MemoryService } from "./memoryService.js";
@@ -19,6 +21,8 @@ import { ScenarioService } from "./scenarioService.js";
 import { SkillService } from "./skillService.js";
 import { StoryPackageService } from "./storyPackageService.js";
 import { KnowledgeBaseService } from "./knowledgeBaseService.js";
+
+const logger = createModuleLogger("dialogueEngine");
 
 const continueTexts = new Set(["继续", "接着", "然后呢", "continue", "go on"]);
 
@@ -35,7 +39,8 @@ export class DialogueEngine {
     private readonly rules: RuleChecker,
     private readonly llm: LlmProvider,
     private readonly storyPackages: StoryPackageService,
-    private readonly knowledgeBase: KnowledgeBaseService
+    private readonly knowledgeBase: KnowledgeBaseService,
+    private readonly auditLog: AuditLogService
   ) {}
 
   createSession(input: CreateSessionRequest) {
@@ -49,6 +54,12 @@ export class DialogueEngine {
     if (input.storyPackageId) {
       this.sessionStoryPackageIds.set(gameState.sessionId, input.storyPackageId);
     }
+    logger.info({ sessionId: gameState.sessionId, storyPackageId: input.storyPackageId }, "session created");
+    this.auditLog.append({
+      type: "session_created",
+      sessionId: gameState.sessionId,
+      summary: `Session created with story package ${input.storyPackageId ?? "default"}`
+    });
     return { sessionId: gameState.sessionId, gameState, characters: this.characters.list(), skills: this.skills.list(), knowledgeDocuments: this.knowledgeBase.list() };
   }
 
@@ -104,6 +115,7 @@ export class DialogueEngine {
 
     const speakerId = this.selectSpeaker(sessionId, input);
     const state = this.states.get(sessionId);
+    logger.info({ sessionId, speakerId, round: state.round }, "message processing");
     const storyPackageId = this.sessionStoryPackageIds.get(sessionId);
     const storyPackage = storyPackageId ? this.storyPackages.get(storyPackageId) : undefined;
     const prompt = this.prompts.buildPrompt(speakerId, state, this.memory.recent(sessionId), input.text, storyPackage);
@@ -111,9 +123,21 @@ export class DialogueEngine {
     const output = this.rules.validateOutput(speakerId, rawOutput);
     const suggestedSkill = output.action.skillId ? this.skills.get(output.action.skillId) : undefined;
     const skill = suggestedSkill && suggestedSkill.ownerId === speakerId ? suggestedSkill : undefined;
+    logger.debug({ sessionId, speakerId }, “llm response received”);
+    this.auditLog.append({
+      type: “llm_response”,
+      sessionId,
+      speakerId,
+      summary: `LLM response from ${speakerId}${skill ? ` using ${skill.name}` : “”}`,
+      details: { usedSkill: skill?.id ?? null, delta }
+    });
     const { state: gameState, delta } = this.states.applyAssistantTurn(sessionId, speakerId, output, skill);
-    const content = `${output.narration}\n\n${this.characters.get(speakerId).name}：“${output.dialogue}”`;
-    const message = this.createMessage(sessionId, "assistant", speakerId, content, skill ? [skill.id] : [], delta);
+    if (gameState.status === “completed”) {
+      logger.info({ sessionId }, “session completed”);
+      this.auditLog.append({ type: “session_completed”, sessionId, summary: “Session completed” });
+    }
+    const content = `${output.narration}\n\n${this.characters.get(speakerId).name}：”${output.dialogue}”`;
+    const message = this.createMessage(sessionId, “assistant”, speakerId, content, skill ? [skill.id] : [], delta);
     this.memory.append(message);
 
     return {
@@ -161,6 +185,7 @@ export class DialogueEngine {
     const storyPackage = storyPackageId ? this.storyPackages.get(storyPackageId) : undefined;
     const prompt = this.prompts.buildPrompt(speakerId, state, this.memory.recent(sessionId), input.text, storyPackage);
 
+    logger.info({ sessionId, speakerId, round: state.round }, "stream message processing");
     yield { type: "meta" as const, speakerId, speakerName: this.characters.get(speakerId).name };
 
     let rawBuffer = "";
@@ -168,6 +193,7 @@ export class DialogueEngine {
       rawBuffer += token;
       yield { type: "token" as const, token, speakerId };
     }
+    logger.debug({ sessionId, speakerId }, "stream response received");
 
     let rawOutput: unknown;
     try {
@@ -180,6 +206,17 @@ export class DialogueEngine {
     const suggestedSkill = output.action.skillId ? this.skills.get(output.action.skillId) : undefined;
     const skill = suggestedSkill && suggestedSkill.ownerId === speakerId ? suggestedSkill : undefined;
     const { state: gameState, delta } = this.states.applyAssistantTurn(sessionId, speakerId, output, skill);
+    this.auditLog.append({
+      type: "llm_response",
+      sessionId,
+      speakerId,
+      summary: `LLM response from ${speakerId}${skill ? ` using ${skill.name}` : ""}`,
+      details: { usedSkill: skill?.id ?? null, delta }
+    });
+    if (gameState.status === "completed") {
+      logger.info({ sessionId }, "session completed");
+      this.auditLog.append({ type: "session_completed", sessionId, summary: "Session completed" });
+    }
     const content = `${output.narration}\n\n${this.characters.get(speakerId).name}："${output.dialogue}"`;
     const message = this.createMessage(sessionId, "assistant", speakerId, content, skill ? [skill.id] : [], delta);
     this.memory.append(message);

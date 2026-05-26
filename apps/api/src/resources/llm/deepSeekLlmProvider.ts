@@ -1,6 +1,9 @@
 import { llmStoryOutputSchema, type LlmStoryOutput } from "@story-game/shared";
 import type { LlmConfigService } from "./llmConfigService.js";
 import type { LlmProvider, LlmRequest } from "./llmProvider.js";
+import { createModuleLogger } from "../../utils/logger.js";
+
+const logger = createModuleLogger("llm:deepseek");
 
 interface DeepSeekChoice {
   message?: {
@@ -21,6 +24,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
       throw new Error("DeepSeek API key is not configured");
     }
 
+    const start = Date.now();
     const response = await fetch(`${config.baseUrl.replace(/\/$/, "")}/chat/completions`, {
       method: "POST",
       headers: {
@@ -53,6 +57,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
     const content = data.choices?.[0]?.message?.content;
     if (!content) throw new Error("DeepSeek response did not include message content");
 
+    logger.info({ model: config.model, latency: Date.now() - start }, "llm complete");
     return llmStoryOutputSchema.parse(JSON.parse(content));
   }
 
@@ -62,6 +67,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
       throw new Error("DeepSeek API key is not configured");
     }
 
+    const start = Date.now();
     const response = await fetch(`${config.baseUrl.replace(/\/$/, "")}/chat/completions`, {
       method: "POST",
       headers: {
@@ -125,5 +131,6 @@ export class DeepSeekLlmProvider implements LlmProvider {
     } finally {
       reader.releaseLock();
     }
+    logger.info({ model: config.model, latency: Date.now() - start }, "llm stream complete");
   }
 }

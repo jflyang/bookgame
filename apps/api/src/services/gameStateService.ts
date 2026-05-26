@@ -10,6 +10,9 @@ import type {
   StateDelta
 } from "@story-game/shared";
 import { ScenarioService } from "./scenarioService.js";
+import { createModuleLogger } from "../utils/logger.js";
+
+const logger = createModuleLogger("gameState");
 
 export class GameStateService {
   private readonly states = new Map<string, GameState>();
@@ -32,6 +35,7 @@ export class GameStateService {
     };
     state.characters = input.characterIds.map((characterId) => this.initialCharacterState(characterId, state.scenario.initialStates));
     this.states.set(sessionId, state);
+    logger.info({ sessionId }, "game state initialized");
     return state;
   }
 
@@ -63,6 +67,7 @@ export class GameStateService {
     state.status = state.characters.some((item) => item.characterId === "dingchunqiu" && item.isDefeated)
       ? "completed"
       : "active";
+    logger.debug({ sessionId, speakerId, round: state.round, delta }, "turn applied");
     return { state, delta };
   }
 
