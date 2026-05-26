@@ -1,0 +1,24 @@
+{
+  "name": "interactive-story-game",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A separated frontend/backend LLM interactive story web game.",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @story-game/api\" \"npm run dev -w @story-game/web\"",
+    "dev:api": "npm run dev -w @story-game/api",
+    "dev:web": "npm run dev -w @story-game/web",
+    "build": "npm run build -w @story-game/shared && npm run build -w @story-game/api && npm run build -w @story-game/web",
+    "typecheck": "npm run build -w @story-game/shared && npm run typecheck -w @story-game/api && npm run typecheck -w @story-game/web"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
