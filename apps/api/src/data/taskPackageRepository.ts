@@ -1,0 +1,183 @@
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync
+} from "node:fs";
+import { basename, extname, join, relative } from "node:path";
+import type { StoryPackage } from "@story-game/shared";
+import { storyPackageSchema } from "@story-game/shared";
+import { assertSafeId, ensureDir, resolveInside } from "./pathGuards.js";
+
+export interface TaskPackageManifest {
+  id: string;
+  type: "task-package";
+  schemaVersion: "1";
+  title: string;
+  description: string;
+  entry: "task-package.json";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TaskPackageRepositoryOptions {
+  legacyDir?: string;
+}
+
+export class TaskPackageRepository {
+  constructor(
+    private readonly rootDir: string,
+    private readonly options: TaskPackageRepositoryOptions = {}
+  ) {
+    ensureDir(rootDir);
+    this.migrateLegacyPackages();
+  }
+
+  list(): StoryPackage[] {
+    return this.packageFiles().map((file) => storyPackageSchema.parse(JSON.parse(readFileSync(file, "utf-8"))));
+  }
+
+  save(pkg: StoryPackage) {
+    const parsed = storyPackageSchema.parse(pkg);
+    ensureDir(this.packageDir(parsed.id));
+    writeFileSync(this.taskFile(parsed.id), JSON.stringify(parsed, null, 2), "utf-8");
+    writeFileSync(this.manifestFile(parsed.id), JSON.stringify(this.toManifest(parsed), null, 2), "utf-8");
+    this.writeSplitFiles(parsed);
+    return parsed;
+  }
+
+  remove(id: string) {
+    const dir = this.packageDir(id);
+    if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
+  }
+
+  taskFile(id: string) {
+    return resolveInside(this.packageDir(id), "task-package.json");
+  }
+
+  manifestFile(id: string) {
+    return resolveInside(this.packageDir(id), "manifest.json");
+  }
+
+  mediaDir(id: string) {
+    return ensureDir(resolveInside(this.packageDir(id), "media"));
+  }
+
+  savesDir(id: string) {
+    return resolveInside(this.packageDir(id), "saves");
+  }
+
+  packageDir(id: string) {
+    return resolveInside(this.rootDir, assertSafeId(id), "");
+  }
+
+  contentFiles(id: string) {
+    const dir = this.packageDir(id);
+    if (!existsSync(dir)) return [];
+    return walkFiles(dir)
+      .filter((file) => !relative(dir, file).startsWith("saves"))
+      .map((file) => ({ absolutePath: file, zipPath: relative(dir, file).replaceAll("\\", "/") }));
+  }
+
+  private packageFiles() {
+    return readdirSync(this.rootDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && safeDirectoryName(entry.name))
+      .map((entry) => resolveInside(this.rootDir, entry.name, "task-package.json"))
+      .filter((path) => existsSync(path));
+  }
+
+  private migrateLegacyPackages() {
+    const legacyDir = this.options.legacyDir;
+    if (!legacyDir || !existsSync(legacyDir)) return;
+    const legacyFiles = readdirSync(legacyDir).filter((file) => file.endsWith(".story-package.json"));
+    for (const file of legacyFiles) {
+      const raw = readFileSync(join(legacyDir, file), "utf-8");
+      const pkg = storyPackageSchema.parse(JSON.parse(raw));
+      assertSafeId(pkg.id);
+      if (existsSync(this.taskFile(pkg.id))) continue;
+      this.save(pkg);
+      this.copyLegacyMedia(legacyDir, pkg.id);
+      this.copyLegacySaves(legacyDir, pkg.id);
+    }
+  }
+
+  private copyLegacyMedia(legacyDir: string, id: string) {
+    const mediaDir = join(legacyDir, "media");
+    if (!existsSync(mediaDir)) return;
+    const legacyMedia = readdirSync(mediaDir).find((file) => file.startsWith(`${id}.`));
+    if (!legacyMedia) return;
+    copyFileSync(join(mediaDir, legacyMedia), resolveInside(this.mediaDir(id), `thumbnail${normalizeMediaExtension(legacyMedia)}`));
+  }
+
+  private copyLegacySaves(legacyDir: string, id: string) {
+    const legacySavesDir = join(legacyDir, id, "saves");
+    if (!existsSync(legacySavesDir)) return;
+    const targetDir = ensureDir(this.savesDir(id));
+    for (const file of readdirSync(legacySavesDir)) {
+      if (!file.endsWith(".session.json")) continue;
+      copyFileSync(join(legacySavesDir, file), resolveInside(targetDir, file));
+    }
+  }
+
+  private toManifest(pkg: StoryPackage): TaskPackageManifest {
+    return {
+      id: pkg.id,
+      type: "task-package",
+      schemaVersion: "1",
+      title: pkg.title,
+      description: pkg.description,
+      entry: "task-package.json",
+      createdAt: pkg.createdAt,
+      updatedAt: pkg.updatedAt
+    };
+  }
+
+  private writeSplitFiles(pkg: StoryPackage) {
+    const packageDir = this.packageDir(pkg.id);
+    writeFileSync(resolveInside(packageDir, "scenario.json"), JSON.stringify(pkg.scenario, null, 2), "utf-8");
+    writeFileSync(resolveInside(packageDir, "characters.json"), JSON.stringify(pkg.characters, null, 2), "utf-8");
+    writeFileSync(resolveInside(packageDir, "skills.json"), JSON.stringify(pkg.skills, null, 2), "utf-8");
+
+    const knowledgeDir = ensureDir(resolveInside(packageDir, "knowledge"));
+    writeFileSync(resolveInside(knowledgeDir, "documents.json"), JSON.stringify(pkg.knowledgeDocuments, null, 2), "utf-8");
+
+    const promptsDir = ensureDir(resolveInside(packageDir, "prompts"));
+    writeFileSync(resolveInside(promptsDir, "story-setting.md"), pkg.storySettingPrompt ?? "", "utf-8");
+    writeFileSync(resolveInside(promptsDir, "rules.json"), JSON.stringify(pkg.promptRules, null, 2), "utf-8");
+
+    const uiDir = ensureDir(resolveInside(packageDir, "ui"));
+    writeFileSync(resolveInside(uiDir, "config.json"), JSON.stringify(pkg.uiConfig ?? {}, null, 2), "utf-8");
+  }
+}
+
+export function removeThumbnailFiles(mediaDir: string) {
+  const files = readdirSync(mediaDir).filter((file) => file.startsWith("thumbnail."));
+  for (const file of files) unlinkSync(resolveInside(mediaDir, file));
+}
+
+export function normalizeMediaExtension(filename: string) {
+  const ext = extname(basename(filename)).toLowerCase();
+  if ([".png", ".jpg", ".jpeg", ".gif", ".webp"].includes(ext)) return ext;
+  return ".png";
+}
+
+function safeDirectoryName(name: string) {
+  try {
+    assertSafeId(name);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function walkFiles(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = resolveInside(dir, entry.name);
+    if (entry.isDirectory()) return walkFiles(path);
+    return [path];
+  });
+}

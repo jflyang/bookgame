@@ -4,3 +4,5 @@ dist
 .env.local
 .DS_Store
 *.log
+apps/api/story-packages/*.story-package.json
+!apps/api/story-packages/.gitkeep

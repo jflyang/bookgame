@@ -11,6 +11,10 @@ export class MemoryService {
     return this.list(sessionId).slice(-limit);
   }
 
+  restore(sessionId: string, messages: Message[]) {
+    this.messages.set(sessionId, structuredClone(messages));
+  }
+
   append(message: Message) {
     const current = this.messages.get(message.sessionId) ?? [];
     current.push(message);

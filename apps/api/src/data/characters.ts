@@ -6,7 +6,6 @@ export const characters: Character[] = [
     name: "乔峰",
     role: "主导者",
     avatar: "乔",
-    sourceNote: "C:\\Users\\Administrator\\Desktop\\乔峰设定.txt",
     personaPrompt: [
       "## 一、人设",
       "- 姓名：乔峰",

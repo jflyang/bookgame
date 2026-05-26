@@ -1,43 +1,42 @@
 import { useState } from "react";
-import { Upload, Check, AlertTriangle } from "lucide-react";
-import type { StoryPackage } from "@story-game/shared";
+import { Upload, FileArchive, Check } from "lucide-react";
+import { importStoryPackageZip } from "../../../lib/adminApi.js";
 import { useGameStore } from "../../../store/gameStore.js";
 
 export function ImportWizard() {
   const [step, setStep] = useState(1);
   const [file, setFile] = useState<File | null>(null);
-  const [parsed, setParsed] = useState<StoryPackage | null>(null);
-  const [errors, setErrors] = useState<string[]>([]);
-  const [overwrite, setOverwrite] = useState(false);
-  const { importStoryPackage, showLibrary, storyPackages } = useGameStore();
+  const [title, setTitle] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [error, setError] = useState("");
+  const { showLibrary, loadStoryPackages } = useGameStore();
 
-  function handleFile(file: File) {
-    setFile(file);
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result as string) as StoryPackage;
-        const issues: string[] = [];
-        if (!data.id) issues.push("缺少 id 字段");
-        if (!data.title) issues.push("缺少 title 字段");
-        if (!data.scenario) issues.push("缺少 scenario 字段");
-        if (!data.characters || data.characters.length === 0) issues.push("缺少角色配置");
-        setErrors(issues);
-        setParsed(data);
-        setStep(2);
-      } catch {
-        setErrors(["无法解析 JSON 文件，请确保是合法的 .story-package.json"]);
-        setParsed(null);
-      }
-    };
-    reader.readAsText(file);
+  function handleFile(f: File) {
+    setFile(f);
+    setError("");
+    setStep(2);
   }
 
-  function handleImport() {
-    if (!parsed) return;
-    void importStoryPackage(parsed).then(() => {
-      showLibrary();
-    });
+  async function handleImport() {
+    if (!file) return;
+    setImporting(true);
+    setError("");
+    try {
+      await importStoryPackageZip(file, title.trim() || undefined);
+      await loadStoryPackages();
+      setStep(3);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "导入失败，请检查文件格式");
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  function handleReset() {
+    setStep(1);
+    setFile(null);
+    setTitle("");
+    setError("");
   }
 
   return (
@@ -45,60 +44,72 @@ export function ImportWizard() {
       <h2>导入故事包</h2>
 
       <div className="wizard-steps">
-        {[1, 2, 3].map((s) => (
-          <div key={s} className={`wizard-step ${step >= s ? "active" : ""} ${step > s ? "done" : ""}`}>
-            <span className="step-number">{s}</span>
-            <span className="step-label">{s === 1 ? "选择文件" : s === 2 ? "预览校验" : "确认导入"}</span>
-          </div>
-        ))}
+        <div className={`wizard-step ${step >= 1 ? "active" : ""} ${step > 1 ? "done" : ""}`}>
+          <span className="step-number">{step > 1 ? <Check size={14} /> : 1}</span>
+          <span className="step-label">选择 ZIP 文件</span>
+        </div>
+        <div className={`wizard-step ${step >= 2 ? "active" : ""} ${step > 2 ? "done" : ""}`}>
+          <span className="step-number">{step > 2 ? <Check size={14} /> : 2}</span>
+          <span className="step-label">确认导入</span>
+        </div>
+        <div className={`wizard-step ${step >= 3 ? "active" : ""}`}>
+          <span className="step-number">3</span>
+          <span className="step-label">完成</span>
+        </div>
       </div>
 
       {step === 1 && (
         <div className="import-dropzone"
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}>
-          <Upload size={40} strokeWidth={1} />
-          <p>拖拽 .story-package.json 到此处，或点击选择文件</p>
-          <input type="file" accept=".story-package.json,.json" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+          <FileArchive size={48} strokeWidth={1} />
+          <p>拖拽 .story-package.zip 到此处，或点击选择文件</p>
+          <p className="muted">支持从其他设备导出的故事包 ZIP 文件</p>
+          <input type="file" accept=".zip" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
         </div>
       )}
 
-      {step >= 2 && parsed && (
+      {step === 2 && file && (
         <div className="import-preview">
-          <h3>{parsed.title || "未命名故事包"}</h3>
-          <p>{parsed.description || "无描述"}</p>
-          <dl>
-            <div><dt>角色数</dt><dd>{parsed.characters?.length ?? 0}</dd></div>
-            <div><dt>技能数</dt><dd>{parsed.skills?.length ?? 0}</dd></div>
-            <div><dt>阶段数</dt><dd>{parsed.scenario?.stages?.length ?? 0}</dd></div>
-          </dl>
-          {errors.length > 0 ? (
+          <h3><FileArchive size={20} /> {file.name}</h3>
+          <p className="muted">{(file.size / 1024).toFixed(1)} KB</p>
+
+          <label className="form-field" style={{ marginTop: 16 }}>
+            <span className="form-label">故事包标题（可选，留空使用原名称）</span>
+            <input
+              className="form-input"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="输入新标题或留空"
+            />
+          </label>
+
+          {error && (
             <div className="import-errors">
-              {errors.map((e, i) => (
-                <p key={i}><AlertTriangle size={14} /> {e}</p>
-              ))}
-            </div>
-          ) : step === 2 ? (
-            <p className="import-ok"><Check size={14} /> 校验通过</p>
-          ) : null}
-          {step === 2 && (
-            <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-              <button onClick={() => setStep(3)}>继续</button>
-              <button className="ghost-button" onClick={() => { setStep(1); setFile(null); setParsed(null); setErrors([]); }}>重新选择</button>
+              <p>{error}</p>
             </div>
           )}
-          {step === 3 && (
-            <div style={{ marginTop: 16 }}>
-              <label className="checkbox-line" style={{ display: "flex", gap: 8, alignItems: "center", margin: "12px 0" }}>
-                <input type="checkbox" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)} />
-                覆盖同名包（如果已存在）
-              </label>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={handleImport} disabled={errors.length > 0}><Upload size={16} /> 确认导入</button>
-                <button className="ghost-button" onClick={() => setStep(2)}>返回上一步</button>
-              </div>
+
+          <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
+            <button onClick={handleImport} disabled={importing}>
+              <Upload size={16} /> {importing ? "导入中..." : "确认导入"}
+            </button>
+            <button className="ghost-button" onClick={handleReset}>重新选择</button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="import-preview">
+          <div style={{ textAlign: "center", padding: 24 }}>
+            <Check size={48} strokeWidth={1} style={{ color: "#16a34a" }} />
+            <h3>导入成功</h3>
+            <p className="muted">故事包已添加到管理台</p>
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 16 }}>
+              <button onClick={() => showLibrary()}>返回故事管理台</button>
+              <button className="ghost-button" onClick={handleReset}>导入另一个</button>
             </div>
-          )}
+          </div>
         </div>
       )}
     </section>

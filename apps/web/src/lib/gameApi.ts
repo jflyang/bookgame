@@ -8,6 +8,7 @@ export interface SessionPayload {
   characters: Character[];
   skills: Skill[];
   knowledgeDocuments: KnowledgeDocument[];
+  messages: Message[];
 }
 
 export async function createSession(storyPackageId?: string): Promise<SessionPayload> {
@@ -103,6 +104,51 @@ export async function sendMessageStream(
 
 function jsonHeaders() {
   return { "Content-Type": "application/json" };
+}
+
+export interface SaveMeta {
+  sessionId: string;
+  label: string;
+  round: number;
+  status: string;
+  messageCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function listSaves(storyPackageId: string): Promise<SaveMeta[]> {
+  const response = await fetch(`${API_BASE}/api/admin/story-packages/${storyPackageId}/saves`);
+  const data = await parseResponse<{ saves: SaveMeta[] }>(response);
+  return data.saves;
+}
+
+export async function saveSession(storyPackageId: string, sessionId: string, label: string) {
+  const response = await fetch(`${API_BASE}/api/admin/story-packages/${storyPackageId}/saves`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId, label })
+  });
+  return parseResponse<{ save: { sessionId: string; label: string } }>(response);
+}
+
+export async function loadSession(storyPackageId: string, saveId: string): Promise<SessionPayload> {
+  // First get the save data, then restore via game API
+  const saveResponse = await fetch(`${API_BASE}/api/admin/story-packages/${storyPackageId}/saves/${saveId}`);
+  const saveData = await parseResponse<{ save: { sessionId: string; label: string } }>(saveResponse);
+  // Then restore
+  const response = await fetch(`${API_BASE}/api/game/sessions/restore`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ storyPackageId, saveId })
+  });
+  return parseResponse<SessionPayload>(response);
+}
+
+export async function deleteSave(storyPackageId: string, saveId: string) {
+  const response = await fetch(`${API_BASE}/api/admin/story-packages/${storyPackageId}/saves/${saveId}`, {
+    method: "DELETE"
+  });
+  return parseResponse<{ ok: boolean }>(response);
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {

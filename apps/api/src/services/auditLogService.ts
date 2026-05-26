@@ -12,6 +12,7 @@ export interface AuditLogEntry {
 
 export class AuditLogService {
   private entries: AuditLogEntry[] = [];
+  private readonly maxEntries = 500;
 
   append(entry: Omit<AuditLogEntry, "id" | "timestamp">) {
     this.entries.push({
@@ -19,6 +20,9 @@ export class AuditLogService {
       id: `audit_${nanoid(10)}`,
       timestamp: new Date().toISOString()
     });
+    if (this.entries.length > this.maxEntries) {
+      this.entries = this.entries.slice(-this.maxEntries);
+    }
   }
 
   list(filter?: { type?: AuditLogEntry["type"]; sessionId?: string; limit?: number }) {

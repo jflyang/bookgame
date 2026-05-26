@@ -14,6 +14,22 @@ export class PromptService {
     const otherCharacterNames = roster.filter((item) => item.id !== speakerId).map((item) => item.name).join("、");
     const enabledRules = storyPackage?.promptRules.filter((rule) => rule.enabled) ?? [];
     const scenarioSetting = storyPackage?.storySettingPrompt || JSON.stringify(state.scenario);
+    const stageDetails = state.scenario.stages.map((stageId, index) => {
+      const detail = state.scenario.stageDetails.find((stage) => stage.id === stageId);
+      return [
+        `${index + 1}. ${stageId}${detail?.title ? `（${detail.title}）` : ""}`,
+        detail?.description ? `   含义：${detail.description}` : "",
+        detail?.enterWhen ? `   进入条件：${detail.enterWhen}` : "",
+        detail?.guidance ? `   推进建议：${detail.guidance}` : ""
+      ].filter(Boolean).join("\n");
+    }).join("\n");
+    const stageGuide = [
+      `当前剧情阶段：${state.scenario.currentStage}`,
+      `可用剧情阶段：${state.scenario.stages.join(" -> ")}`,
+      `阶段卡片说明：\n${stageDetails || "未配置阶段说明，只能参考阶段 ID。"}`,
+      `当前剧情目标：${state.scenario.currentGoal}`,
+      "如果剧情需要推进，只能在 stageSuggestion 中填入上面可用剧情阶段之一；不确定时沿用当前阶段。"
+    ].join("\n");
 
     return [
       "你正在驱动一个多人角色互动故事游戏。每次只有一个角色发言。",
@@ -32,6 +48,7 @@ export class PromptService {
       `角色主提示词：${speaker.personaPrompt}`,
       `检索到的角色知识库片段：${JSON.stringify(knowledgeHits)}`,
       `故事包主设定提示词：${scenarioSetting}`,
+      `剧情阶段信息：\n${stageGuide}`,
       `游戏状态：${JSON.stringify(state.characters)}`,
       `最近历史：${JSON.stringify(history)}`
     ].join("\n\n");

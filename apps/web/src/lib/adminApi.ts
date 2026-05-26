@@ -53,6 +53,44 @@ export async function updateLlmConfig(config: LlmConfig) {
   return parseResponse<{ llmConfig: LlmConfigView }>(response);
 }
 
+export function downloadStoryPackage(id: string) {
+  const url = `${API_BASE}/api/admin/story-packages/${id}/export`;
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${id}.story-package.zip`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+export async function importStoryPackageZip(file: File, title?: string) {
+  const form = new FormData();
+  form.append("file", file);
+  const query = title ? `?title=${encodeURIComponent(title)}` : "";
+  const response = await fetch(`${API_BASE}/api/admin/story-packages/import${query}`, {
+    method: "POST",
+    body: form,
+  });
+  return parseResponse<{ storyPackage: import("@story-game/shared").StoryPackage; storyPackages: import("@story-game/shared").StoryPackage[] }>(response);
+}
+
+export async function uploadThumbnail(id: string, file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch(`${API_BASE}/api/admin/story-packages/${id}/thumbnail`, {
+    method: "POST",
+    body: form,
+  });
+  return parseResponse<{ thumbnail: string }>(response);
+}
+
+export async function deleteThumbnail(id: string) {
+  const response = await fetch(`${API_BASE}/api/admin/story-packages/${id}/thumbnail`, {
+    method: "DELETE",
+  });
+  return parseResponse<{ ok: boolean }>(response);
+}
+
 function jsonHeaders() {
   return { "Content-Type": "application/json" };
 }

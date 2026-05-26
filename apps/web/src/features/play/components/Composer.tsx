@@ -58,6 +58,7 @@ export function Composer({ icon }: { icon: ReactNode }) {
           <input
             ref={inputRef}
             id="story-input"
+            name="story-input"
             value={text}
             onChange={(event) => handleChange(event.target.value)}
             aria-label={selected ? `指定 ${selected.name} 发言` : "输入行动或剧情指令"}
@@ -86,4 +87,3 @@ export function Composer({ icon }: { icon: ReactNode }) {
     </form>
   );
 }
-

@@ -15,7 +15,7 @@ export class RuleChecker {
       if (error && typeof error === "object" && "issues" in error) {
         logger.warn({ speakerId, errors: (error as { issues: unknown }).issues }, "output validation failed");
       }
-      throw;
+      throw error;
     }
   }
 }

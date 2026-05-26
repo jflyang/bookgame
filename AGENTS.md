@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **game** (705 symbols, 1606 relationships, 59 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **bookgame** (1154 symbols, 2809 relationships, 94 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -24,10 +24,10 @@ This project is indexed by GitNexus as **game** (705 symbols, 1606 relationships
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/game/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/game/clusters` | All functional areas |
-| `gitnexus://repo/game/processes` | All execution flows |
-| `gitnexus://repo/game/process/{name}` | Step-by-step execution trace |
+| `gitnexus://repo/bookgame/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/bookgame/clusters` | All functional areas |
+| `gitnexus://repo/bookgame/processes` | All execution flows |
+| `gitnexus://repo/bookgame/process/{name}` | Step-by-step execution trace |
 
 ## CLI
 

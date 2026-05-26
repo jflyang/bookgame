@@ -5,6 +5,7 @@ import { StoryLibrary } from "./components/StoryLibrary.js";
 import { StoryEditor } from "./components/StoryEditor.js";
 import { LlmConfigPanel } from "./components/LlmConfigPanel.js";
 import { ImportWizard } from "./components/ImportWizard.js";
+import { AuditLogPage } from "./components/AuditLogPage.js";
 import { PlaceholderPage } from "./components/PlaceholderPage.js";
 import { useGameStore } from "../../store/gameStore.js";
 
@@ -41,7 +42,7 @@ export function AdminApp() {
     if (pathname === "/admin/sessions") return <PlaceholderPage title="会话管理" description="查看和管理所有运行中的故事会话。此功能即将推出。" />;
     if (pathname.startsWith("/admin/sessions/")) return <PlaceholderPage title="会话详情" description="查看会话消息历史、运行时状态和调试信息。此功能即将推出。" />;
     if (pathname === "/admin/runtime") return <PlaceholderPage title="运行时总览" description="全局运行时统计、LLM 调用指标和校验监控。此功能即将推出。" />;
-    if (pathname === "/admin/audit-log") return <PlaceholderPage title="审计日志" description="LLM 请求记录、校验失败、状态变更的完整追踪。此功能即将推出。" />;
+    if (pathname === "/admin/audit-log") return <AuditLogPage />;
     // Default: library
     return <StoryLibrary />;
   }

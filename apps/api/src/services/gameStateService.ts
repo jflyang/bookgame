@@ -52,6 +52,10 @@ export class GameStateService {
     return state;
   }
 
+  restore(gameState: GameState) {
+    this.states.set(gameState.sessionId, structuredClone(gameState));
+  }
+
   applyAssistantTurn(sessionId: string, speakerId: CharacterId, output: LlmStoryOutput, skill?: Skill) {
     const state = this.get(sessionId);
     const delta: StateDelta = {};

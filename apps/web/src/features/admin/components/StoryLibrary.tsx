@@ -1,31 +1,48 @@
 import { useState } from "react";
 import { Download, FileUp, MonitorPlay, Pencil, Plus, Trash2 } from "lucide-react";
-import type { StoryPackage } from "@story-game/shared";
+import { downloadStoryPackage } from "../../../lib/adminApi.js";
 import { useGameStore } from "../../../store/gameStore.js";
 
 export function StoryLibrary() {
-  const { storyPackages, createStoryPackage, deleteStoryPackage, editStoryPackage, showImport, start } = useGameStore();
+  const { storyPackages, createStoryPackage, deleteStoryPackage, editStoryPackage, showImport, start, error } = useGameStore();
   const [title, setTitle] = useState("");
+  const [feedback, setFeedback] = useState("");
   const defaultStory = storyPackages[0];
 
   async function handleCreate() {
     const nextTitle = title.trim() || "新的互动故事";
-    await createStoryPackage(nextTitle);
-    setTitle("");
+    try {
+      await createStoryPackage(nextTitle);
+      setTitle("");
+      setFeedback(`已创建故事包「${nextTitle}」`);
+      setTimeout(() => setFeedback(""), 2500);
+    } catch {
+      setFeedback("创建失败，请重试");
+      setTimeout(() => setFeedback(""), 3000);
+    }
   }
 
-  function exportPackage(storyPackage: StoryPackage) {
-    const blob = new Blob([JSON.stringify(storyPackage, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${storyPackage.title}.story-package.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+  async function handleDelete(id: string, title: string) {
+    if (storyPackages.length <= 1) {
+      setFeedback("至少保留一个故事包");
+      setTimeout(() => setFeedback(""), 2500);
+      return;
+    }
+    if (!confirm(`确定要删除「${title}」吗？此操作不可撤销。`)) return;
+    try {
+      await deleteStoryPackage(id);
+      setFeedback(`已删除「${title}」`);
+      setTimeout(() => setFeedback(""), 2500);
+    } catch (err) {
+      setFeedback(err instanceof Error ? err.message : "删除失败，请重试");
+      setTimeout(() => setFeedback(""), 4000);
+    }
   }
 
   return (
     <section className="library">
+      {error ? <p className="error-banner">{error}</p> : null}
+      {feedback ? <p className="feedback-toast">{feedback}</p> : null}
       <div className="library-header">
         <div>
           <p className="eyebrow">Story Packages</p>
@@ -50,6 +67,13 @@ export function StoryLibrary() {
       <div className="story-grid">
         {storyPackages.map((storyPackage) => (
           <article className="story-card" key={storyPackage.id}>
+            {storyPackage.thumbnail ? (
+              <img className="story-card-thumb" src={storyPackage.thumbnail} alt={storyPackage.title} />
+            ) : (
+              <div className="story-card-thumb-placeholder">
+                <span style={{ fontSize: "2rem", opacity: 0.4 }}>📦</span>
+              </div>
+            )}
             <div>
               <h2>{storyPackage.title}</h2>
               <p>{storyPackage.description}</p>
@@ -62,8 +86,8 @@ export function StoryLibrary() {
             <div className="card-actions">
               <button className="primary-wide" onClick={() => void start(storyPackage.id)}><MonitorPlay size={17} /> 进入展示界面</button>
               <button className="ghost-button" onClick={() => editStoryPackage(storyPackage.id)}><Pencil size={17} /> 编辑</button>
-              <button className="ghost-button" onClick={() => exportPackage(storyPackage)}><Download size={17} /> 导出</button>
-              <button className="danger-button" onClick={() => void deleteStoryPackage(storyPackage.id)}><Trash2 size={17} /> 删除</button>
+              <button className="ghost-button" onClick={() => downloadStoryPackage(storyPackage.id)}><Download size={17} /> 导出</button>
+              <button className="danger-button" onClick={() => handleDelete(storyPackage.id, storyPackage.title)}><Trash2 size={17} /> 删除</button>
             </div>
           </article>
         ))}

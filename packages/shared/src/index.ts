@@ -1,28 +1,29 @@
 import { z } from "zod";
 
 export const characterIds = ["qiaofeng", "xuzhu", "duanyu", "dingchunqiu"] as const;
-export type CharacterId = (typeof characterIds)[number];
+export type CharacterId = string;
+export const safeIdSchema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/, "Invalid id");
 
 export const messageRoleSchema = z.enum(["user", "assistant", "system"]);
 export type MessageRole = z.infer<typeof messageRoleSchema>;
 
 export const characterSchema = z.object({
-  id: z.enum(characterIds),
+  id: safeIdSchema,
   name: z.string(),
   role: z.string(),
   avatar: z.string(),
   personaPrompt: z.string(),
   rules: z.array(z.string()).default([]),
-  skillIds: z.array(z.string()).default([]),
-  knowledgeBaseIds: z.array(z.string()).default([]),
+  skillIds: z.array(safeIdSchema).default([]),
+  knowledgeBaseIds: z.array(safeIdSchema).default([]),
   sourceNote: z.string().optional()
 });
 export type Character = z.infer<typeof characterSchema>;
 
 export const skillSchema = z.object({
-  id: z.string(),
+  id: safeIdSchema,
   name: z.string(),
-  ownerId: z.enum(characterIds),
+  ownerId: safeIdSchema,
   cost: z.object({ mp: z.number().int().nonnegative() }),
   damage: z.object({ min: z.number().int().nonnegative(), max: z.number().int().nonnegative() }).optional(),
   effect: z.string(),
@@ -32,9 +33,9 @@ export const skillSchema = z.object({
 export type Skill = z.infer<typeof skillSchema>;
 
 export const knowledgeDocumentSchema = z.object({
-  id: z.string(),
+  id: safeIdSchema,
   title: z.string(),
-  ownerId: z.enum(characterIds).nullable(),
+  ownerId: safeIdSchema.nullable(),
   content: z.string(),
   sourceType: z.enum(["markdown", "manual"]).default("markdown"),
   createdAt: z.string(),
@@ -43,7 +44,7 @@ export const knowledgeDocumentSchema = z.object({
 export type KnowledgeDocument = z.infer<typeof knowledgeDocumentSchema>;
 
 export const initialCharacterStateSchema = z.object({
-  characterId: z.enum(characterIds),
+  characterId: safeIdSchema,
   hp: z.number().int().positive(),
   mp: z.number().int().nonnegative(),
   attack: z.string().optional(),
@@ -52,12 +53,22 @@ export const initialCharacterStateSchema = z.object({
 });
 export type InitialCharacterState = z.infer<typeof initialCharacterStateSchema>;
 
+export const scenarioStageDetailSchema = z.object({
+  id: safeIdSchema,
+  title: z.string().default(""),
+  description: z.string().default(""),
+  enterWhen: z.string().default(""),
+  guidance: z.string().default("")
+});
+export type ScenarioStageDetail = z.infer<typeof scenarioStageDetailSchema>;
+
 export const scenarioSchema = z.object({
-  id: z.string(),
+  id: safeIdSchema,
   title: z.string(),
   premise: z.string(),
   currentStage: z.string(),
   stages: z.array(z.string()),
+  stageDetails: z.array(scenarioStageDetailSchema).optional().default([]),
   currentGoal: z.string(),
   rules: z.array(z.string()),
   initialStates: z.array(initialCharacterStateSchema)
@@ -65,7 +76,7 @@ export const scenarioSchema = z.object({
 export type Scenario = z.infer<typeof scenarioSchema>;
 
 export const storyPromptRuleSchema = z.object({
-  id: z.string(),
+  id: safeIdSchema,
   title: z.string(),
   category: z.enum([
     "knowledge_forcing",
@@ -146,9 +157,10 @@ export const uiConfigSchema = z.object({
 export type UiConfig = z.infer<typeof uiConfigSchema>;
 
 export const storyPackageSchema = z.object({
-  id: z.string(),
+  id: safeIdSchema,
   title: z.string(),
   description: z.string(),
+  thumbnail: z.string().optional(),
   storySettingPrompt: z.string().default(""),
   scenario: scenarioSchema,
   characters: z.array(characterSchema),
@@ -165,9 +177,11 @@ export const storyPackageSchema = z.object({
   updatedAt: z.string()
 });
 export type StoryPackage = z.infer<typeof storyPackageSchema>;
+export const taskPackageSchema = storyPackageSchema;
+export type TaskPackage = StoryPackage;
 
 export const characterStateSchema = z.object({
-  characterId: z.enum(characterIds),
+  characterId: safeIdSchema,
   hp: z.number().int(),
   mp: z.number().int(),
   conditions: z.array(z.string()),
@@ -176,10 +190,10 @@ export const characterStateSchema = z.object({
 export type CharacterState = z.infer<typeof characterStateSchema>;
 
 export const gameStateSchema = z.object({
-  sessionId: z.string(),
-  scenarioId: z.string(),
+  sessionId: safeIdSchema,
+  scenarioId: safeIdSchema,
   round: z.number().int().nonnegative(),
-  lastSpeakerId: z.enum(characterIds).nullable(),
+  lastSpeakerId: safeIdSchema.nullable(),
   status: z.enum(["active", "completed"]),
   characters: z.array(characterStateSchema),
   scenario: scenarioSchema,
@@ -192,10 +206,10 @@ export const stateDeltaSchema = z.record(z.string(), z.number().int());
 export type StateDelta = z.infer<typeof stateDeltaSchema>;
 
 export const messageSchema = z.object({
-  id: z.string(),
-  sessionId: z.string(),
+  id: safeIdSchema,
+  sessionId: safeIdSchema,
   role: messageRoleSchema,
-  speakerId: z.enum(characterIds).nullable(),
+  speakerId: safeIdSchema.nullable(),
   content: z.string(),
   usedSkills: z.array(z.string()),
   stateDelta: stateDeltaSchema,
@@ -205,12 +219,12 @@ export type Message = z.infer<typeof messageSchema>;
 
 export const llmActionSchema = z.object({
   type: z.enum(["skill", "observe", "command", "defend", "escape"]),
-  skillId: z.string().optional(),
-  targetIds: z.array(z.enum(characterIds)).default([])
+  skillId: safeIdSchema.optional(),
+  targetIds: z.array(safeIdSchema).default([])
 });
 
 export const llmStoryOutputSchema = z.object({
-  speakerId: z.enum(characterIds),
+  speakerId: safeIdSchema,
   narration: z.string().min(1),
   dialogue: z.string().min(1),
   action: llmActionSchema,
@@ -220,15 +234,15 @@ export const llmStoryOutputSchema = z.object({
 export type LlmStoryOutput = z.infer<typeof llmStoryOutputSchema>;
 
 export const createSessionRequestSchema = z.object({
-  storyPackageId: z.string().optional(),
-  scenarioId: z.string().default("xuzhu_vs_dingchunqiu"),
-  characterIds: z.array(z.enum(characterIds)).default([...characterIds])
+  storyPackageId: safeIdSchema.optional(),
+  scenarioId: safeIdSchema.default("xuzhu_vs_dingchunqiu"),
+  characterIds: z.array(safeIdSchema).default([...characterIds])
 });
 export type CreateSessionRequest = z.infer<typeof createSessionRequestSchema>;
 
 export const sendMessageRequestSchema = z.object({
   text: z.string().min(1),
-  targetCharacterId: z.enum(characterIds).nullable().optional()
+  targetCharacterId: safeIdSchema.nullable().optional()
 });
 export type SendMessageRequest = z.infer<typeof sendMessageRequestSchema>;
 
@@ -240,9 +254,13 @@ export const createStoryPackageRequestSchema = z.object({
   sourcePackageId: z.string().optional()
 });
 export type CreateStoryPackageRequest = z.infer<typeof createStoryPackageRequestSchema>;
+export const createTaskPackageRequestSchema = createStoryPackageRequestSchema;
+export type CreateTaskPackageRequest = CreateStoryPackageRequest;
 
 export const updateStoryPackageRequestSchema = storyPackageSchema;
 export type UpdateStoryPackageRequest = z.infer<typeof updateStoryPackageRequestSchema>;
+export const updateTaskPackageRequestSchema = taskPackageSchema;
+export type UpdateTaskPackageRequest = UpdateStoryPackageRequest;
 
 export const llmProviderTypeSchema = z.enum(["mock", "deepseek"]);
 export type LlmProviderType = z.infer<typeof llmProviderTypeSchema>;

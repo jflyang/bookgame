@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { Character, GameState, KnowledgeDocument, LlmConfig, LlmConfigView, Message, Scenario, Skill, StoryPackage } from "@story-game/shared";
 import * as adminApi from "../lib/adminApi.js";
 import * as gameApi from "../lib/gameApi.js";
+import type { SaveMeta } from "../lib/gameApi.js";
 
 type AppView = "library" | "editor" | "play" | "import" | "model-config" | "sessions" | "session-detail" | "runtime" | "audit-log";
 
@@ -25,6 +26,7 @@ interface GameStore {
   isStreaming: boolean;
   streamingSpeakerId: string | null;
   streamingSpeakerName: string | null;
+  saves: SaveMeta[];
   loadStoryPackages: () => Promise<void>;
   loadLlmConfig: () => Promise<void>;
   saveLlmConfig: (config: LlmConfig) => Promise<void>;
@@ -48,6 +50,10 @@ interface GameStore {
   saveScenario: (scenario: Scenario) => Promise<void>;
   saveCharacter: (character: Character) => Promise<void>;
   saveKnowledgeDocuments: (documents: KnowledgeDocument[], characters?: Character[]) => Promise<void>;
+  loadSaves: (storyPackageId: string) => Promise<void>;
+  saveCurrentSession: (label: string) => Promise<void>;
+  loadSavedSession: (storyPackageId: string, saveId: string) => Promise<void>;
+  deleteSavedSession: (storyPackageId: string, saveId: string) => Promise<void>;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -70,6 +76,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   isStreaming: false,
   streamingSpeakerId: null,
   streamingSpeakerName: null,
+  saves: [],
   async loadStoryPackages() {
     set({ error: null });
     try {
@@ -113,12 +120,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
   async createStoryPackage(title) {
     set({ error: null });
     const result = await adminApi.createStoryPackage(title, get().storyPackages[0]?.id);
-    set({ storyPackages: result.storyPackages, view: "editor", editingPackageId: result.storyPackage.id });
-    get().editStoryPackage(result.storyPackage.id);
+    set({ storyPackages: result.storyPackages, view: "library", editingPackageId: null });
   },
   async saveStoryPackage(storyPackage) {
     const result = await adminApi.updateStoryPackage(storyPackage);
-    set({ storyPackages: result.storyPackages, editingPackageId: result.storyPackage.id });
+    set({
+      storyPackages: result.storyPackages,
+      editingPackageId: result.storyPackage.id,
+      characters: result.storyPackage.characters,
+      skills: result.storyPackage.skills,
+      knowledgeDocuments: result.storyPackage.knowledgeDocuments,
+    });
   },
   async importStoryPackage(storyPackage) {
     const result = await adminApi.updateStoryPackage(storyPackage);
@@ -126,8 +138,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     get().editStoryPackage(result.storyPackage.id);
   },
   async deleteStoryPackage(id) {
+    set({ error: null });
     const result = await adminApi.deleteStoryPackage(id);
-    set({ storyPackages: result.storyPackages, view: "library", editingPackageId: null });
+    set({ storyPackages: result.storyPackages, view: "library", editingPackageId: null, error: null });
   },
   async start(storyPackageId) {
     set({ error: null, isAutoPlaying: false });
@@ -279,6 +292,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const next = { ...storyPackage, characters: nextCharacters, knowledgeDocuments: documents };
     await get().saveStoryPackage(next);
     set({ knowledgeDocuments: documents, characters: nextCharacters });
+  },
+  async loadSaves(storyPackageId) {
+    try {
+      const saves = await gameApi.listSaves(storyPackageId);
+      set({ saves });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "加载存档列表失败" });
+    }
+  },
+  async saveCurrentSession(label) {
+    const { sessionId, editingPackageId } = get();
+    if (!sessionId || !editingPackageId) return;
+    await gameApi.saveSession(editingPackageId, sessionId, label);
+    await get().loadSaves(editingPackageId);
+  },
+  async loadSavedSession(storyPackageId, saveId) {
+    set({ error: null, isAutoPlaying: false });
+    const payload = await gameApi.loadSession(storyPackageId, saveId);
+    navigateTo("/");
+    set({ ...payload, messages: payload.messages ?? [], debug: null, view: "play", editingPackageId: storyPackageId, saves: [] });
+  },
+  async deleteSavedSession(storyPackageId, saveId) {
+    await gameApi.deleteSave(storyPackageId, saveId);
+    await get().loadSaves(storyPackageId);
   }
 }));
 
