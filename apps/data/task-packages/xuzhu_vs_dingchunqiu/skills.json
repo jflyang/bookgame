@@ -120,5 +120,159 @@
     },
     "effect": "低血时的最终毒招",
     "description": "丁春秋孤注一掷，将毒功尽数爆发"
+  },
+  {
+    "id": "tianshan_liuyangzhang",
+    "name": "天山六阳掌",
+    "ownerId": "xuzhu",
+    "cost": {
+      "mp": 30
+    },
+    "damage": {
+      "min": 35,
+      "max": 50
+    },
+    "effect": "阳刚掌力层层递进，如春阳化雪，可压制毒功",
+    "description": "虚竹双掌连推，至阳内力如烈日当空，层层叠叠碾压而下"
+  },
+  {
+    "id": "tianshan_zhemeishou",
+    "name": "天山折梅手",
+    "ownerId": "xuzhu",
+    "cost": {
+      "mp": 25
+    },
+    "damage": {
+      "min": 25,
+      "max": 40
+    },
+    "effect": "拆解丁春秋招式，本回合自身受伤降低",
+    "description": "虚竹双手如穿花拂柳，以天山折梅手精妙手法化解对手攻势"
+  },
+  {
+    "id": "shengsifu_hanyi",
+    "name": "生死符·寒意初现",
+    "ownerId": "xuzhu",
+    "cost": {
+      "mp": 40
+    },
+    "damage": {
+      "min": 45,
+      "max": 60
+    },
+    "effect": "寒意如细针入经脉，丁春秋下一回合行动受限",
+    "description": "虚竹掌心凝出薄冰，将生死符劲力打入丁春秋经脉"
+  },
+  {
+    "id": "fomen_huti",
+    "name": "佛门护体",
+    "ownerId": "xuzhu",
+    "cost": {
+      "mp": 25
+    },
+    "damage": {
+      "min": 0,
+      "max": 0
+    },
+    "effect": "双手合十内力护身，本回合受到伤害减少40%",
+    "description": "虚竹双手合十，佛门真气自体内涌出形成金色护罩"
+  },
+  {
+    "id": "xuzhu_putong_zhangji",
+    "name": "普通掌击",
+    "ownerId": "xuzhu",
+    "cost": {
+      "mp": 0
+    },
+    "damage": {
+      "min": 8,
+      "max": 15
+    },
+    "effect": "内力不足时使用",
+    "description": "虚竹沉腰坐马，朴实无华的一掌推出"
+  },
+  {
+    "id": "liumai_shaoshang",
+    "name": "六脉神剑·少商剑",
+    "ownerId": "duanyu",
+    "cost": {
+      "mp": 35
+    },
+    "damage": {
+      "min": 30,
+      "max": 45
+    },
+    "effect": "救急打断丁春秋一次行动，乔峰或虚竹气血低于50时可用",
+    "description": "段誉食指疾点，无形剑气破空而出直取丁春秋要害"
+  },
+  {
+    "id": "liumai_shangyang",
+    "name": "六脉神剑·商阳剑",
+    "ownerId": "duanyu",
+    "cost": {
+      "mp": 30
+    },
+    "damage": {
+      "min": 25,
+      "max": 40
+    },
+    "effect": "阻断丁春秋退路，逃跑时使用",
+    "description": "段誉中指弹射，商阳剑气横扫封住丁春秋退路"
+  },
+  {
+    "id": "huagong_dafa",
+    "name": "化功大法",
+    "ownerId": "dingchunqiu",
+    "cost": {
+      "mp": 35
+    },
+    "damage": {
+      "min": 25,
+      "max": 40
+    },
+    "effect": "削减乔峰或虚竹15~25内力",
+    "description": "丁春秋狞笑中双掌化去对手内力，掌心隐隐有腐臭之气"
+  },
+  {
+    "id": "fushi_duzhang",
+    "name": "腐尸毒掌",
+    "ownerId": "dingchunqiu",
+    "cost": {
+      "mp": 25
+    },
+    "damage": {
+      "min": 30,
+      "max": 45
+    },
+    "effect": "若命中，目标下一回合持续损失5~10气血",
+    "description": "丁春秋掌中淬炼腐尸奇毒，一掌拍出腥风扑面"
+  },
+  {
+    "id": "duwu_dunshen",
+    "name": "毒雾遁身",
+    "ownerId": "dingchunqiu",
+    "cost": {
+      "mp": 20
+    },
+    "damage": {
+      "min": 0,
+      "max": 0
+    },
+    "effect": "闪避一次攻击，拉开距离",
+    "description": "丁春秋身形急退，毒雾炸开遮蔽身形"
+  },
+  {
+    "id": "xingxiu_yaofeng",
+    "name": "星宿妖风",
+    "ownerId": "dingchunqiu",
+    "cost": {
+      "mp": 30
+    },
+    "damage": {
+      "min": 20,
+      "max": 30
+    },
+    "effect": "扰乱虚竹动作，使其下一次攻击伤害降低",
+    "description": "丁春秋运起星宿妖风，黑气裹挟腥臭袭向虚竹面门"
   }
 ]

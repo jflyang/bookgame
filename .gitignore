@@ -7,9 +7,16 @@ dist
 apps/api/story-packages/*.story-package.json
 !apps/api/story-packages/.gitkeep
 
-# Non-default story packages (keep local only)
-apps/data/task-packages/story_*/
+# Non-default story packages: track configs, exclude media
+apps/data/task-packages/story_*/assets/
+apps/data/task-packages/story_*/media/
+apps/data/task-packages/story_*/saves/
 apps/data/task-packages/media/
+
+# Runtime data
+apps/data/saves/
+apps/api/data/runtime-stats.db-shm
+apps/api/data/runtime-stats.db-wal
 
 # Local asset packs
 wuxia_sfx_pack*/

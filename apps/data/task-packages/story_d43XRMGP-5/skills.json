@@ -1,0 +1,197 @@
+[
+  {
+    "id": "skill_unstable_punch",
+    "name": "不稳定重拳",
+    "ownerId": "zhangdali",
+    "cost": {
+      "mp": 25
+    },
+    "damage": {
+      "min": 5,
+      "max": 55
+    },
+    "effect": "一记重拳——但效果极度随机，可能打爆墙壁也可能只是轻轻碰了一下",
+    "description": "张大力鼓起勇气挥出拳头，拳头上闪烁着不稳定的纳米蓝光",
+    "sampleLine": "吃我一拳！……咦？怎么没反应？"
+  },
+  {
+    "id": "skill_lucky_miracle",
+    "name": "狗屎运爆发",
+    "ownerId": "zhangdali",
+    "cost": {
+      "mp": 30
+    },
+    "damage": {
+      "min": 25,
+      "max": 50
+    },
+    "effect": "天降好运——可能是天花板正好砸中敌人，或者对方的武器突然卡壳",
+    "description": "就在千钧一发之际，一个完全意外的巧合彻底扭转了局面",
+    "sampleLine": "啊？这也行？我自己都没想到！"
+  },
+  {
+    "id": "skill_trash_talk",
+    "name": "废柴吐槽",
+    "ownerId": "zhangdali",
+    "cost": {
+      "mp": 10
+    },
+    "damage": {
+      "min": 5,
+      "max": 15
+    },
+    "effect": "用精准吐槽打击敌人心理，降低对方士气",
+    "description": "张大力用宅男的独特视角喷出一句没人能反驳的垃圾话",
+    "sampleLine": "你一个科学家把世界搞成这样还敢自称天才？你论文被拒稿的那篇是不是叫《论作死的十万种方法》？"
+  },
+  {
+    "id": "skill_self_heal",
+    "name": "摸鱼自愈",
+    "ownerId": "zhangdali",
+    "cost": {
+      "mp": 20
+    },
+    "damage": {
+      "min": 0,
+      "max": 0
+    },
+    "effect": "激活纳米自愈能力恢复自身，但必须保持三秒不动（很危险）",
+    "description": "张大力蹲在掩体后面，纳米细胞在体内快速修复伤口——但姿势像在上厕所",
+    "sampleLine": "别看我！三秒就好……两秒……一秒……好了！"
+  },
+  {
+    "id": "skill_satellite_scan",
+    "name": "卫星扫描",
+    "ownerId": "ai_xiaobing",
+    "cost": {
+      "mp": 15
+    },
+    "damage": {
+      "min": 5,
+      "max": 10
+    },
+    "effect": "调用全球卫星扫描周围环境，揭示隐藏信息和敌人位置",
+    "description": "小冰强行占用最后3%的电量连上卫星，全息地图在空中展开",
+    "sampleLine": "（手机发出刺耳的警报）电量2%！你要的信息：前方50米有敌人。现在关机了，再见。"
+  },
+  {
+    "id": "skill_toxic_roast",
+    "name": "毒舌暴击",
+    "ownerId": "ai_xiaobing",
+    "cost": {
+      "mp": 10
+    },
+    "damage": {
+      "min": 15,
+      "max": 30
+    },
+    "effect": "用AI级别的毒舌精准打击敌人心理防线——对方无法还嘴",
+    "description": "小冰用毫无感情的机械音说出让人社会性死亡级别的毒舌评价",
+    "sampleLine": "分析完毕。陈博士的智力水平约等于一只训练有素的边境牧羊犬。更正——是未经训练的。"
+  },
+  {
+    "id": "skill_emergency_hack",
+    "name": "紧急骇入",
+    "ownerId": "ai_xiaobing",
+    "cost": {
+      "mp": 30
+    },
+    "damage": {
+      "min": 20,
+      "max": 40
+    },
+    "effect": "骇入敌方系统，控制电子门、监视器或机器人",
+    "description": "小冰在关机前一秒强行骇入系统，所有电子设备的屏幕上都出现一个笑脸emoji",
+    "sampleLine": "（最后1%电量）已骇入。现在我真的要关机了。充电宝有吗？没有？那永别了。"
+  },
+  {
+    "id": "skill_roach_army",
+    "name": "蟑螂大军召唤",
+    "ownerId": "qiangwang",
+    "cost": {
+      "mp": 35
+    },
+    "damage": {
+      "min": 35,
+      "max": 55
+    },
+    "effect": "召唤千万蟑螂大军淹没敌人——敌军陷入恐惧和混乱",
+    "description": "阿强仰天发出一声蟑螂特有的嘶鸣，地面开始涌动——数不清的蟑螂如黑色洪流涌出",
+    "sampleLine": "孩儿们，给这位'天才'博士看看什么叫真正的智慧生命！"
+  },
+  {
+    "id": "skill_glorious_boast",
+    "name": "光辉自吹",
+    "ownerId": "qiangwang",
+    "cost": {
+      "mp": 10
+    },
+    "damage": {
+      "min": 5,
+      "max": 15
+    },
+    "effect": "长篇大论吹嘘自己和蟑螂族的优越性，干扰敌人注意力",
+    "description": "阿强展开一场慷慨激昂的演讲——主题是蟑螂为什么比人类更优秀",
+    "sampleLine": "人类？你们连核辐射都扛不住！我们蟑螂早在三亿年前就统治地球了！"
+  },
+  {
+    "id": "skill_spray_phobia",
+    "name": "杀虫剂PTSD",
+    "ownerId": "qiangwang",
+    "cost": {
+      "mp": 20
+    },
+    "damage": {
+      "min": 0,
+      "max": 5
+    },
+    "effect": "被提到杀虫剂后陷入短暂恐慌，但同时触发愤怒反击",
+    "description": "有人提到了'杀虫剂'三个字，阿强瞬间僵住然后暴走",
+    "sampleLine": "别提那个词！！——孩儿们，给我上！！！"
+  },
+  {
+    "id": "skill_mad_science",
+    "name": "疯狂发明",
+    "ownerId": "dr_chen",
+    "cost": {
+      "mp": 30
+    },
+    "damage": {
+      "min": 30,
+      "max": 50
+    },
+    "effect": "当场发明一个不合逻辑但很危险的装置投入战斗",
+    "description": "陈博士从实验室里推出一台完全不该存在的机器，上面冒着危险的电火花",
+    "sampleLine": "我的最新发明——量子谐波共振蟑螂驱逐射线枪！……等等，为什么它在冒烟？"
+  },
+  {
+    "id": "skill_paper_rage",
+    "name": "论文狂怒",
+    "ownerId": "dr_chen",
+    "cost": {
+      "mp": 25
+    },
+    "damage": {
+      "min": 20,
+      "max": 35
+    },
+    "effect": "被'论文'二字激怒后进入狂暴状态，攻击不分敌我",
+    "description": "陈博士青筋暴起，瞳孔放大——'论文被拒'是他唯一不能提的禁语",
+    "sampleLine": "我的论文没有问题！！那些审稿人都是庸才！！让你看看真正的科学！！"
+  },
+  {
+    "id": "skill_experiment_malfunction",
+    "name": "实验失控",
+    "ownerId": "dr_chen",
+    "cost": {
+      "mp": 40
+    },
+    "damage": {
+      "min": 40,
+      "max": 60
+    },
+    "effect": "陈博士的实验装置失控，造成大范围随机伤害——可能伤到自己",
+    "description": "机器发出尖锐的警报声，各种液体从管子里喷出来——场面彻底失控",
+    "sampleLine": "不！不！！这不是计划的一部分！！快按红色按钮——不对，是按绿色！！啊——"
+  }
+]

@@ -110,20 +110,7 @@ const nodeGuides: Record<WorkflowNodeId, {
       "3. StoryPerformanceRuntime 提取消息中的 **粗体** 文本（或全文），与触发词做归一化匹配",
       "4. 命中 → 播放演出",
     ].join("\n"),
-    advice: [
-      "知识库命中型（最常用）：",
-      "  • 先在角色知识库里写好触发词段落，格式为「表演：xxx」+「触发词：A、B、C」",
-      "  • 在 Prompt 规则里要求 LLM 用 **粗体** 标出关键动作/状态",
-      "  • 这里填的触发词要与知识库一致，matchBoldOnly 建议保持 true",
-      "",
-      "技能使用型：",
-      "  • 先在角色配置页创建技能（ID/名称/消耗/效果）",
-      "  • 在知识库中为技能写详细描述，让 LLM 知道何时使用",
-      "  • 这里选择对应技能 ID，LLM 使用该技能时自动触发演出",
-      "  • 技能不需要内力数值也可以定义（消耗可设为 0）",
-      "",
-      "音频文件建议 1~5 秒，视频 2~4 秒。每次播放都会打断当前 BGM，短素材体验更好。",
-    ].join("\n"),
+    advice: "先在角色知识库里写好触发词段落（格式：表演：xxx + 触发词：A、B、C），在 Prompt 规则里要求 LLM 用 **粗体** 标出关键动作；再在这里新建演出，填同样的知识库标题和触发词，上传音效/图片即可。详细配置指南见 docs/演出配置指南.md。",
     previewTitle: "已配置演出",
     preview: (pkg) => Object.entries(pkg.pluginManifest?.performances ?? {})
       .map(([id, performance]) => `${performance.name} (${id})\n${performance.renderer} · ${performance.trigger.type}`)

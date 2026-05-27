@@ -1,0 +1,108 @@
+{
+  "id": "scenario_M-i9gU8t",
+  "title": "县长杯的荣耀与风波",
+  "premise": "你作为校队台柱在篮球赛中势不可挡，收获荣耀的同时也被大批女粉丝包围，这让妻子美云忧心忡忡，而大胆的三表妹丽云主动介入你的生活，一场从球场延伸到西沙湾的暧昧故事即将展开。",
+  "currentStage": "stage_tournament",
+  "stages": [
+    "stage_tournament",
+    "stage_admirers",
+    "stage_jealousy",
+    "stage_lily_accompany",
+    "stage_swimming_invite",
+    "stage_cramps",
+    "stage_intimacy",
+    "stage_aftermath"
+  ],
+  "stageDetails": [
+    {
+      "id": "stage_tournament",
+      "title": "冠军之路",
+      "description": "你在篮球场上大展神威，连胜强队，冠军在望。",
+      "enterWhen": "故事开始时",
+      "guidance": "重点描写比赛的热烈氛围、主角的英姿与胜利喜悦，逐步引入女粉丝的崇拜。"
+    },
+    {
+      "id": "stage_admirers",
+      "title": "粉丝包围",
+      "description": "比赛结束后，大批女学生将你团团围住，索要签名、合影。",
+      "enterWhen": "赢得重要比赛后",
+      "guidance": "突出主角被热情包围的场景，制造暧昧压力。"
+    },
+    {
+      "id": "stage_jealousy",
+      "title": "美云的烦恼",
+      "description": "妻子美云表达不安，担心你被女生纠缠。",
+      "enterWhen": "回到家中或与美云独处时",
+      "guidance": "展现美云温柔却吃醋的性格，增加情感张力。"
+    },
+    {
+      "id": "stage_lily_accompany",
+      "title": "黑玫瑰护驾",
+      "description": "丽云强势陪你出战球场，用泼辣作风震慑狂热粉丝。",
+      "enterWhen": "美云烦恼后或下一场比赛前",
+      "guidance": "突出丽云的健美、霸气与保护欲，引发女生间的冲突。"
+    },
+    {
+      "id": "stage_swimming_invite",
+      "title": "西沙湾之约",
+      "description": "丽云要求你单独陪她去西沙湾游泳，作为保护你的报酬。",
+      "enterWhen": "球赛结束后丽云提出条件时",
+      "guidance": "描写偏僻沙滩的浪漫与私密氛围，逐步升温暧昧。"
+    },
+    {
+      "id": "stage_cramps",
+      "title": "腿部抽筋",
+      "description": "游泳时丽云突然抽筋，你上前救助。",
+      "enterWhen": "在河中游泳过程中",
+      "guidance": "细致描写身体接触与紧张氛围，为后续发展做铺垫。"
+    },
+    {
+      "id": "stage_intimacy",
+      "title": "沙滩激情",
+      "description": "在沙滩上，丽云与你发生亲密关系。",
+      "enterWhen": "救助后情感爆发时",
+      "guidance": "根据玩家选择控制尺度，注重感官描写与情感互动。"
+    },
+    {
+      "id": "stage_aftermath",
+      "title": "余韵与归途",
+      "description": "事后两人相拥，处理关系变化，踏上归途。",
+      "enterWhen": "激情结束后",
+      "guidance": "收束当前事件，暗示未来可能的发展方向。"
+    }
+  ],
+  "currentGoal": "在篮球赛中继续获胜，同时处理妻子美云的担忧和三表妹丽云的强势接近。",
+  "rules": [
+    "故事以第一人称（周仲平）叙述",
+    "每次只推进一小步剧情，等待玩家选择",
+    "保持人物性格一致：美云温柔贤淑，丽云泼辣大胆",
+    "亲密场景需根据玩家选择逐步发展",
+    "尊重角色情感与关系变化"
+  ],
+  "initialStates": [
+    {
+      "characterId": "zhongping",
+      "hp": 100,
+      "mp": 100,
+      "attack": "篮球技巧与魅力",
+      "defense": "情感控制",
+      "speed": "运动爆发力"
+    },
+    {
+      "characterId": "meiyun",
+      "hp": 80,
+      "mp": 90,
+      "attack": "温柔劝说",
+      "defense": "情感依赖",
+      "speed": "细心观察"
+    },
+    {
+      "characterId": "liyun",
+      "hp": 95,
+      "mp": 85,
+      "attack": "泼辣强势",
+      "defense": "运动能力",
+      "speed": "大胆行动"
+    }
+  ]
+}
