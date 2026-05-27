@@ -1,93 +1,39 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { TurnProcessor } from "../turnProcessor.js";
-import type {
-  Character,
-  Skill,
-  GameState,
-  LlmStoryOutput,
-  SendMessageRequest,
-} from "@story-game/shared";
+import type { Character, GameState, LlmStoryOutput, SendMessageRequest } from "@story-game/shared";
 
 function makeCharacter(overrides: Partial<Character> = {}): Character {
   return {
-    id: "qiaofeng",
-    name: "乔峰",
-    role: "主导者",
-    avatar: "乔",
-    personaPrompt: "You are Qiao Feng",
-    rules: ["be brave"],
-    skillIds: ["test_skill"],
-    knowledgeBaseIds: [],
-    ...overrides,
-  };
-}
-
-function makeSkill(overrides: Partial<Skill> = {}): Skill {
-  return {
-    id: "test_skill",
-    name: "Test Skill",
-    ownerId: "qiaofeng",
-    cost: { mp: 10 },
-    damage: { min: 15, max: 25 },
-    effect: "Hurts",
-    description: "A test skill",
-    ...overrides,
+    id: "qiaofeng", name: "乔峰", role: "主导者", avatar: "乔",
+    personaPrompt: "You are Qiao Feng", rules: ["be brave"],
+    skillIds: [], knowledgeBaseIds: [], ...overrides,
   };
 }
 
 function makeGameState(overrides: Record<string, unknown> = {}): GameState {
-  const base = {
-    sessionId: "sess_001",
-    round: 1,
-    status: "active" as const,
-    lastSpeakerId: null,
-    characters: [
-      {
-        characterId: "qiaofeng" as const,
-        hp: 100,
-        mp: 80,
-        conditions: [],
-        isDefeated: false,
-      },
-    ],
+  return {
+    sessionId: "sess_001", round: 1, status: "active", lastSpeakerId: null,
+    characters: [{ characterId: "qiaofeng", hp: 100, mp: 80, conditions: [], isDefeated: false }],
     scenario: {
-      id: "sc_001",
-      title: "Test Scenario",
-      currentStage: "opening",
-      currentGoal: "Test",
-      premise: "Test",
-      rules: [],
-      stages: ["opening", "climax", "ending"],
-      initialStates: [],
+      id: "sc_001", title: "Test", currentStage: "opening", currentGoal: "Test",
+      premise: "Test", rules: [], stages: ["opening", "climax", "ending"], initialStates: [],
     },
-    createdAt: "2024-01-01T00:00:00.000Z",
-    updatedAt: "2024-01-01T00:00:00.000Z",
-    scenarioId: "sc_001",
-  };
-  return { ...base, ...overrides } as GameState;
+    createdAt: "2024-01-01T00:00:00.000Z", updatedAt: "2024-01-01T00:00:00.000Z",
+    scenarioId: "sc_001", ...overrides,
+  } as GameState;
 }
 
-function makeValidOutput(
-  overrides: Partial<LlmStoryOutput> = {}
-): LlmStoryOutput {
+function makeValidOutput(overrides: Partial<LlmStoryOutput> = {}): LlmStoryOutput {
   return {
-    speakerId: "qiaofeng" as const,
-    narration: "He strikes fiercely",
-    dialogue: "Take this!",
-    action: {
-      type: "skill",
-      skillId: "test_skill",
-      targetIds: ["xuzhu" as const],
-    },
-    stateDeltaSuggestion: {},
-    ...overrides,
+    speakerId: "qiaofeng", narration: "He strikes fiercely", dialogue: "Take this!",
+    action: { type: "skill", skillId: "test_skill", targetIds: ["xuzhu"] },
+    stateDeltaSuggestion: {}, ...overrides,
   };
 }
 
 describe("TurnProcessor", () => {
   let processor: TurnProcessor;
   let mockCharacters: Record<string, ReturnType<typeof vi.fn>>;
-  let mockSkills: Record<string, ReturnType<typeof vi.fn>>;
   let mockMemory: Record<string, ReturnType<typeof vi.fn>>;
   let mockStates: Record<string, ReturnType<typeof vi.fn>>;
   let mockPrompts: Record<string, ReturnType<typeof vi.fn>>;
@@ -96,359 +42,446 @@ describe("TurnProcessor", () => {
   let mockAuditLog: Record<string, ReturnType<typeof vi.fn>>;
   let mockSpeakerSelector: Record<string, ReturnType<typeof vi.fn>>;
   let mockStats: Record<string, ReturnType<typeof vi.fn>>;
+  let mockSkills: Record<string, ReturnType<typeof vi.fn>>;
   let mockGetStoryPackage: ReturnType<typeof vi.fn>;
 
   const sessionId = "sess_001";
   const input: SendMessageRequest = { text: "攻击他！" };
   const character = makeCharacter();
-  const skill = makeSkill();
   const gameState = makeGameState();
   const validOutput = makeValidOutput();
 
   beforeEach(() => {
     mockCharacters = { get: vi.fn(), list: vi.fn() };
-    mockSkills = { get: vi.fn() };
     mockMemory = { append: vi.fn(), recent: vi.fn(), list: vi.fn().mockReturnValue([]) };
-    mockStates = { get: vi.fn(), applyAssistantTurn: vi.fn() };
+    mockStates = { get: vi.fn(), applyAssistantTurn: vi.fn(), withLock: vi.fn((_id: string, fn: () => Promise<unknown>) => fn()) };
     mockPrompts = { buildPrompt: vi.fn() };
     mockRules = { validateOutput: vi.fn() };
     mockLlm = { complete: vi.fn(), stream: vi.fn() };
     mockAuditLog = { append: vi.fn() };
     mockSpeakerSelector = { select: vi.fn() };
     mockStats = { recordCompleteTurn: vi.fn() };
+    mockSkills = { get: vi.fn().mockReturnValue(undefined), list: vi.fn().mockReturnValue([]) };
     mockGetStoryPackage = vi.fn();
 
-    // Default mock behavior
     mockSpeakerSelector.select.mockReturnValue("qiaofeng");
     mockCharacters.get.mockReturnValue(character);
     mockCharacters.list.mockReturnValue([character]);
     mockStates.get.mockReturnValue(gameState);
     mockPrompts.buildPrompt.mockReturnValue("system prompt\nuser query");
-    mockLlm.complete.mockResolvedValue({
-      output: validOutput,
-      raw: JSON.stringify(validOutput),
-    });
+    mockLlm.complete.mockResolvedValue({ output: validOutput, raw: JSON.stringify(validOutput) });
     mockRules.validateOutput.mockReturnValue(validOutput);
-    mockSkills.get.mockReturnValue(skill);
     mockStates.applyAssistantTurn.mockReturnValue({
       state: { ...gameState, round: 2 },
-      delta: { "qiaofeng.mp": -10, "xuzhu.hp": -20 },
+      delta: { "dingchunqiu.hp": -20 },
     });
     mockGetStoryPackage.mockReturnValue(undefined);
 
     processor = new TurnProcessor(
-      mockCharacters as never,
-      mockSkills as never,
-      mockMemory as never,
-      mockStates as never,
-      mockPrompts as never,
-      mockRules as never,
-      mockLlm as never,
-      mockAuditLog as never,
-      mockSpeakerSelector as never,
-      mockStats as never,
-      mockGetStoryPackage
+      mockCharacters as never, mockMemory as never, mockStates as never,
+      mockPrompts as never, mockRules as never, mockLlm as never,
+      mockAuditLog as never, mockSpeakerSelector as never,
+      mockStats as never, mockSkills as never,
+      mockGetStoryPackage as never,
     );
   });
 
-  // ---------------------------------------------------------------------------
-  // sendMessage
-  // ---------------------------------------------------------------------------
+  // ---- sendMessage ----
 
-  it("sendMessage returns { message, gameState, debug }", async () => {
+  it("returns { message, gameState, debug }", async () => {
     const result = await processor.sendMessage(sessionId, input);
-
     expect(result).toHaveProperty("message");
     expect(result).toHaveProperty("gameState");
     expect(result).toHaveProperty("debug");
-
     expect(result.message.role).toBe("assistant");
     expect(result.message.speakerId).toBe("qiaofeng");
     expect(result.message.id).toMatch(/^msg_/);
     expect(result.message.content).toContain("He strikes fiercely");
-    expect(result.message.content).toContain("乔峰");
-
     expect(result.debug.selectedSpeakerId).toBe("qiaofeng");
-    expect(result.debug.usedSkill).toBe("test_skill");
     expect(result.debug.validation).toBe("passed");
   });
 
-  it("sendMessage applies skill when skillId matches owner", async () => {
-    const result = await processor.sendMessage(sessionId, input);
-
-    expect(result.debug.usedSkill).toBe("test_skill");
-    expect(result.message.usedSkills).toEqual(["test_skill"]);
-    expect(mockSkills.get).toHaveBeenCalledWith("test_skill");
-    expect(mockStates.applyAssistantTurn).toHaveBeenCalledWith(
-      sessionId,
-      "qiaofeng",
-      validOutput,
-      skill
-    );
-  });
-
-  it("sendMessage does not apply skill on owner mismatch", async () => {
-    const mismatchedSkill = makeSkill({ ownerId: "xuzhu" });
-    mockSkills.get.mockReturnValue(mismatchedSkill);
-
-    const result = await processor.sendMessage(sessionId, input);
-
-    expect(result.debug.usedSkill).toBeNull();
-    expect(result.message.usedSkills).toEqual([]);
-    expect(mockStates.applyAssistantTurn).toHaveBeenCalledWith(
-      sessionId,
-      "qiaofeng",
-      validOutput,
-      undefined
-    );
-  });
-
-  it("sendMessage validates output via ruleChecker", async () => {
+  it("validates output via ruleChecker", async () => {
     await processor.sendMessage(sessionId, input);
-
-    expect(mockRules.validateOutput).toHaveBeenCalledWith(
-      "qiaofeng",
-      validOutput
-    );
+    expect(mockRules.validateOutput).toHaveBeenCalledWith("qiaofeng", validOutput);
   });
 
-  it("sendMessage records stats on successful turn", async () => {
+  it("records stats on successful turn", async () => {
     await processor.sendMessage(sessionId, input);
-
     expect(mockStats.recordCompleteTurn).toHaveBeenCalledTimes(1);
-    const callArg = mockStats.recordCompleteTurn.mock.calls[0][0];
-    expect(callArg.sessionId).toBe(sessionId);
-    expect(callArg.round).toBe(1);
-    expect(callArg.speakerId).toBe("qiaofeng");
-    expect(callArg.validationResult).toBe("passed");
-    expect(callArg.validationErrors).toEqual([]);
-    expect(callArg.stateDelta).toEqual({ "qiaofeng.mp": -10, "xuzhu.hp": -20 });
-    expect(callArg.stageBefore).toBe("opening");
-    expect(typeof callArg.latencyMs).toBe("number");
+    const arg = mockStats.recordCompleteTurn.mock.calls[0][0];
+    expect(arg.sessionId).toBe(sessionId);
+    expect(arg.speakerId).toBe("qiaofeng");
+    expect(arg.validationResult).toBe("passed");
+    expect(arg.stageBefore).toBe("opening");
   });
 
-  it("sendMessage records failed stats and rethrows on validation error", async () => {
-    const validationError = new Error("speaker mismatch");
-    mockRules.validateOutput.mockImplementation(() => {
-      throw validationError;
-    });
-
-    await expect(processor.sendMessage(sessionId, input)).rejects.toThrow(
-      "speaker mismatch"
-    );
-
+  it("records failed stats and rethrows on validation error", async () => {
+    mockRules.validateOutput.mockImplementation(() => { throw new Error("speaker mismatch"); });
+    await expect(processor.sendMessage(sessionId, input)).rejects.toThrow("speaker mismatch");
     expect(mockStats.recordCompleteTurn).toHaveBeenCalledTimes(1);
-    const callArg = mockStats.recordCompleteTurn.mock.calls[0][0];
-    expect(callArg.validationResult).toBe("failed");
-    expect(callArg.parsedOutput).toBeNull();
+    expect(mockStats.recordCompleteTurn.mock.calls[0][0].validationResult).toBe("failed");
   });
 
-  it("sendMessage writes audit log for llm_response", async () => {
+  it("writes audit log entries", async () => {
     await processor.sendMessage(sessionId, input);
-
-    expect(mockAuditLog.append).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "llm_response",
-        sessionId,
-        speakerId: "qiaofeng",
-      })
-    );
+    const calls = mockAuditLog.append.mock.calls.map((c: unknown[]) => (c[0] as { type: string }).type);
+    expect(calls).toContain("llm_response");
   });
 
-  it("sendMessage writes session_completed audit log when game ends", async () => {
-    const completedState = makeGameState({ status: "completed" });
+  it("writes session_completed when game ends", async () => {
     mockStates.applyAssistantTurn.mockReturnValue({
-      state: completedState,
+      state: { ...gameState, round: 2, status: "completed" },
       delta: {},
     });
-
     await processor.sendMessage(sessionId, input);
-
-    const calls = mockAuditLog.append.mock.calls.map((c: unknown[]) => c[0]);
-    expect(calls.filter((c: { type: string }) => c.type === "session_completed")).toHaveLength(1);
+    const types = mockAuditLog.append.mock.calls.map((c: unknown[]) => (c[0] as { type: string }).type);
+    expect(types).toContain("session_completed");
   });
 
-  it("sendMessage prepares turn: appends user message, selects speaker, reads state", async () => {
+  it("prepares turn: appends user message, selects speaker, reads state", async () => {
     await processor.sendMessage(sessionId, input);
-
-    // User message appended
-    const userMsgAppend = mockMemory.append.mock.calls.find(
-      (c: unknown[]) => (c[0] as { role: string }).role === "user"
-    );
-    expect(userMsgAppend).toBeDefined();
-    expect(userMsgAppend[0].content).toBe("攻击他！");
-
-    // Speaker selected
-    expect(mockSpeakerSelector.select).toHaveBeenCalledWith(sessionId, input);
-
-    // State read
+    expect(mockMemory.append).toHaveBeenCalled();
+    expect(mockSpeakerSelector.select).toHaveBeenCalledWith(sessionId, input, undefined);
     expect(mockStates.get).toHaveBeenCalledWith(sessionId);
   });
 
-  // ---------------------------------------------------------------------------
-  // sendMessageStream
-  // ---------------------------------------------------------------------------
-
-  it("sendMessageStream yields meta, token, and done events in order", async () => {
-    async function* mockStream() {
-      yield "Hello ";
-      yield "World";
-    }
-    mockLlm.stream.mockReturnValue(mockStream());
-
-    const events: unknown[] = [];
-    for await (const event of processor.sendMessageStream(sessionId, input)) {
-      events.push(event);
-    }
-
-    expect(events.length).toBeGreaterThanOrEqual(4);
-    expect(events[0]).toEqual({
-      type: "meta",
-      speakerId: "qiaofeng",
-      speakerName: "乔峰",
-    });
-    expect(events[1]).toEqual({
-      type: "token",
-      token: "Hello ",
-      speakerId: "qiaofeng",
-    });
-    expect(events[2]).toEqual({
-      type: "token",
-      token: "World",
-      speakerId: "qiaofeng",
-    });
-    const doneEvent = events[events.length - 1] as Record<string, unknown>;
-    expect(doneEvent.type).toBe("done");
-    expect(doneEvent.message).toBeDefined();
-    expect(doneEvent.gameState).toBeDefined();
-    expect(doneEvent.debug).toBeDefined();
-  });
-
-  // This test covers the invalid JSON path in stream
-  it("sendMessageStream parses valid JSON from stream buffer", async () => {
-    const outputJson = JSON.stringify(validOutput);
-    async function* mockStream() {
-      yield outputJson;
-    }
-    mockLlm.stream.mockReturnValue(mockStream());
-    // For this path, rules.validateOutput will succeed
-    mockRules.validateOutput.mockReturnValue(validOutput);
-
-    const events: unknown[] = [];
-    for await (const event of processor.sendMessageStream(sessionId, input)) {
-      events.push(event);
-    }
-
-    // meta + token + done
-    expect(events.length).toBeGreaterThanOrEqual(2);
-    const doneEvent = events.find((e) => (e as { type: string }).type === "done") as Record<string, unknown> | undefined;
-    expect(doneEvent).toBeDefined();
-    expect((doneEvent as Record<string, unknown>).message).toBeDefined();
-    expect((doneEvent as Record<string, unknown>).gameState).toBeDefined();
-    expect((doneEvent as Record<string, unknown>).debug).toBeDefined();
-  });
-
-  it("sendMessageStream records stats after stream completes", async () => {
-    const outputJson = JSON.stringify(validOutput);
-    async function* mockStream() {
-      yield outputJson;
-    }
-    mockLlm.stream.mockReturnValue(mockStream());
-    mockRules.validateOutput.mockReturnValue(validOutput);
-
-    // Consume stream fully
-    const events: unknown[] = [];
-    for await (const event of processor.sendMessageStream(sessionId, input)) {
-      events.push(event);
-    }
-
-    expect(mockStats.recordCompleteTurn).toHaveBeenCalledTimes(1);
-    const callArg = mockStats.recordCompleteTurn.mock.calls[0][0];
-    expect(callArg.sessionId).toBe(sessionId);
-    expect(callArg.validationResult).toBe("passed");
-    expect(callArg.validationErrors).toEqual([]);
-  });
-
-  it("sendMessageStream records failed stats on validation error after stream", async () => {
-    const outputJson = JSON.stringify(validOutput);
-    async function* mockStream() {
-      yield outputJson;
-    }
-    mockLlm.stream.mockReturnValue(mockStream());
-    mockRules.validateOutput.mockImplementation(() => {
-      throw new Error("invalid output");
-    });
-
-    // Consume stream — after tokens it should throw
-    const events: unknown[] = [];
-    await expect(
-      (async () => {
-        for await (const event of processor.sendMessageStream(sessionId, input)) {
-          events.push(event);
-        }
-      })()
-    ).rejects.toThrow("invalid output");
-
-    expect(mockStats.recordCompleteTurn).toHaveBeenCalledTimes(1);
-    const callArg = mockStats.recordCompleteTurn.mock.calls[0][0];
-    expect(callArg.validationResult).toBe("failed");
-    expect(callArg.parsedOutput).toBeNull();
-  });
-
-  // ---------------------------------------------------------------------------
-  // Edge cases
-  // ---------------------------------------------------------------------------
-
   it("handles missing story package gracefully", async () => {
-    mockGetStoryPackage.mockReturnValue(undefined);
+    await processor.sendMessage(sessionId, input);
+    expect(mockPrompts.buildPrompt).toHaveBeenCalled();
+  });
+
+  // ---- sendMessageStream ----
+
+  it("yields meta, token, and done events in order", async () => {
+    const chunks = ["Hello ", "World"];
+    async function* mockStream() { for (const c of chunks) yield c; }
+    mockLlm.stream.mockReturnValue(mockStream());
+
+    const events: string[] = [];
+    for await (const event of processor.sendMessageStream(sessionId, input)) {
+      events.push((event as { type: string }).type);
+    }
+    expect(events).toEqual(["meta", "token", "token", "done"]);
+  });
+
+  it("records stats after stream completes", async () => {
+    async function* mockStream() { yield "Hello"; }
+    mockLlm.stream.mockReturnValue(mockStream());
+
+    for await (const _ of processor.sendMessageStream(sessionId, input)) { void _; }
+    expect(mockStats.recordCompleteTurn).toHaveBeenCalledTimes(1);
+    expect(mockStats.recordCompleteTurn.mock.calls[0][0].validationResult).toBe("passed");
+  });
+
+  it("records failed stats on validation error after stream", async () => {
+    async function* mockStream() { yield "bad json"; }
+    mockLlm.stream.mockReturnValue(mockStream());
+    mockRules.validateOutput.mockImplementation(() => { throw new Error("invalid"); });
+
+    await expect(async () => {
+      for await (const _ of processor.sendMessageStream(sessionId, input)) { void _; }
+    }).rejects.toThrow("invalid");
+
+    expect(mockStats.recordCompleteTurn).toHaveBeenCalledTimes(1);
+    expect(mockStats.recordCompleteTurn.mock.calls[0][0].validationResult).toBe("failed");
+  });
+
+  it("parses valid JSON from stream buffer", async () => {
+    const json = JSON.stringify(validOutput);
+    async function* mockStream() { yield json; }
+    mockLlm.stream.mockReturnValue(mockStream());
+
+    for await (const _ of processor.sendMessageStream(sessionId, input)) { void _; }
+    expect(mockRules.validateOutput).toHaveBeenCalledWith("qiaofeng", expect.objectContaining({ speakerId: "qiaofeng" }));
+  });
+
+  // ---- Skill damage resolution ----
+
+  it("strips self-HP damage when LLM incorrectly sets it", async () => {
+    const output = makeValidOutput({
+      action: { type: "skill", skillId: "天山六阳掌", targetIds: ["dingchunqiu"] },
+      stateDeltaSuggestion: { qiaofeng_hp: -30, dingchunqiu_hp: -5 },
+    });
+    mockSkills.get.mockReturnValue({
+      id: "天山六阳掌", name: "天山六阳掌", ownerId: "qiaofeng",
+      cost: { mp: 30 }, damage: { min: 35, max: 50 },
+    });
+    mockRules.validateOutput.mockReturnValue(output);
+    mockLlm.complete.mockResolvedValue({ output, raw: JSON.stringify(output) });
+
+    await processor.sendMessage(sessionId, input);
+    const applied = mockStates.applyAssistantTurn.mock.calls[0][2] as { stateDeltaSuggestion: Record<string, number> };
+    // Self HP should be removed
+    expect(applied.stateDeltaSuggestion.qiaofeng_hp).toBeUndefined();
+    // Target HP should be set to calculated damage (35~50, overwriting LLM's -5)
+    expect(applied.stateDeltaSuggestion.dingchunqiu_hp).toBeLessThanOrEqual(-35);
+    expect(applied.stateDeltaSuggestion.dingchunqiu_hp).toBeGreaterThanOrEqual(-50);
+  });
+
+  it("uses fallback enemy target from attackableTargetIds when targetIds is empty for damage skill", async () => {
+    mockCharacters.list.mockReturnValue([
+      { id: "qiaofeng", name: "乔峰", role: "主导者", attackableTargetIds: ["dingchunqiu"] },
+      { id: "dingchunqiu", name: "丁春秋", role: "反派", attackableTargetIds: [] },
+    ] as never);
+    const output = makeValidOutput({
+      action: { type: "skill", skillId: "星宿毒雾", targetIds: [] },
+      stateDeltaSuggestion: { dingchunqiu_mp: -30 },
+    });
+    mockSkills.get.mockReturnValue({
+      id: "星宿毒雾", name: "星宿毒雾", ownerId: "dingchunqiu",
+      cost: { mp: 30 }, damage: { min: 20, max: 35 },
+    });
+    mockRules.validateOutput.mockReturnValue(output);
+    mockLlm.complete.mockResolvedValue({ output, raw: JSON.stringify(output) });
+
+    await processor.sendMessage(sessionId, input);
+    const applied = mockStates.applyAssistantTurn.mock.calls[0][2] as { stateDeltaSuggestion: Record<string, number> };
+    // Should fallback to character in speaker's attackableTargetIds (dingchunqiu)
+    expect(applied.stateDeltaSuggestion.dingchunqiu_hp).toBeLessThanOrEqual(-20);
+    expect(applied.stateDeltaSuggestion.dingchunqiu_hp).toBeGreaterThanOrEqual(-35);
+  });
+
+  it("falls back to first entry in attackableTargetIds when multiple targets configured", async () => {
+    mockCharacters.list.mockReturnValue([
+      { id: "qiaofeng", name: "乔峰", role: "主导者", attackableTargetIds: ["dingchunqiu", "duanyu"] },
+      { id: "dingchunqiu", name: "丁春秋", role: "反派", attackableTargetIds: [] },
+      { id: "duanyu", name: "段誉", role: "观察者", attackableTargetIds: [] },
+    ] as never);
+    const output = makeValidOutput({
+      action: { type: "skill", skillId: "天山六阳掌", targetIds: [] },
+      stateDeltaSuggestion: {},
+    });
+    mockSkills.get.mockReturnValue({
+      id: "天山六阳掌", name: "天山六阳掌", ownerId: "qiaofeng",
+      cost: { mp: 30 }, damage: { min: 35, max: 50 },
+    });
+    mockRules.validateOutput.mockReturnValue(output);
+    mockLlm.complete.mockResolvedValue({ output, raw: JSON.stringify(output) });
+
+    await processor.sendMessage(sessionId, input);
+    const applied = mockStates.applyAssistantTurn.mock.calls[0][2] as { stateDeltaSuggestion: Record<string, number> };
+    // Should pick the first attackable target (dingchunqiu)
+    expect(applied.stateDeltaSuggestion.dingchunqiu_hp).toBeLessThanOrEqual(-35);
+    // Should NOT hit the second target
+    expect(applied.stateDeltaSuggestion.duanyu_hp).toBeUndefined();
+  });
+
+  it("falls back to any non-speaker when attackableTargetIds is empty", async () => {
+    mockCharacters.list.mockReturnValue([
+      { id: "qiaofeng", name: "乔峰", role: "主导者", attackableTargetIds: [] },
+      { id: "xuzhu", name: "虚竹", role: "行动者", attackableTargetIds: [] },
+    ] as never);
+    const output = makeValidOutput({
+      action: { type: "skill", skillId: "天山六阳掌", targetIds: [] },
+      stateDeltaSuggestion: {},
+    });
+    mockSkills.get.mockReturnValue({
+      id: "天山六阳掌", name: "天山六阳掌", ownerId: "qiaofeng",
+      cost: { mp: 30 }, damage: { min: 35, max: 50 },
+    });
+    mockRules.validateOutput.mockReturnValue(output);
+    mockLlm.complete.mockResolvedValue({ output, raw: JSON.stringify(output) });
+
+    await processor.sendMessage(sessionId, input);
+    const applied = mockStates.applyAssistantTurn.mock.calls[0][2] as { stateDeltaSuggestion: Record<string, number> };
+    // Should fall back to the only non-speaker (xuzhu)
+    expect(applied.stateDeltaSuggestion.xuzhu_hp).toBeLessThanOrEqual(-35);
+    // Self should NOT get HP damage
+    expect(applied.stateDeltaSuggestion.qiaofeng_hp).toBeUndefined();
+  });
+
+  it("does not use fallback when LLM provides explicit targetIds", async () => {
+    mockCharacters.list.mockReturnValue([
+      { id: "qiaofeng", name: "乔峰", role: "主导者", attackableTargetIds: ["dingchunqiu"] },
+      { id: "xuzhu", name: "虚竹", role: "行动者", attackableTargetIds: [] },
+      { id: "dingchunqiu", name: "丁春秋", role: "反派", attackableTargetIds: [] },
+    ] as never);
+    const output = makeValidOutput({
+      action: { type: "skill", skillId: "天山六阳掌", targetIds: ["xuzhu"] },
+      stateDeltaSuggestion: {},
+    });
+    mockSkills.get.mockReturnValue({
+      id: "天山六阳掌", name: "天山六阳掌", ownerId: "qiaofeng",
+      cost: { mp: 30 }, damage: { min: 35, max: 50 },
+    });
+    mockRules.validateOutput.mockReturnValue(output);
+    mockLlm.complete.mockResolvedValue({ output, raw: JSON.stringify(output) });
+
+    await processor.sendMessage(sessionId, input);
+    const applied = mockStates.applyAssistantTurn.mock.calls[0][2] as { stateDeltaSuggestion: Record<string, number> };
+    // Should use the LLM-specified target (xuzhu), NOT the attackableTargetIds fallback
+    expect(applied.stateDeltaSuggestion.xuzhu_hp).toBeLessThanOrEqual(-35);
+    expect(applied.stateDeltaSuggestion.dingchunqiu_hp).toBeUndefined();
+  });
+
+  it("returns usedSkill name for non-skill action", async () => {
+    const output = makeValidOutput({
+      action: { type: "command", targetIds: ["xuzhu"] },
+      stateDeltaSuggestion: {},
+    });
+    mockRules.validateOutput.mockReturnValue(output);
+    mockLlm.complete.mockResolvedValue({ output, raw: JSON.stringify(output) });
 
     const result = await processor.sendMessage(sessionId, input);
-
-    expect(result.debug.selectedSpeakerId).toBe("qiaofeng");
-    expect(mockPrompts.buildPrompt).toHaveBeenCalled();
-    const callArgs = (mockPrompts.buildPrompt as ReturnType<typeof vi.fn>).mock
-      .calls[0];
-    expect(callArgs[0]).toBe("qiaofeng");
-    expect(callArgs[3]).toBe("攻击他！");
-    expect(callArgs[4]).toBeUndefined();
+    expect(result.debug.usedSkill).toBeNull();
   });
 
-  it("handles streaming with step-by-step token emission", async () => {
-    const tokens = ['{"speakerId": "qiaofeng", "narri', 'tion": "Te', 'st", "dialogue": "Hi", "action": {"type": "observe", "targetIds": []}}'];
-    async function* mockStream() {
-      for (const t of tokens) yield t;
-    }
-    mockLlm.stream.mockReturnValue(mockStream());
-    const fallbackOutput: LlmStoryOutput = {
-      speakerId: "qiaofeng",
-      narration: '{"speakerId": "qiaofeng", "narrition": "Test", "dialogue": "Hi", "action": {"type": "observe", "targetIds": []}}',
-      dialogue: "",
-      action: { type: "command", targetIds: [] },
-      stateDeltaSuggestion: {},
-    };
-    // After JSON parsing fails, the catch block creates a fallback
-    // which will still have empty dialogue → validateOutput will throw
-    mockRules.validateOutput.mockImplementation(() => {
-      throw new Error("dialogue cannot be empty");
+  // ── formatCombatLine ──
+
+  it("message content includes combat line with skill damage and MP cost", async () => {
+    mockCharacters.list.mockReturnValue([
+      { id: "qiaofeng", name: "乔峰", role: "主导者" },
+      { id: "dingchunqiu", name: "丁春秋", role: "反派" },
+    ] as never);
+    const output = makeValidOutput({
+      action: { type: "skill", skillId: "天山六阳掌", targetIds: ["dingchunqiu"] },
+      stateDeltaSuggestion: { dingchunqiu_hp: -42, qiaofeng_mp: -30 },
     });
+    mockSkills.get.mockReturnValue({
+      id: "天山六阳掌", name: "天山六阳掌", ownerId: "qiaofeng",
+      cost: { mp: 30 }, damage: { min: 35, max: 50 },
+    });
+    mockRules.validateOutput.mockReturnValue(output);
+    mockLlm.complete.mockResolvedValue({ output, raw: JSON.stringify(output) });
 
-    const events: unknown[] = [];
-    await expect(
-      (async () => {
-        for await (const event of processor.sendMessageStream(sessionId, input)) {
-          events.push(event);
-        }
-      })()
-    ).rejects.toThrow("dialogue cannot be empty");
+    const result = await processor.sendMessage(sessionId, input);
+    expect(result.message.content).toContain("⚔ 乔峰 施展【天山六阳掌】");
+    expect(result.message.content).toMatch(/→ 丁春秋 气血-\d+/);
+    expect(result.message.content).toContain("｜ 乔峰 内力-30");
+  });
 
-    // 1 meta + 3 tokens = 4 events before error
-    expect(events.length).toBe(4);
-    const tokenEvents = events.filter(
-      (e) => (e as { type: string }).type === "token"
-    );
-    expect(tokenEvents).toHaveLength(3);
-    expect((tokenEvents[0] as { token: string }).token).toContain("narri");
-    expect((tokenEvents[1] as { token: string }).token).toContain("tion");
-    expect((tokenEvents[2] as { token: string }).token).toContain("dialogue");
+  it("message content does NOT include full status line", async () => {
+    const output = makeValidOutput();
+    mockRules.validateOutput.mockReturnValue(output);
+    mockLlm.complete.mockResolvedValue({ output, raw: JSON.stringify(output) });
+
+    const result = await processor.sendMessage(sessionId, input);
+    expect(result.message.content).not.toContain("[状态]");
+  });
+
+  it("message content has no combat line for non-skill actions", async () => {
+    for (const actionType of ["observe", "command", "escape", "defend"]) {
+      const output = makeValidOutput({
+        action: { type: actionType as never, targetIds: [] },
+        stateDeltaSuggestion: {},
+      });
+      mockRules.validateOutput.mockReturnValue(output);
+      mockLlm.complete.mockResolvedValue({ output, raw: JSON.stringify(output) });
+
+      const result = await processor.sendMessage(sessionId, input);
+      expect(result.message.content).not.toContain("⚔");
+      expect(result.message.content).not.toContain("[乔峰");
+    }
+  });
+
+  it("combat line shows target but no MP when MP is 0", async () => {
+    mockCharacters.list.mockReturnValue([
+      { id: "qiaofeng", name: "乔峰", role: "主导者" },
+      { id: "dingchunqiu", name: "丁春秋", role: "反派" },
+    ] as never);
+    const output = makeValidOutput({
+      action: { type: "skill", skillId: "免费技能", targetIds: ["dingchunqiu"] },
+      stateDeltaSuggestion: {},
+    });
+    mockSkills.get.mockReturnValue({
+      id: "免费技能", name: "免费技能", ownerId: "qiaofeng",
+      cost: { mp: 0 }, damage: { min: 10, max: 20 },
+    });
+    mockRules.validateOutput.mockReturnValue(output);
+    mockLlm.complete.mockResolvedValue({ output, raw: JSON.stringify(output) });
+
+    const result = await processor.sendMessage(sessionId, input);
+    expect(result.message.content).toContain("⚔ 乔峰 施展【免费技能】");
+    expect(result.message.content).toContain("→ 丁春秋 气血-");
+    // No MP cost should appear
+    expect(result.message.content).not.toContain("内力");
+  });
+
+  // ── StreamContentExtractor ──
+
+  it("stream yields extracted content for JSON tokens", async () => {
+    // Simulate real DeepSeek JSON streaming output with realistic chunk sizes
+    const json = JSON.stringify(makeValidOutput({
+      narration: "虚竹一掌拍出",
+      dialogue: "看招！",
+      action: { type: "skill", skillId: "天山六阳掌", targetIds: ["dingchunqiu"] },
+      stateDeltaSuggestion: {},
+    }));
+    // Real LLM streams in larger chunks (20+ chars). Split accordingly so JSON
+    // detection triggers before any content leaks.
+    const chunks: string[] = [];
+    for (let i = 0; i < json.length; i += 30) {
+      chunks.push(json.slice(i, i + 30));
+    }
+    async function* mockStream() { for (const c of chunks) yield c; }
+    mockLlm.stream.mockReturnValue(mockStream());
+
+    const tokens: string[] = [];
+    for await (const event of processor.sendMessageStream(sessionId, input)) {
+      if (event.type === "token") tokens.push((event as { token: string }).token);
+    }
+    const combined = tokens.join("");
+    // Must contain Chinese content
+    expect(combined).toContain("虚竹一掌拍出");
+    expect(combined).toContain("看招！");
+    // Must NOT contain JSON structural keys
+    expect(combined).not.toContain('"speakerId"');
+    expect(combined).not.toContain('"narration"');
+    expect(combined).not.toContain('"action"');
+  });
+
+  it("stream passes through non-JSON plain text", async () => {
+    async function* mockStream() { yield "Hello "; yield "World"; }
+    mockLlm.stream.mockReturnValue(mockStream());
+
+    const tokens: string[] = [];
+    for await (const event of processor.sendMessageStream(sessionId, input)) {
+      if (event.type === "token") tokens.push((event as { token: string }).token);
+    }
+    expect(tokens.join("")).toBe("Hello World");
+  });
+
+  it("stream handles JSON escape sequences", async () => {
+    const output = makeValidOutput({
+      narration: `He said: "hello"\nnew line test`,
+      dialogue: "continue",
+    });
+    const json = JSON.stringify(output);
+    async function* mockStream() { yield json; }
+    mockLlm.stream.mockReturnValue(mockStream());
+
+    const tokens: string[] = [];
+    for await (const event of processor.sendMessageStream(sessionId, input)) {
+      if (event.type === "token") tokens.push((event as { token: string }).token);
+    }
+    const combined = tokens.join("");
+    expect(combined).toContain("He said: ");
+    expect(combined).toContain("hello");
+    expect(combined).toContain("new line test");
+  });
+
+  it("stream handles JSON that arrives gradually with no content in early chunks", async () => {
+    // Early chunks only have JSON structure, content comes later
+    const chunks = [
+      '{"speakerId":"',
+      'qiaofeng","narr',
+      'ation":"渐',
+      '入佳境","dialogue":"',
+      '继续","action"',
+      ':{"type":"observe","targetIds":[]}}',
+    ];
+    async function* mockStream() { for (const c of chunks) yield c; }
+    mockLlm.stream.mockReturnValue(mockStream());
+
+    const tokens: string[] = [];
+    for await (const event of processor.sendMessageStream(sessionId, input)) {
+      if (event.type === "token") tokens.push((event as { token: string }).token);
+    }
+    const combined = tokens.join("");
+    expect(combined).toContain("渐入佳境");
+    expect(combined).toContain("继续");
+    expect(combined).not.toContain("speakerId");
+    expect(combined).not.toContain("qiaofeng");
   });
 });

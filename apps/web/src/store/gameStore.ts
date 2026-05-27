@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { Character, GameState, KnowledgeDocument, LlmConfig, LlmConfigView, Message, Scenario, Skill, StoryPackage } from "@story-game/shared";
 import * as adminApi from "../lib/adminApi.js";
 import * as gameApi from "../lib/gameApi.js";
-import type { SaveMeta } from "../lib/gameApi.js";
+import type { SaveMeta, SaveSlot } from "../lib/gameApi.js";
 
 type AppView = "library" | "editor" | "play" | "import" | "model-config" | "sessions" | "session-detail" | "runtime" | "audit-log";
 
@@ -26,7 +26,7 @@ interface GameStore {
   isStreaming: boolean;
   streamingSpeakerId: string | null;
   streamingSpeakerName: string | null;
-  saves: SaveMeta[];
+  saveSlots: SaveSlot[];
   loadStoryPackages: (includeHidden?: boolean) => Promise<void>;
   loadLlmConfig: () => Promise<void>;
   saveLlmConfig: (config: LlmConfig) => Promise<void>;
@@ -51,9 +51,10 @@ interface GameStore {
   saveCharacter: (character: Character) => Promise<void>;
   saveKnowledgeDocuments: (documents: KnowledgeDocument[], characters?: Character[]) => Promise<void>;
   loadSaves: (storyPackageId: string) => Promise<void>;
-  saveCurrentSession: (label: string) => Promise<void>;
+  saveCurrentSession: (label: string, slot: number) => Promise<void>;
   loadSavedSession: (storyPackageId: string, saveId: string) => Promise<void>;
-  deleteSavedSession: (storyPackageId: string, saveId: string) => Promise<void>;
+  loadSavedSessionBySlot: (storyPackageId: string, slot: number) => Promise<void>;
+  deleteSavedSession: (storyPackageId: string, saveId: string, slot?: number) => Promise<void>;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -76,7 +77,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   isStreaming: false,
   streamingSpeakerId: null,
   streamingSpeakerName: null,
-  saves: [],
+  saveSlots: [],
   async loadStoryPackages(includeHidden?: boolean) {
     set({ error: null });
     try {
@@ -95,8 +96,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
   async saveLlmConfig(config) {
-    const result = await adminApi.updateLlmConfig(config);
-    set({ llmConfig: result.llmConfig });
+    try {
+      const result = await adminApi.updateLlmConfig(config);
+      set({ llmConfig: result.llmConfig });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "保存大模型配置失败" });
+    }
   },
   showLibrary() {
     navigateTo("/admin/story-packages");
@@ -119,34 +124,58 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   async createStoryPackage(title) {
     set({ error: null });
-    const result = await adminApi.createStoryPackage(title, get().storyPackages[0]?.id);
-    set({ storyPackages: result.storyPackages, view: "library", editingPackageId: null });
+    try {
+      const result = await adminApi.createStoryPackage(title, get().storyPackages[0]?.id);
+      set({ storyPackages: result.storyPackages, view: "library", editingPackageId: null });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "创建故事包失败" });
+    }
   },
   async saveStoryPackage(storyPackage) {
-    const result = await adminApi.updateStoryPackage(storyPackage);
-    set({
-      storyPackages: result.storyPackages,
-      editingPackageId: result.storyPackage.id,
-      characters: result.storyPackage.characters,
-      skills: result.storyPackage.skills,
-      knowledgeDocuments: result.storyPackage.knowledgeDocuments,
-    });
+    try {
+      const result = await adminApi.updateStoryPackage(storyPackage);
+      set({
+        storyPackages: result.storyPackages,
+        editingPackageId: result.storyPackage.id,
+        characters: result.storyPackage.characters,
+        skills: result.storyPackage.skills,
+        knowledgeDocuments: result.storyPackage.knowledgeDocuments,
+      });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "保存故事包失败" });
+    }
   },
   async importStoryPackage(storyPackage) {
-    const result = await adminApi.updateStoryPackage(storyPackage);
-    set({ storyPackages: result.storyPackages, view: "editor", editingPackageId: result.storyPackage.id });
-    get().editStoryPackage(result.storyPackage.id);
+    try {
+      const result = await adminApi.updateStoryPackage(storyPackage);
+      set({ storyPackages: result.storyPackages, view: "editor", editingPackageId: result.storyPackage.id });
+      get().editStoryPackage(result.storyPackage.id);
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "导入故事包失败" });
+    }
   },
   async deleteStoryPackage(id) {
     set({ error: null });
-    const result = await adminApi.deleteStoryPackage(id);
-    set({ storyPackages: result.storyPackages, view: "library", editingPackageId: null, error: null });
+    try {
+      const result = await adminApi.deleteStoryPackage(id);
+      set({ storyPackages: result.storyPackages, view: "library", editingPackageId: null, error: null });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "删除故事包失败" });
+    }
   },
   async start(storyPackageId) {
-    set({ error: null, isAutoPlaying: false });
-    const payload = await gameApi.createSession(storyPackageId);
-    navigateTo("/");
-    set({ ...payload, messages: [], debug: null, view: "play", editingPackageId: storyPackageId });
+    set({ error: null, isAutoPlaying: false, isStreaming: false, streamingContent: null, streamingSpeakerId: null, streamingSpeakerName: null });
+    sessionStorage.removeItem("auto-save-sessionId");
+    sessionStorage.removeItem("auto-save-packageId");
+    sessionStorage.removeItem("auto-save-label");
+    sessionStorage.setItem("last-packageId", storyPackageId);
+    try {
+      const payload = await gameApi.createSession(storyPackageId);
+      navigateTo("/");
+      set({ ...payload, messages: [], debug: null, view: "play", editingPackageId: storyPackageId });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "创建会话失败" });
+    }
   },
   showImport() {
     navigateTo("/admin/story-packages/import");
@@ -174,6 +203,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   async send(text) {
     const { sessionId, selectedCharacterId } = get();
     if (!sessionId || !text.trim()) return;
+    const capturedSessionId = sessionId;
     set({ isSending: true, error: null });
     try {
       const result = await gameApi.sendMessage(sessionId, {
@@ -182,7 +212,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       });
       const userMessage: Message = {
         id: `local_${Date.now()}`,
-        sessionId,
+        sessionId: capturedSessionId,
         role: "user",
         speakerId: null,
         content: text,
@@ -190,24 +220,35 @@ export const useGameStore = create<GameStore>((set, get) => ({
         stateDelta: {},
         createdAt: new Date().toISOString()
       };
-      set((state) => ({
-        messages: [...state.messages, userMessage, result.message],
-        gameState: result.gameState,
-        debug: result.debug,
-        selectedCharacterId: null
-      }));
+      set((state) => {
+        if (state.sessionId !== capturedSessionId) return {};
+        return {
+          messages: [...state.messages, userMessage, result.message],
+          gameState: result.gameState,
+          debug: result.debug,
+          selectedCharacterId: null
+        };
+      });
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : "发送失败", isAutoPlaying: false });
+      set((state) => {
+        if (state.sessionId !== capturedSessionId) return {};
+        return { error: error instanceof Error ? error.message : "发送失败", isAutoPlaying: false };
+      });
     } finally {
-      set({ isSending: false });
+      set((state) => {
+        if (state.sessionId !== capturedSessionId) return {};
+        return { isSending: false };
+      });
     }
   },
   async sendStream(text) {
-    const { sessionId, selectedCharacterId, characters } = get();
+    const { sessionId, selectedCharacterId, isSending, isStreaming } = get();
     if (!sessionId || !text.trim()) return;
+    if (isSending || isStreaming) return;
+    const capturedSessionId = sessionId;
     const localUserMessage: Message = {
       id: `local_${Date.now()}`,
-      sessionId,
+      sessionId: capturedSessionId,
       role: "user",
       speakerId: null,
       content: text,
@@ -226,37 +267,55 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }));
     try {
       await gameApi.sendMessageStream(
-        sessionId,
+        capturedSessionId,
         { text, targetCharacterId: selectedCharacterId as never },
         (tokenEvent) => {
-          set((state) => ({
-            streamingContent: (state.streamingContent ?? "") + tokenEvent.token,
-            streamingSpeakerId: tokenEvent.speakerId
-          }));
+          set((state) => {
+            if (state.sessionId !== capturedSessionId) return {};
+            return {
+              streamingContent: (state.streamingContent ?? "") + tokenEvent.token,
+              streamingSpeakerId: tokenEvent.speakerId
+            };
+          });
         },
         (metaEvent) => {
-          set({
-            streamingSpeakerId: metaEvent.speakerId,
-            streamingSpeakerName: metaEvent.speakerName
+          set((state) => {
+            if (state.sessionId !== capturedSessionId) return {};
+            return {
+              streamingSpeakerId: metaEvent.speakerId,
+              streamingSpeakerName: metaEvent.speakerName
+            };
           });
         },
         (doneEvent) => {
-          set((state) => ({
-            messages: [...state.messages, doneEvent.message],
-            gameState: doneEvent.gameState,
-            debug: doneEvent.debug,
-            streamingContent: null,
-            isStreaming: false,
-            streamingSpeakerId: null,
-            streamingSpeakerName: null,
-            selectedCharacterId: null
-          }));
+          set((state) => {
+            if (state.sessionId !== capturedSessionId) return {};
+            return {
+              messages: [...state.messages, doneEvent.message],
+              gameState: doneEvent.gameState,
+              debug: doneEvent.debug,
+              streamingContent: null,
+              isStreaming: false,
+              streamingSpeakerId: null,
+              streamingSpeakerName: null,
+              selectedCharacterId: null
+            };
+          });
         }
       );
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : "发送失败", isAutoPlaying: false, isStreaming: false, streamingContent: null });
+      sessionStorage.removeItem("auto-save-sessionId");
+      sessionStorage.removeItem("auto-save-packageId");
+      sessionStorage.removeItem("auto-save-label");
+      set((state) => {
+        if (state.sessionId !== capturedSessionId) return {};
+        return { error: error instanceof Error ? error.message : "发送失败", isAutoPlaying: false, isStreaming: false, streamingContent: null };
+      });
     } finally {
-      set({ isSending: false });
+      set((state) => {
+        if (state.sessionId !== capturedSessionId) return {};
+        return { isSending: false };
+      });
     }
   },
   async continueStory() {
@@ -295,27 +354,51 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   async loadSaves(storyPackageId) {
     try {
-      const saves = await gameApi.listSaves(storyPackageId);
-      set({ saves });
+      const saveSlots = await gameApi.listSaves(storyPackageId);
+      set({ saveSlots });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : "加载存档列表失败" });
     }
   },
-  async saveCurrentSession(label) {
+  async saveCurrentSession(label, slot) {
     const { sessionId, editingPackageId } = get();
     if (!sessionId || !editingPackageId) return;
-    await gameApi.saveSession(editingPackageId, sessionId, label);
-    await get().loadSaves(editingPackageId);
+    try {
+      await gameApi.saveSession(editingPackageId, sessionId, label, slot);
+      await get().loadSaves(editingPackageId);
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "保存进度失败" });
+    }
   },
   async loadSavedSession(storyPackageId, saveId) {
     set({ error: null, isAutoPlaying: false });
-    const payload = await gameApi.loadSession(storyPackageId, saveId);
-    navigateTo("/");
-    set({ ...payload, messages: payload.messages ?? [], debug: null, view: "play", editingPackageId: storyPackageId, saves: [] });
+    sessionStorage.setItem("last-packageId", storyPackageId);
+    try {
+      const payload = await gameApi.loadSession(storyPackageId, saveId);
+      navigateTo("/");
+      set({ ...payload, messages: payload.messages ?? [], debug: null, view: "play", editingPackageId: storyPackageId, saveSlots: [] });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "载入存档失败" });
+    }
   },
-  async deleteSavedSession(storyPackageId, saveId) {
-    await gameApi.deleteSave(storyPackageId, saveId);
-    await get().loadSaves(storyPackageId);
+  async loadSavedSessionBySlot(storyPackageId, slot) {
+    set({ error: null, isAutoPlaying: false });
+    sessionStorage.setItem("last-packageId", storyPackageId);
+    try {
+      const payload = await gameApi.loadSessionBySlot(storyPackageId, slot);
+      navigateTo("/");
+      set({ ...payload, messages: payload.messages ?? [], debug: null, view: "play", editingPackageId: storyPackageId, saveSlots: [] });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "载入存档失败" });
+    }
+  },
+  async deleteSavedSession(storyPackageId, saveId, slot) {
+    try {
+      await gameApi.deleteSave(storyPackageId, saveId, slot);
+      await get().loadSaves(storyPackageId);
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "删除存档失败" });
+    }
   }
 }));
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { GameStateService } from "../gameStateService.js";
 import { ScenarioService } from "../scenarioService.js";
-import type { Skill, LlmStoryOutput } from "@story-game/shared";
+import type { LlmStoryOutput } from "@story-game/shared";
 
 const mockScenario = {
   id: "test",
@@ -13,38 +13,19 @@ const mockScenario = {
   currentGoal: "Test goal",
   rules: [],
   initialStates: [
-    { characterId: "qiaofeng" as const, hp: 100, mp: 50 },
-    { characterId: "dingchunqiu" as const, hp: 80, mp: 30 }
-  ]
+    { characterId: "qiaofeng", hp: 100, mp: 50 },
+    { characterId: "dingchunqiu", hp: 80, mp: 30 },
+  ],
 };
 
-const mockSkill: Skill = {
-  id: "test_skill",
-  name: "Test Skill",
-  ownerId: "qiaofeng",
-  cost: { mp: 10 },
-  damage: { min: 15, max: 25 },
-  effect: "Hurts",
-  description: "A test skill"
-};
-
-const mockSkillNoDmg: Skill = {
-  id: "defend",
-  name: "Defend",
-  ownerId: "qiaofeng",
-  cost: { mp: 5 },
-  effect: "Blocks",
-  description: "Defensive"
-};
-
-function makeOutput(speakerId: "qiaofeng" | "dingchunqiu", stage?: string): LlmStoryOutput {
+function makeOutput(overrides: Partial<LlmStoryOutput> = {}): LlmStoryOutput {
   return {
-    speakerId,
+    speakerId: "qiaofeng",
     narration: "Acts",
     dialogue: "Hah!",
     action: { type: "skill", skillId: "test_skill", targetIds: ["dingchunqiu"] },
     stateDeltaSuggestion: {},
-    ...(stage ? { stageSuggestion: stage } : {})
+    ...overrides,
   };
 }
 
@@ -58,63 +39,73 @@ describe("GameStateService", () => {
   });
 
   it("creates session with initial states", () => {
-    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng", "dingchunqiu"] });
+    const state = svc.createSession({
+      scenarioId: "test",
+      characterIds: ["qiaofeng", "dingchunqiu"],
+    });
     expect(state.sessionId).toMatch(/^session_/);
     expect(state.round).toBe(0);
-    const qf = state.characters.find((c) => c.characterId === "qiaofeng");
-    expect(qf?.hp).toBe(100);
-    expect(qf?.mp).toBe(50);
+    expect(state.status).toBe("active");
+    expect(state.characters).toHaveLength(2);
+    expect(state.characters[0].characterId).toBe("qiaofeng");
+    expect(state.characters[0].hp).toBe(100);
   });
 
-  it("applyAssistantTurn deducts mp and hp", () => {
-    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng", "dingchunqiu"] });
-    const { state: newState, delta } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", makeOutput("qiaofeng"), mockSkill);
-    expect(newState.round).toBe(1);
-    const qf = newState.characters.find((c) => c.characterId === "qiaofeng")!;
-    expect(qf.mp).toBe(40);
-    const dc = newState.characters.find((c) => c.characterId === "dingchunqiu")!;
-    expect(dc.hp).toBeLessThan(80);
+  it("get throws for unknown session", () => {
+    expect(() => svc.get("nonexistent")).toThrow("Session not found");
+  });
+
+  it("restore loads saved state", () => {
+    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng"] });
+    state.round = 10;
+    svc.restore(state);
+    const restored = svc.get(state.sessionId);
+    expect(restored.round).toBe(10);
+  });
+
+  it("applyAssistantTurn advances round and sets lastSpeaker", () => {
+    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng"] });
+    const output = makeOutput();
+    const { state: ns } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", output);
+    expect(ns.round).toBe(1);
+    expect(ns.lastSpeakerId).toBe("qiaofeng");
+  });
+
+  it("applyAssistantTurn applies stateDeltaSuggestion for HP", () => {
+    const state = svc.createSession({ scenarioId: "test", characterIds: ["dingchunqiu"] });
+    const output = makeOutput({ stateDeltaSuggestion: { "dingchunqiu.hp": -30 } });
+    const { state: ns, delta } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", output);
+    expect(ns.characters[0].hp).toBe(50); // 80 - 30
+    expect(delta["dingchunqiu.hp"]).toBe(-30);
+  });
+
+  it("applyAssistantTurn triggers defeat when HP reaches 0", () => {
+    const state = svc.createSession({ scenarioId: "test", characterIds: ["dingchunqiu"] });
+    const output = makeOutput({ stateDeltaSuggestion: { "dingchunqiu.hp": -100 } });
+    const { state: ns } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", output);
+    expect(ns.characters[0].hp).toBe(0);
+    expect(ns.characters[0].isDefeated).toBe(true);
+    expect(ns.status).toBe("completed");
+  });
+
+  it("applyAssistantTurn applies stateDeltaSuggestion for MP", () => {
+    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng"] });
+    const output = makeOutput({ stateDeltaSuggestion: { "qiaofeng.mp": -10 } });
+    const { delta } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", output);
     expect(delta["qiaofeng.mp"]).toBe(-10);
-    expect(delta["dingchunqiu.hp"]).toBeLessThan(0);
   });
 
-  it("damage is within range over 50 trials", () => {
-    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng", "dingchunqiu"] });
-    for (let i = 0; i < 50; i++) {
-      const s = structuredClone(state);
-      const { state: ns, delta } = svc.applyAssistantTurn(s.sessionId, "qiaofeng", makeOutput("qiaofeng"), mockSkill);
-      const dmg = -(delta["dingchunqiu.hp"] ?? 0);
-      expect(dmg).toBeGreaterThanOrEqual(15);
-      expect(dmg).toBeLessThanOrEqual(25);
-    }
-  });
-
-  it("defeat triggers completion", () => {
-    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng", "dingchunqiu"] });
-    const dc = state.characters.find((c) => c.characterId === "dingchunqiu")!;
-    dc.hp = 1;
-    const bigSkill: Skill = { ...mockSkill, damage: { min: 100, max: 100 } };
-    const { state: newState } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", makeOutput("qiaofeng"), bigSkill);
-    const dcAfter = newState.characters.find((c) => c.characterId === "dingchunqiu")!;
-    expect(dcAfter.isDefeated).toBe(true);
-    expect(newState.status).toBe("completed");
-  });
-
-  it("valid stageSuggestion advances stage", () => {
-    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng", "dingchunqiu"] });
-    const { state: ns } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", makeOutput("qiaofeng", "middle"), mockSkillNoDmg);
+  it("applyAssistantTurn changes stage when suggestion is valid", () => {
+    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng"] });
+    const output = makeOutput({ stageSuggestion: "middle" });
+    const { state: ns } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", output);
     expect(ns.scenario.currentStage).toBe("middle");
   });
 
-  it("invalid stageSuggestion is ignored", () => {
-    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng", "dingchunqiu"] });
-    const { state: ns } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", makeOutput("qiaofeng", "nonexistent"), mockSkillNoDmg);
+  it("applyAssistantTurn ignores invalid stage suggestion", () => {
+    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng"] });
+    const output = makeOutput({ stageSuggestion: "nonexistent" });
+    const { state: ns } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", output);
     expect(ns.scenario.currentStage).toBe("opening");
-  });
-
-  it("skill without damage works", () => {
-    const state = svc.createSession({ scenarioId: "test", characterIds: ["qiaofeng", "dingchunqiu"] });
-    const { state: ns } = svc.applyAssistantTurn(state.sessionId, "qiaofeng", makeOutput("qiaofeng"), mockSkillNoDmg);
-    expect(ns.round).toBe(1);
   });
 });

@@ -19,6 +19,7 @@ function createMockDialogueEngine() {
 function createMockSessionSaveService() {
   return {
     get: vi.fn(),
+    getBySlot: vi.fn(),
   } as any;
 }
 

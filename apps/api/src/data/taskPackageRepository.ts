@@ -13,6 +13,9 @@ import type { StoryPackage, StoryPluginManifest } from "@story-game/shared";
 import { storyPackageSchema, storyPluginManifestSchema } from "@story-game/shared";
 import { assertSafeId, ensureDir, resolveInside } from "./pathGuards.js";
 import { buildPluginIndex, type PluginAssetIndex } from "./pluginPackageIndex.js";
+import { createModuleLogger } from "../utils/logger.js";
+
+const logger = createModuleLogger("taskPackageRepo");
 
 export interface TaskPackageManifest {
   id: string;
@@ -87,10 +90,6 @@ export class TaskPackageRepository {
     return ensureDir(resolveInside(this.packageDir(id), "media"));
   }
 
-  savesDir(id: string) {
-    return resolveInside(this.packageDir(id), "saves");
-  }
-
   packageDir(id: string) {
     return resolveInside(this.rootDir, assertSafeId(id), "");
   }
@@ -127,7 +126,8 @@ export class TaskPackageRepository {
       const raw = JSON.parse(readFileSync(mf, "utf-8"));
       if (raw.schemaVersion !== "2") return null;
       return storyPluginManifestSchema.parse(raw);
-    } catch {
+    } catch (err) {
+      logger.warn({ err, packageId, manifestPath: mf }, "failed to parse plugin manifest");
       return null;
     }
   }
@@ -169,7 +169,6 @@ export class TaskPackageRepository {
       if (existsSync(this.taskFile(pkg.id))) continue;
       this.save(pkg);
       this.copyLegacyMedia(legacyDir, pkg.id);
-      this.copyLegacySaves(legacyDir, pkg.id);
     }
   }
 
@@ -179,16 +178,6 @@ export class TaskPackageRepository {
     const legacyMedia = readdirSync(mediaDir).find((file) => file.startsWith(`${id}.`));
     if (!legacyMedia) return;
     copyFileSync(join(mediaDir, legacyMedia), resolveInside(this.mediaDir(id), `thumbnail${normalizeMediaExtension(legacyMedia)}`));
-  }
-
-  private copyLegacySaves(legacyDir: string, id: string) {
-    const legacySavesDir = join(legacyDir, id, "saves");
-    if (!existsSync(legacySavesDir)) return;
-    const targetDir = ensureDir(this.savesDir(id));
-    for (const file of readdirSync(legacySavesDir)) {
-      if (!file.endsWith(".session.json")) continue;
-      copyFileSync(join(legacySavesDir, file), resolveInside(targetDir, file));
-    }
   }
 
   private toManifest(pkg: StoryPackage): TaskPackageManifest | StoryPluginManifest {
@@ -247,7 +236,8 @@ function safeDirectoryName(name: string) {
   try {
     assertSafeId(name);
     return true;
-  } catch {
+  } catch (err) {
+    logger.debug({ err, name }, "skipping directory with invalid name");
     return false;
   }
 }

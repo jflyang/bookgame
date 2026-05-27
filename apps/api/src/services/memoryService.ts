@@ -2,6 +2,7 @@ import type { Message } from "@story-game/shared";
 
 export class MemoryService {
   private readonly messages = new Map<string, Message[]>();
+  private static readonly MAX_MESSAGES_PER_SESSION = 200;
 
   list(sessionId: string) {
     return this.messages.get(sessionId) ?? [];
@@ -16,9 +17,24 @@ export class MemoryService {
   }
 
   append(message: Message) {
-    const current = this.messages.get(message.sessionId) ?? [];
+    let current = this.messages.get(message.sessionId) ?? [];
     current.push(message);
+    if (current.length > MemoryService.MAX_MESSAGES_PER_SESSION) {
+      current = this.compressHistory(message.sessionId);
+    }
     this.messages.set(message.sessionId, current);
+  }
+
+  cleanupSession(sessionId: string) {
+    this.messages.delete(sessionId);
+  }
+
+  clearOldSessions(activeSessionIds: Set<string>) {
+    for (const sessionId of this.messages.keys()) {
+      if (!activeSessionIds.has(sessionId)) {
+        this.messages.delete(sessionId);
+      }
+    }
   }
 
   compressHistory(sessionId: string, maxMessages = 30): Message[] {

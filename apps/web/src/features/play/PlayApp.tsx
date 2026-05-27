@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { CircleHelp, FolderOpen, MoreVertical, RefreshCw, RotateCcw, Save, ScrollText, Send, Settings, X } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, CircleHelp, FolderOpen, MoreVertical, RefreshCw, RotateCcw, Save, ScrollText, Send, Settings, X } from "lucide-react";
 import { CharacterRail } from "./components/CharacterRail.js";
 import { Composer } from "./components/Composer.js";
 import { MessageList } from "./components/MessageList.js";
+import { SaveLoadOverlay } from "./components/SaveLoadOverlay.js";
 import UiConfigContext, { useLabels, useUiConfig } from "./UiConfigContext.js";
 import { StoryAssetsProvider } from "./contexts/StoryAssetsContext.js";
 import { AudioManagerProvider } from "./contexts/AudioManager.js";
@@ -48,10 +49,11 @@ export function PlayApp() {
     setAutoPlay,
     editingPackageId,
     error,
-    saves,
+    saveSlots,
     loadSaves,
     saveCurrentSession,
     loadSavedSession,
+    loadSavedSessionBySlot,
     deleteSavedSession
   } = useGameStore();
 
@@ -59,7 +61,7 @@ export function PlayApp() {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
-  const [saveLabel, setSaveLabel] = useState("");
+  const [navExpanded, setNavExpanded] = useState(false);
   const storyPackage = storyPackages.find((p) => p.id === editingPackageId);
   const labels = useLabels();
   const uiConfig = storyPackage?.uiConfig;
@@ -71,20 +73,70 @@ export function PlayApp() {
     void loadStoryPackages();
   }, [loadStoryPackages]);
 
+  // Auto-save on refresh/close (best-effort via sendBeacon)
+  useEffect(() => {
+    const handleUnload = () => {
+      if (sessionId && editingPackageId) {
+        const now = new Date().toLocaleString("zh-CN");
+        sessionStorage.setItem("auto-save-sessionId", sessionId);
+        sessionStorage.setItem("auto-save-packageId", editingPackageId);
+        sessionStorage.setItem("auto-save-label", now + " " + stageDisplayName());
+        // fire-and-forget — if it fails, auto-restore will fall back gracefully
+        navigator.sendBeacon?.(
+          `${window.location.origin}/api/admin/story-packages/${editingPackageId}/saves`,
+          new Blob([JSON.stringify({ sessionId, label: now + " " + stageDisplayName(), slot: 1 })], { type: "application/json" })
+        );
+      }
+    };
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
+  }, [sessionId, editingPackageId]); // eslint-disable-line
+
+  // Auto-restore on load
   useEffect(() => {
     if (sessionId || storyPackages.length === 0) return;
-    void start(storyPackages[0].id);
-  }, [sessionId, start, storyPackages]);
+    const savedSessionId = sessionStorage.getItem("auto-save-sessionId");
+    const savedPackageId = sessionStorage.getItem("auto-save-packageId");
+    if (savedSessionId && savedPackageId) {
+      loadSaves(savedPackageId).then(() => {
+        const slots = useGameStore.getState().saveSlots;
+        const match = slots.find((s) => s.save?.sessionId === savedSessionId);
+        if (match) {
+          void loadSavedSessionBySlot(savedPackageId, match.slot);
+        } else {
+          void start(savedPackageId);
+        }
+      }).catch(() => {
+        // loadSaves failed (network error etc.) — clear stale markers and start fresh
+        void start(savedPackageId);
+      }).finally(() => {
+        sessionStorage.removeItem("auto-save-sessionId");
+        sessionStorage.removeItem("auto-save-packageId");
+        sessionStorage.removeItem("auto-save-label");
+      });
+    } else {
+      const lastId = sessionStorage.getItem("last-packageId");
+      const targetId = lastId && storyPackages.some((p) => p.id === lastId) ? lastId : storyPackages[0]?.id;
+      if (targetId) void start(targetId);
+    }
+  }, [sessionId, start, storyPackages]); // eslint-disable-line
 
   useEffect(() => {
     if (!isAutoPlaying || isSending || gameState?.status === "completed") return;
     const timer = window.setTimeout(() => {
       void continueStory();
-    }, 1600);
+    }, 3000);
     return () => window.clearTimeout(timer);
   }, [continueStory, gameState?.round, gameState?.status, isAutoPlaying, isSending]);
 
   const isCompleted = gameState?.status === "completed";
+
+  function stageDisplayName() {
+    const stage = gameState?.scenario?.currentStage;
+    if (!stage) return "";
+    const detail = gameState?.scenario?.stageDetails?.find((s) => s.id === stage);
+    return detail?.title || stage;
+  }
 
   const pluginManifest = storyPackage?.pluginManifest ?? null;
 
@@ -101,10 +153,12 @@ export function PlayApp() {
     <StoryPerformanceRuntime />
     <UiConfigContext.Provider value={uiConfig ?? {} as UiConfig}>
       <main className="play-shell" style={themeVars(uiConfig)} data-story-plugin={editingPackageId ?? ""}>
-        <aside className="play-nav" aria-label="主导航">
-          <div className="window-dots" aria-hidden="true"><span /><span /><span /></div>
-          <p className="nav-section-title">故事包</p>
-          <div className="nav-packages">
+        <aside className={`play-nav ${navExpanded ? "expanded" : ""}`} aria-label="主导航">
+          <button className="nav-toggle" onClick={() => setNavExpanded(!navExpanded)} title={navExpanded ? "收起" : "展开"}>
+            {navExpanded ? <ChevronsLeft size={20} /> : <ChevronsRight size={20} />}
+          </button>
+          {navExpanded && <p className="nav-section-title">故事包</p>}
+          {navExpanded && <div className="nav-packages">
             {storyPackages.map((pkg) => (
               <button
                 key={pkg.id}
@@ -120,12 +174,12 @@ export function PlayApp() {
                 )}
               </button>
             ))}
-          </div>
-          <div className="nav-divider" />
-          <a className="nav-settings-btn" href="/admin/story-packages" title="后台管理">
+          </div>}
+          {navExpanded && <div className="nav-divider" />}
+          {navExpanded && <a className="nav-settings-btn" href="/admin/story-packages" title="后台管理">
             <Settings size={20} />
             <span>后台管理</span>
-          </a>
+          </a>}
         </aside>
 
         <section className="play-main">
@@ -136,7 +190,7 @@ export function PlayApp() {
             </div>
             <div className="play-toolbar">
               <span className={`status-badge ${isCompleted ? "completed" : ""}`}>
-                {isCompleted ? labels.statusCompleted : `${labels.round} ${gameState?.round ?? 0}`}
+                {isCompleted ? labels.statusCompleted : `${labels.round} ${gameState?.round ?? 0} · ${stageDisplayName()}`}
               </span>
               <button className="paper-icon" onClick={() => setShowRules(true)} aria-label="查看规则" title="查看规则">
                 <CircleHelp size={18} />
@@ -184,8 +238,8 @@ export function PlayApp() {
               <div className="play-composer-shell">
                 <div className="quick-actions">
                   {showQuickActions && (
-                    <button className="btn-continue" onClick={() => void continueStory()} disabled={isSending || !sessionId}>
-                      <ScrollText size={17} /> {labels.continue}
+                    <button className="btn-continue" onClick={() => void continueStory()} disabled={isSending || !sessionId} title={labels.continue}>
+                      <ScrollText size={17} />
                     </button>
                   )}
                   {showAutoPlay && (
@@ -231,51 +285,41 @@ export function PlayApp() {
         )}
 
         {showSaveModal && (
-          <div className="rules-overlay" onClick={() => setShowSaveModal(false)}>
-            <div className="rules-panel" onClick={(e) => e.stopPropagation()}>
-              <h2>保存进度</h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <label className="field-title">
-                  存档名称
-                  <input className="field-input" value={saveLabel} onChange={(e) => setSaveLabel(e.target.value)}
-                    placeholder={new Date().toLocaleString("zh-CN")} />
-                </label>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => { void saveCurrentSession(saveLabel || new Date().toLocaleString("zh-CN")); setShowSaveModal(false); setSaveLabel(""); }}>
-                    保存
-                  </button>
-                  <button className="ghost-button" onClick={() => setShowSaveModal(false)}>取消</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <SaveLoadOverlay
+            mode="save"
+            title="保存进度"
+            saveSlots={saveSlots}
+            storyPackage={storyPackage}
+            stageName={stageDisplayName()}
+            gameRound={gameState?.round ?? 0}
+            messageCount={useGameStore.getState().messages.length}
+            onSave={(slot) => {
+              const label = new Date().toLocaleString("zh-CN") + " " + stageDisplayName();
+              void saveCurrentSession(label, slot);
+              setShowSaveModal(false);
+            }}
+            onClose={() => setShowSaveModal(false)}
+          />
         )}
 
         {showLoadModal && (
-          <div className="rules-overlay" onClick={() => setShowLoadModal(false)}>
-            <div className="rules-panel" onClick={(e) => e.stopPropagation()}>
-              <h2>载入进度</h2>
-              {saves.length === 0 ? (
-                <p className="muted">暂无存档</p>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {saves.map((save) => (
-                    <div key={save.sessionId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
-                      <div>
-                        <strong>{save.label}</strong>
-                        <p className="muted" style={{ margin: 0 }}>回合 {save.round} · {save.messageCount} 条消息 · {save.status === "completed" ? "已结束" : "进行中"}</p>
-                      </div>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <button onClick={() => { void loadSavedSession(editingPackageId!, save.sessionId); setShowLoadModal(false); }}>载入</button>
-                        <button className="danger-button" onClick={() => { void deleteSavedSession(editingPackageId!, save.sessionId); }}>删除</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <button className="ghost-button" style={{ marginTop: 12 }} onClick={() => setShowLoadModal(false)}>关闭</button>
-            </div>
-          </div>
+          <SaveLoadOverlay
+            mode="load"
+            title="载入进度"
+            saveSlots={saveSlots}
+            storyPackage={storyPackage}
+            stageName={stageDisplayName()}
+            gameRound={gameState?.round ?? 0}
+            messageCount={useGameStore.getState().messages.length}
+            onLoadBySlot={(slot) => {
+              void loadSavedSessionBySlot(editingPackageId!, slot);
+              setShowLoadModal(false);
+            }}
+            onDelete={(saveId, slot) => {
+              void deleteSavedSession(editingPackageId!, saveId, slot);
+            }}
+            onClose={() => setShowLoadModal(false)}
+          />
         )}
       </main>
     </UiConfigContext.Provider>

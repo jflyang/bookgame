@@ -12,6 +12,7 @@
     "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @story-game/api\" \"npm run dev -w @story-game/web\"",
     "dev:api": "npm run dev -w @story-game/api",
     "dev:web": "npm run dev -w @story-game/web",
+    "restart": "bash restart.sh",
     "build": "npm run build -w @story-game/shared && npm run build -w @story-game/api && npm run build -w @story-game/web",
     "typecheck": "npm run build -w @story-game/shared && npm run typecheck -w @story-game/api && npm run typecheck -w @story-game/web"
   },

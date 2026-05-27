@@ -101,6 +101,16 @@ export async function deleteThumbnail(id: string) {
   return parseResponse<{ ok: boolean }>(response);
 }
 
+export async function uploadBackgroundImage(id: string, file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch(`${API_BASE}/api/admin/story-packages/${id}/background-image`, {
+    method: "POST",
+    body: form,
+  });
+  return parseResponse<{ path: string }>(response);
+}
+
 export async function uploadPerformanceAudio(id: string, performanceId: string, file: File) {
   const form = new FormData();
   form.append("file", file);
@@ -127,11 +137,33 @@ export async function uploadPerformanceImage(id: string, performanceId: string, 
   return parseResponse<{ path: string }>(response);
 }
 
+export async function uploadPerformanceVideo(id: string, performanceId: string, file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch(
+    `${API_BASE}/api/admin/story-packages/${id}/performance-video?performanceId=${encodeURIComponent(performanceId)}`,
+    {
+      method: "POST",
+      body: form,
+    }
+  );
+  return parseResponse<{ path: string }>(response);
+}
+
 function jsonHeaders() {
   return { "Content-Type": "application/json" };
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) throw new Error(await response.text());
+  if (!response.ok) {
+    const body = await response.text();
+    try {
+      const parsed = JSON.parse(body);
+      if (parsed?.error) throw new Error(parsed.error);
+    } catch (e) {
+      if (e instanceof Error && e.message !== body) throw e;
+    }
+    throw new Error(body || `Request failed with status ${response.status}`);
+  }
   return response.json() as Promise<T>;
 }

@@ -25,7 +25,7 @@ export function RuntimeDashboard() {
   const load = useCallback(async () => {
     try {
       const [recData, aggData, sumData] = await Promise.all([
-        fetchRuntimeRecords(50, sessionFilter || undefined),
+        fetchRuntimeRecords(100, sessionFilter || undefined),
         fetchRuntimeAggregates(sessionFilter || undefined),
         fetchSessionSummaries(),
       ]);

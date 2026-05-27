@@ -92,4 +92,24 @@ describe("knowledge-driven performances", () => {
 
     expect(shouldPlayForMessage(performance, message, [], knowledgeDocs)).toBe(false);
   });
+
+  it("plays knowledgeUse performance from plain text when matchBoldOnly is disabled", () => {
+    const performance: StoryPerformanceDefinition = {
+      name: "亢龙有悔",
+      renderer: "audio",
+      durationMs: 1500,
+      trigger: {
+        type: "knowledgeUse",
+        characterId: "qiaofeng",
+        keywords: ["亢龙有悔"],
+        matchBoldOnly: false,
+      },
+      playOnce: "never",
+      layers: {},
+      audio: { main: "assets/performances/wuxia_sfx/audio/zhang_fa_nei_li_bao_10.wav" },
+    };
+    const message = { ...baseMessage, content: "乔峰使出亢龙有悔。" };
+
+    expect(shouldPlayForMessage(performance, message, [], knowledgeDocs)).toBe(true);
+  });
 });

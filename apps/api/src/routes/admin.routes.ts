@@ -43,6 +43,10 @@ export async function adminRoutes(app: FastifyInstance) {
     if (!data) return reply.code(400).send({ error: "No file uploaded" });
     const buffer = await data.toBuffer();
     const title = (request.query as Record<string, string>).title;
+    const isJson = data.filename.endsWith(".json") || data.mimetype === "application/json";
+    if (isJson) {
+      return reply.code(201).send(adminApplicationService.importStoryPackageJson(buffer, title));
+    }
     return reply.code(201).send(adminApplicationService.importStoryPackage(buffer, title));
   });
 
@@ -93,6 +97,14 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.send(adminApplicationService.deleteThumbnail(id));
   });
 
+  app.post("/story-packages/:id/background-image", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const data = await request.file();
+    if (!data) return reply.code(400).send({ error: "No file uploaded" });
+    const buffer = await data.toBuffer();
+    return reply.send(adminApplicationService.uploadBackgroundImage(id, buffer, data.filename));
+  });
+
   app.post("/story-packages/:id/performance-audio", async (request, reply) => {
     const { id } = request.params as { id: string };
     const { performanceId } = request.query as { performanceId?: string };
@@ -113,6 +125,16 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.send(adminApplicationService.uploadPerformanceImage(id, performanceId, buffer, data.filename));
   });
 
+  app.post("/story-packages/:id/performance-video", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const { performanceId } = request.query as { performanceId?: string };
+    if (!performanceId) return reply.code(400).send({ error: "performanceId is required" });
+    const data = await request.file();
+    if (!data) return reply.code(400).send({ error: "No file uploaded" });
+    const buffer = await data.toBuffer();
+    return reply.send(adminApplicationService.uploadPerformanceVideo(id, performanceId, buffer, data.filename));
+  });
+
   // Session saves -- nested under story-packages
   app.get("/story-packages/:pkgId/saves", async (request, reply) => {
     const { pkgId } = request.params as { pkgId: string };
@@ -126,18 +148,20 @@ export async function adminRoutes(app: FastifyInstance) {
 
   app.post("/story-packages/:pkgId/saves", async (request, reply) => {
     const { pkgId } = request.params as { pkgId: string };
-    const { sessionId, label } = request.body as { sessionId: string; label: string };
-    return reply.code(201).send(adminApplicationService.saveCurrentSession(pkgId, sessionId, label));
+    const { sessionId, label, slot } = request.body as { sessionId: string; label?: string; slot?: number };
+    return reply.code(201).send(adminApplicationService.saveCurrentSession(pkgId, sessionId, label, slot));
   });
 
   app.delete("/story-packages/:pkgId/saves/:saveId", async (request, reply) => {
     const { pkgId, saveId } = request.params as { pkgId: string; saveId: string };
-    return reply.send(adminApplicationService.deleteSave(pkgId, saveId));
+    const { slot } = request.query as { slot?: string };
+    return reply.send(adminApplicationService.deleteSave(pkgId, saveId, slot ? parseInt(slot, 10) : undefined));
   });
 
   app.get("/audit-log", async (request, reply) => {
-    const { type, sessionId } = request.query as { type?: string; sessionId?: string };
-    return reply.send(adminApplicationService.listAuditLog(type, sessionId));
+    const { type, sessionId, limit } = request.query as { type?: string; sessionId?: string; limit?: string };
+    const limitNum = limit ? parseInt(limit, 10) : undefined;
+    return reply.send(adminApplicationService.listAuditLog(type, sessionId, limitNum));
   });
 
   registerRuntimeStatsRoutes(app, runtimeStatsCollector);

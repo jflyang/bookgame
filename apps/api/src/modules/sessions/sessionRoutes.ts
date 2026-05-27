@@ -2,6 +2,9 @@ import type { FastifyInstance } from "fastify";
 import type { SessionRepository } from "./sessionRepository.js";
 import type { GameStateService } from "../../services/gameStateService.js";
 import type { MemoryService } from "../../services/memoryService.js";
+import { createModuleLogger } from "../../utils/logger.js";
+
+const logger = createModuleLogger("sessionRoutes");
 
 export function registerSessionRoutes(
   app: FastifyInstance,
@@ -10,15 +13,16 @@ export function registerSessionRoutes(
   memoryService: MemoryService
 ) {
   app.get("/sessions", async (request, reply) => {
-    const { storyPackageId, status } = request.query as { storyPackageId?: string; status?: string };
+    const { storyPackageId, status, limit } = request.query as { storyPackageId?: string; status?: string; limit?: string };
+    const limitNum = limit ? parseInt(limit, 10) : undefined;
 
     let sessions;
     if (storyPackageId) {
-      sessions = repo.findByPackage(storyPackageId);
+      sessions = repo.findByPackage(storyPackageId, limitNum);
     } else if (status) {
-      sessions = repo.findByStatus(status);
+      sessions = repo.findByStatus(status, limitNum);
     } else {
-      sessions = repo.listAll();
+      sessions = repo.listAll(limitNum);
     }
 
     return reply.send({ sessions });
@@ -34,13 +38,13 @@ export function registerSessionRoutes(
     try {
       const stateResult = gameStateService.get(id);
       gameState = stateResult;
-    } catch {
-      // session not in memory (server restart)
+    } catch (err) {
+      logger.warn({ err, sessionId: id }, "session state not in memory (server restart?)");
     }
     try {
       messages = memoryService.list(id);
-    } catch {
-      // no messages
+    } catch (err) {
+      logger.warn({ err, sessionId: id }, "session messages not in memory");
     }
 
     return reply.send({ session, gameState, messages });

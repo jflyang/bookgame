@@ -63,9 +63,9 @@ export function ImportWizard() {
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}>
           <FileArchive size={48} strokeWidth={1} />
-          <p>拖拽 .story-package.zip 到此处，或点击选择文件</p>
-          <p className="muted">支持从其他设备导出的故事包 ZIP 文件</p>
-          <input type="file" accept=".zip" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+          <p>拖拽 .story-package.zip 或 .json 到此处，或点击选择文件</p>
+          <p className="muted">支持 ZIP 包和 JSON 故事包文件</p>
+          <input type="file" accept=".zip,.json" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
         </div>
       )}
 

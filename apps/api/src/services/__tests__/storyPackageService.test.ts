@@ -142,4 +142,58 @@ describe("StoryPackageService", () => {
 
     expect(() => svc.importZip(zip.toBuffer())).toThrow(/不被允许/);
   });
+
+  it("importZip falls back to default promptRules when imported package has none", () => {
+    const pkg = structuredClone(svc.list()[0]);
+    delete (pkg as any).promptRules;
+    const zip = new AdmZip();
+    zip.addFile("task-package.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
+    const imported = svc.importZip(zip.toBuffer());
+    expect(imported.promptRules).toBeDefined();
+    expect(imported.promptRules.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("importZip falls back to default promptRules when imported package has empty array", () => {
+    const pkg = structuredClone(svc.list()[0]);
+    (pkg as any).promptRules = [];
+    const zip = new AdmZip();
+    zip.addFile("task-package.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
+    const imported = svc.importZip(zip.toBuffer());
+    expect(imported.promptRules).toBeDefined();
+    expect(imported.promptRules.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("importJson falls back to default promptRules when imported json has none", () => {
+    const pkg = structuredClone(svc.list()[0]);
+    delete (pkg as any).promptRules;
+    const imported = svc.importJson(Buffer.from(JSON.stringify(pkg), "utf-8"));
+    expect(imported.promptRules).toBeDefined();
+    expect(imported.promptRules.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("importJson falls back to default promptRules when imported json has empty array", () => {
+    const pkg = structuredClone(svc.list()[0]);
+    (pkg as any).promptRules = [];
+    const imported = svc.importJson(Buffer.from(JSON.stringify(pkg), "utf-8"));
+    expect(imported.promptRules).toBeDefined();
+    expect(imported.promptRules.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("importZip keeps existing promptRules when present", () => {
+    const pkg = structuredClone(svc.list()[0]);
+    pkg.promptRules = [{ id: "custom_1", title: "Custom", category: "custom" as any, enabled: true, content: "custom rule" }];
+    const zip = new AdmZip();
+    zip.addFile("task-package.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
+    const imported = svc.importZip(zip.toBuffer());
+    expect(imported.promptRules).toHaveLength(1);
+    expect(imported.promptRules[0].title).toBe("Custom");
+  });
+
+  it("importJson keeps existing promptRules when present", () => {
+    const pkg = structuredClone(svc.list()[0]);
+    pkg.promptRules = [{ id: "custom_1", title: "Custom", category: "custom" as any, enabled: true, content: "custom rule" }];
+    const imported = svc.importJson(Buffer.from(JSON.stringify(pkg), "utf-8"));
+    expect(imported.promptRules).toHaveLength(1);
+    expect(imported.promptRules[0].title).toBe("Custom");
+  });
 });

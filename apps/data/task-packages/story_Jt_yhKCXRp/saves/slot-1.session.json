@@ -1,0 +1,293 @@
+{
+  "sessionId": "session_JxyryyCuZ7",
+  "label": "2026/5/27 23:50:07 媚药清洗",
+  "gameState": {
+    "sessionId": "session_JxyryyCuZ7",
+    "scenarioId": "scenario_Zh1AJ_A-",
+    "round": 7,
+    "lastSpeakerId": "meiyun",
+    "status": "active",
+    "scenario": {
+      "id": "scenario_Zh1AJ_A-",
+      "title": "卧室征服仪式",
+      "premise": "仲平刚刚与美云完成激烈性爱，大姐正准备对丽云进行『必经之路』的媚药清洗仪式，让她彻底臣服。",
+      "currentStage": "stage_washing",
+      "stages": [
+        "stage_after_mei",
+        "stage_washing",
+        "stage_submission",
+        "stage_penetration",
+        "stage_consolidation"
+      ],
+      "stageDetails": [
+        {
+          "id": "stage_after_mei",
+          "title": "美云余韵",
+          "description": "美云高潮后软倒，仲平与大姐转向丽云",
+          "enterWhen": "故事开始时或上一阶段完成",
+          "guidance": "详细描写美云迷离状态与大姐的坏笑，缓慢转向丽云的束缚准备"
+        },
+        {
+          "id": "stage_washing",
+          "title": "媚药清洗",
+          "description": "大姐对丽云进行详细的媚药洗穴过程，包括乳房刺激、阴道清洗和肛门按摩",
+          "enterWhen": "丽云被按倒并束缚后",
+          "guidance": "极致感官描写媚药效果、身体反应、反复边缘控制，不要一次性完成清洗"
+        },
+        {
+          "id": "stage_submission",
+          "title": "彻底臣服",
+          "description": "丽云在多次高潮边缘被压制后心理崩溃，主动求欢",
+          "enterWhen": "清洗仪式反复多次后",
+          "guidance": "重点描写丽云从嘴硬到哭腔求饶的心理转变"
+        },
+        {
+          "id": "stage_penetration",
+          "title": "插入征服",
+          "description": "仲平正式插入被洗净的丽云",
+          "enterWhen": "丽云彻底服软且丝带解开后",
+          "guidance": "细致描写插入瞬间的感受与丽云的反应"
+        },
+        {
+          "id": "stage_consolidation",
+          "title": "仪式巩固",
+          "description": "事后巩固支配关系，提醒未来规则",
+          "enterWhen": "本次性爱高潮结束后",
+          "guidance": "推进下一轮可能的目标或强化姐妹们的服从"
+        }
+      ],
+      "currentGoal": "完成对丽云的媚药洗穴仪式并彻底征服她",
+      "rules": [
+        "每次只推进一小步动作和感受",
+        "必须详细描写女性身体反应、声音和心理变化",
+        "大姐主导清洗仪式，仲平主导插入",
+        "媚药会让身体极度敏感并分泌大量淫水",
+        "清洗仪式必须包括乳房按摩、阴道深度清洗和肛门刺激"
+      ],
+      "initialStates": [
+        {
+          "characterId": "zhongping",
+          "hp": 100,
+          "mp": 80,
+          "attack": "强大持久的性能力",
+          "defense": "极强支配欲",
+          "speed": "快速反应"
+        },
+        {
+          "characterId": "dajie",
+          "hp": 100,
+          "mp": 90,
+          "attack": "熟练调教技巧",
+          "defense": "心理掌控",
+          "speed": "果断"
+        },
+        {
+          "characterId": "meiyun",
+          "hp": 60,
+          "mp": 30,
+          "attack": "柔顺臣服",
+          "defense": "敏感身体",
+          "speed": "缓慢恢复"
+        },
+        {
+          "characterId": "liyun",
+          "hp": 85,
+          "mp": 40,
+          "attack": "初始嘴硬",
+          "defense": "逐渐崩坏",
+          "speed": "激烈挣扎"
+        }
+      ]
+    },
+    "characters": [
+      {
+        "characterId": "zhongping",
+        "hp": 100,
+        "mp": 80,
+        "conditions": [],
+        "isDefeated": false
+      },
+      {
+        "characterId": "dajie",
+        "hp": 100,
+        "mp": 90,
+        "conditions": [],
+        "isDefeated": false
+      },
+      {
+        "characterId": "meiyun",
+        "hp": 60,
+        "mp": 30,
+        "conditions": [],
+        "isDefeated": false
+      },
+      {
+        "characterId": "liyun",
+        "hp": 85,
+        "mp": 5,
+        "conditions": [],
+        "isDefeated": false
+      }
+    ],
+    "createdAt": "2026-05-27T15:48:14.464Z",
+    "updatedAt": "2026-05-27T15:49:55.391Z"
+  },
+  "messages": [
+    {
+      "id": "msg_ePdYopkNAY",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "user",
+      "speakerId": null,
+      "content": "继续",
+      "usedSkills": [],
+      "stateDelta": {},
+      "createdAt": "2026-05-27T15:48:15.249Z"
+    },
+    {
+      "id": "msg_hMpoqGFWQg",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "assistant",
+      "speakerId": "dajie",
+      "content": "我轻笑着拍了拍丽云紧绷的臀部，指尖沾满了滑腻的媚药洗护液。房间里弥漫着甜腻诱人的香气，美云还在旁边软软地喘着气，眼神迷离。丽云被丝带绑在床柱上，身体微微颤抖，嘴里却还在逞强。\n\n大姐：\"哎呀，丽云丫头，这还没开始呢，你就抖成这样？等下姐姐给你好好洗洗，保证让你舒服得连话都说不出来。\"",
+      "usedSkills": [],
+      "stateDelta": {
+        "liyun_mp": -5
+      },
+      "createdAt": "2026-05-27T15:48:18.169Z"
+    },
+    {
+      "id": "msg_WqqAmLcDfn",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "user",
+      "speakerId": null,
+      "content": "继续",
+      "usedSkills": [],
+      "stateDelta": {},
+      "createdAt": "2026-05-27T15:48:29.638Z"
+    },
+    {
+      "id": "msg_O-Mr64qZ9A",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "assistant",
+      "speakerId": "liyun",
+      "content": "你被丝带紧紧绑在床柱上，双手举过头顶，双腿被分开固定。大姐的手指带着冰凉的媚药洗护液在你的臀缝间游走，你咬紧嘴唇，试图压下身体的颤抖。\n\n丽云：\"哼……谁、谁抖了！大姐你别得意，这点小把戏我才不怕！你有本事放开我，我们正经较量……\"",
+      "usedSkills": [],
+      "stateDelta": {
+        "liyun_mp": -5
+      },
+      "createdAt": "2026-05-27T15:48:31.935Z"
+    },
+    {
+      "id": "msg_cIddTu9ww8",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "user",
+      "speakerId": null,
+      "content": "继续",
+      "usedSkills": [],
+      "stateDelta": {},
+      "createdAt": "2026-05-27T15:48:52.024Z"
+    },
+    {
+      "id": "msg_QgnxcuSdbm",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "assistant",
+      "speakerId": "zhongping",
+      "content": "房间里弥漫着媚药的甜腻香气，美云瘫软在旁边的沙发上，眼神迷离地看着这边。丽云被丝带绑在床柱上，双腿分开固定，大姐的手指还在她臀缝间游走。我站在床边，居高临下地看着丽云倔强的侧脸，嘴角勾起一抹玩味的笑。\n\n仲平：\"丽云啊，你这嘴硬的毛病得改改。大姐的**媚药洗穴**可不是那么好受的，等会儿你就知道什么叫做真正的‘舒服’了。\"",
+      "usedSkills": [],
+      "stateDelta": {
+        "liyun_mp": -5
+      },
+      "createdAt": "2026-05-27T15:48:54.921Z"
+    },
+    {
+      "id": "msg_-ddp4A-eHP",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "user",
+      "speakerId": null,
+      "content": "继续",
+      "usedSkills": [],
+      "stateDelta": {},
+      "createdAt": "2026-05-27T15:48:58.984Z"
+    },
+    {
+      "id": "msg_mlQUZuR1eU",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "assistant",
+      "speakerId": "liyun",
+      "content": "你被丝带紧紧绑在床柱上，双手举过头顶，双腿被分开固定。大姐的手指带着冰凉的媚药洗护液在你的臀缝间游走，你咬紧嘴唇，试图压下身体的颤抖。仲平的话让你心头一紧，但你依然倔强地扬起下巴。\n\n丽云：\"哼，仲平哥你少吓唬人！什么**媚药洗穴**，不就是涂点药水吗？我丽云什么大风大浪没见过，你们……啊！\"",
+      "usedSkills": [],
+      "stateDelta": {
+        "liyun_mp": -5
+      },
+      "createdAt": "2026-05-27T15:49:01.720Z"
+    },
+    {
+      "id": "msg_AqqrlCnSAj",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "user",
+      "speakerId": null,
+      "content": "继续",
+      "usedSkills": [],
+      "stateDelta": {},
+      "createdAt": "2026-05-27T15:49:34.210Z"
+    },
+    {
+      "id": "msg_amYTg3tBo_",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "assistant",
+      "speakerId": "meiyun",
+      "content": "我瘫软在旁边的沙发上，双腿还微微打着颤，高潮的余韵让全身都酥软无力。空气中弥漫着媚药洗护液甜腻的香气，我看着丽云被丝带绑在床柱上的样子，嘴角不自觉地浮起一丝温柔的笑意。大姐的手指还在她臀缝间游走，丽云虽然嘴上逞强，但身体已经开始微微发颤了。\n\n美云：\"仲平……大姐……丽云她还在嘴硬呢。不过……我知道那种感觉的，等会儿她就会彻底软下来的。大姐的手法真的好厉害，我当时也是这样……一下就投降了……\"",
+      "usedSkills": [],
+      "stateDelta": {
+        "meiyun_mp": 5
+      },
+      "createdAt": "2026-05-27T15:49:36.927Z"
+    },
+    {
+      "id": "msg_QIoM4FldtX",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "user",
+      "speakerId": null,
+      "content": "继续",
+      "usedSkills": [],
+      "stateDelta": {},
+      "createdAt": "2026-05-27T15:49:40.701Z"
+    },
+    {
+      "id": "msg_5LXLEYuRM0",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "assistant",
+      "speakerId": "dajie",
+      "content": "房间里弥漫着媚药洗护液甜腻的香气，美云瘫在沙发上眼神迷离地看着这边，仲平站在床边含笑望着丽云。丽云被丝带绑在床柱上，双腿分开固定，我手指沾满滑腻的**媚药洗护液**，在她臀缝间慢慢游走，然后沿着会阴滑向前方，轻轻拨开那两片紧闭的花唇。冰凉的液体触到敏感处时，丽云的身体猛地一颤，嘴里却还在逞强。\n\n大姐：\"哎呀，丽云丫头，这才刚涂上你就抖成这样？姐姐我可还没正式开始呢。等会儿给你好好洗洗前面和后面，保证让你舒服得连话都说不出来。\"",
+      "usedSkills": [],
+      "stateDelta": {
+        "liyun_mp": -10
+      },
+      "createdAt": "2026-05-27T15:49:44.149Z"
+    },
+    {
+      "id": "msg_cX55bf6Qyt",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "user",
+      "speakerId": null,
+      "content": "继续",
+      "usedSkills": [],
+      "stateDelta": {},
+      "createdAt": "2026-05-27T15:49:51.742Z"
+    },
+    {
+      "id": "msg_Blll7BLycd",
+      "sessionId": "session_JxyryyCuZ7",
+      "role": "assistant",
+      "speakerId": "meiyun",
+      "content": "我软软地靠在沙发上，高潮后的身体还带着酥麻的余韵。看着大姐的手指在丽云湿润的花唇间游走，那冰凉的**媚药洗护液**在灯光下闪着晶莹的光。丽云的身体绷得紧紧的，我知道她其实已经开始有感觉了，只是还在硬撑。我轻轻喘了口气，感觉自己的小腹又微微热了起来，光是看着这一幕就让我的身体回忆起那种被彻底打开的感觉。\n\n美云：\"仲平……大姐的手法真的好厉害……我当时也是这样，一开始觉得凉凉的，后来就……就完全控制不住自己了。丽云她肯定也快撑不住了，我能看到她大腿内侧在发抖呢……\"",
+      "usedSkills": [],
+      "stateDelta": {
+        "liyun_mp": -5
+      },
+      "createdAt": "2026-05-27T15:49:55.392Z"
+    }
+  ],
+  "createdAt": "2026-05-27T15:50:07.987Z",
+  "updatedAt": "2026-05-27T15:50:07.987Z"
+}

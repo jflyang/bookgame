@@ -16,10 +16,24 @@ const logger = createModuleLogger("gameState");
 
 export class GameStateService {
   private readonly states = new Map<string, GameState>();
+  private readonly locks = new Map<string, Promise<void>>();
+  private readonly maxSessions: number;
 
-  constructor(private readonly scenarios: ScenarioService) {}
+  constructor(
+    private readonly scenarios: ScenarioService,
+    maxSessions = 1000
+  ) {
+    this.maxSessions = maxSessions;
+  }
 
   createSession(input: CreateSessionRequest) {
+    if (this.states.size >= this.maxSessions) {
+      const oldest = [...this.states.entries()].sort(
+        ([, a], [, b]) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+      )[0];
+      if (oldest) this.cleanupSession(oldest[0]);
+    }
+
     const sessionId = `session_${nanoid(10)}`;
     const now = new Date().toISOString();
     const state: GameState = {
@@ -53,22 +67,33 @@ export class GameStateService {
   }
 
   restore(gameState: GameState) {
+    this.cleanupSession(gameState.sessionId);
     this.states.set(gameState.sessionId, structuredClone(gameState));
   }
 
-  applyAssistantTurn(sessionId: string, speakerId: CharacterId, output: LlmStoryOutput, skill?: Skill) {
+  cleanupSession(sessionId: string) {
+    this.states.delete(sessionId);
+    this.locks.delete(sessionId);
+  }
+
+  async withLock<T>(sessionId: string, fn: () => Promise<T>): Promise<T> {
+    const prev = this.locks.get(sessionId) ?? Promise.resolve();
+    const next = prev.catch((err) => { logger.warn({ err, sessionId }, "previous lock operation failed, continuing"); }).then(() => fn());
+    this.locks.set(sessionId, next.then(() => {}, () => {}) as Promise<void>);
+    return next;
+  }
+
+  applyAssistantTurn(sessionId: string, speakerId: CharacterId, output: LlmStoryOutput) {
     const state = this.get(sessionId);
     const delta: StateDelta = {};
-    if (skill) {
-      this.applySkillDelta(state.characters, speakerId, skill, delta);
-    }
+    this.applyStateDeltaSuggestion(state.characters, output.stateDeltaSuggestion, delta, state.scenario.initialStates);
     if (output.stageSuggestion && state.scenario.stages.includes(output.stageSuggestion)) {
       state.scenario.currentStage = output.stageSuggestion;
     }
     state.round += 1;
     state.lastSpeakerId = speakerId;
     state.updatedAt = new Date().toISOString();
-    state.status = state.characters.some((item) => item.characterId === "dingchunqiu" && item.isDefeated)
+    state.status = state.characters.some((item) => item.isDefeated)
       ? "completed"
       : "active";
     logger.debug({ sessionId, speakerId, round: state.round, delta }, "turn applied");
@@ -81,20 +106,40 @@ export class GameStateService {
     return { characterId, ...base, conditions: [], isDefeated: false };
   }
 
-  private applySkillDelta(states: CharacterState[], speakerId: CharacterId, skill: Skill, delta: StateDelta) {
-    const actor = states.find((item) => item.characterId === speakerId);
-    if (!actor) return;
-    const mpCost = Math.min(actor.mp, skill.cost.mp);
-    actor.mp -= mpCost;
-    delta[`${speakerId}.mp`] = -mpCost;
-
-    if (!skill.damage) return;
-    const targetId: CharacterId = speakerId === "dingchunqiu" ? "xuzhu" : "dingchunqiu";
-    const target = states.find((item) => item.characterId === targetId);
-    if (!target) return;
-    const damage = skill.damage.min + Math.floor(Math.random() * (skill.damage.max - skill.damage.min + 1));
-    target.hp = Math.max(0, target.hp - damage);
-    target.isDefeated = target.hp <= 0;
-    delta[`${targetId}.hp`] = -damage;
+  private applyStateDeltaSuggestion(
+    states: CharacterState[],
+    suggestion: Record<string, number>,
+    delta: StateDelta,
+    initialStates: GameState["scenario"]["initialStates"],
+  ) {
+    for (const [key, value] of Object.entries(suggestion)) {
+      if (typeof value !== "number" || value === 0) continue;
+      // Parse key format: "characterId_hp", "characterId.mp", or bare "hp"/"mp"
+      let charId: string | undefined;
+      let attr: string;
+      const match = key.match(/^(.+?)[._](hp|mp)$/i);
+      if (match) {
+        charId = match[1];
+        attr = match[2].toLowerCase();
+      } else if (/^(hp|mp)$/i.test(key)) {
+        // Bare key: apply to first matching character
+        attr = key.toLowerCase();
+        charId = states[0]?.characterId;
+      } else {
+        continue;
+      }
+      const char = states.find((s) => s.characterId === charId);
+      if (!char) continue;
+      const maxVal = initialStates.find((s) => s.characterId === charId);
+      if (attr === "hp") {
+        const maxHp = maxVal?.hp ?? char.hp;
+        char.hp = Math.min(maxHp, Math.max(0, char.hp + value));
+        char.isDefeated = char.hp <= 0;
+      } else if (attr === "mp") {
+        const maxMp = maxVal?.mp ?? char.mp;
+        char.mp = Math.min(maxMp, Math.max(0, char.mp + value));
+      }
+      delta[key] = (delta[key] ?? 0) + value;
+    }
   }
 }

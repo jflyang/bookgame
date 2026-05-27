@@ -32,8 +32,15 @@ export class GameApplicationService {
     return this.dialogueEngine.sendMessageStream(sessionId, input);
   }
 
-  restoreSession(storyPackageId: string, saveId: string) {
-    const save = this.sessionSaves.get(storyPackageId, saveId);
+  restoreSession(storyPackageId: string, saveId?: string, slot?: number) {
+    let save: ReturnType<typeof this.sessionSaves.getBySlot>;
+    if (slot !== undefined) {
+      save = this.sessionSaves.getBySlot(storyPackageId, slot);
+    } else if (saveId) {
+      save = this.sessionSaves.get(storyPackageId, saveId);
+    } else {
+      throw new Error("Either saveId or slot must be provided");
+    }
     return this.dialogueEngine.restoreSession(storyPackageId, save.gameState, save.messages);
   }
 }

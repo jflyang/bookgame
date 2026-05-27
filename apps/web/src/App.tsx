@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
+import { ErrorBoundary } from "./components/ErrorBoundary.js";
 import { AdminApp } from "./features/admin/AdminApp.js";
 import { PlayApp } from "./features/play/PlayApp.js";
 
 export function App() {
+  return (
+    <ErrorBoundary>
+      <AppInner />
+    </ErrorBoundary>
+  );
+}
+
+function AppInner() {
   const [path, setPath] = useState(window.location.pathname);
 
   useEffect(() => {

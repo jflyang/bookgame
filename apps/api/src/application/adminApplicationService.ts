@@ -50,6 +50,11 @@ export class AdminApplicationService {
     return { storyPackage, storyPackages: this.storyPackages.list() };
   }
 
+  importStoryPackageJson(buffer: Buffer, title?: string) {
+    const storyPackage = this.storyPackages.importJson(buffer, title);
+    return { storyPackage, storyPackages: this.storyPackages.list() };
+  }
+
   updateStoryPackage(storyPackage: StoryPackage) {
     return this.dialogueEngine.updateStoryPackage(storyPackage);
   }
@@ -89,6 +94,11 @@ export class AdminApplicationService {
     return { ok: true };
   }
 
+  uploadBackgroundImage(id: string, buffer: Buffer, filename: string) {
+    const path = this.media.saveBackgroundImage(id, buffer, filename);
+    return { path };
+  }
+
   uploadPerformanceAudio(id: string, performanceId: string, buffer: Buffer, filename: string) {
     const path = this.storyPackages.savePerformanceAudioAsset(id, performanceId, buffer, filename);
     return { path };
@@ -99,23 +109,39 @@ export class AdminApplicationService {
     return { path };
   }
 
+  uploadPerformanceVideo(id: string, performanceId: string, buffer: Buffer, filename: string) {
+    const path = this.storyPackages.savePerformanceVideoAsset(id, performanceId, buffer, filename);
+    return { path };
+  }
+
   listSaves(storyPackageId: string) {
-    return { saves: this.sessionSaves.list(storyPackageId) };
+    return { slots: this.sessionSaves.listSlots(storyPackageId) };
   }
 
   getSave(storyPackageId: string, saveId: string) {
     return { save: this.sessionSaves.get(storyPackageId, saveId) };
   }
 
-  saveCurrentSession(storyPackageId: string, sessionId: string, label?: string) {
+  saveCurrentSession(storyPackageId: string, sessionId: string, label?: string, slot?: number) {
     const state = this.dialogueEngine.getSessionState(sessionId);
     const messages = this.dialogueEngine.getMessages(sessionId);
-    const save = this.sessionSaves.save(storyPackageId, label || `存档 ${new Date().toLocaleString("zh-CN")}`, state.gameState, messages);
-    return { save };
+    const saveSlot = slot ?? 1;
+    const save = this.sessionSaves.saveToSlot(
+      storyPackageId,
+      saveSlot,
+      label || `存档 ${new Date().toLocaleString("zh-CN")}`,
+      state.gameState,
+      messages
+    );
+    return { save, slot: saveSlot };
   }
 
-  deleteSave(storyPackageId: string, saveId: string) {
-    this.sessionSaves.delete(storyPackageId, saveId);
+  deleteSave(storyPackageId: string, saveId: string, slot?: number) {
+    if (slot !== undefined) {
+      this.sessionSaves.deleteBySlot(storyPackageId, slot);
+    } else {
+      this.sessionSaves.delete(storyPackageId, saveId);
+    }
     return { ok: true };
   }
 
@@ -167,7 +193,7 @@ export class AdminApplicationService {
     }
   }
 
-  listAuditLog(type?: string, sessionId?: string) {
-    return { entries: this.auditLog.list({ type: type as any, sessionId, limit: 200 }) };
+  listAuditLog(type?: string, sessionId?: string, limit?: number) {
+    return { entries: this.auditLog.list({ type: type as any, sessionId, limit: limit ?? 200 }) };
   }
 }

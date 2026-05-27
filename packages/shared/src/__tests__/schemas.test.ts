@@ -9,6 +9,8 @@ import {
   runtimeTurnRecordSchema,
   runtimeStatsAggregateSchema,
   characterStateSchema,
+  llmActionSchema,
+  storyPromptRuleSchema,
 } from "../index.js";
 
 describe("llmConfigSchema", () => {
@@ -268,5 +270,85 @@ describe("runtimeStatsAggregateSchema", () => {
       activeSpeakers: ["qiaofeng", "xuzhu"],
     });
     expect(result.success).toBe(true);
+  });
+});
+
+describe("llmActionSchema", () => {
+  it("accepts skill action with skillId", () => {
+    const result = llmActionSchema.safeParse({
+      type: "skill",
+      skillId: "xianglong_kanglongyouhui",
+      targetIds: ["dingchunqiu"],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts command action with null skillId", () => {
+    const result = llmActionSchema.safeParse({
+      type: "command",
+      skillId: null,
+      targetIds: ["xuzhu", "dingchunqiu"],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts observe action without skillId", () => {
+    const result = llmActionSchema.safeParse({
+      type: "observe",
+      targetIds: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts observe action with null skillId", () => {
+    const result = llmActionSchema.safeParse({
+      type: "observe",
+      skillId: null,
+      targetIds: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("defaults targetIds to empty array", () => {
+    const result = llmActionSchema.safeParse({ type: "observe" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.targetIds).toEqual([]);
+  });
+});
+
+describe("storyPromptRuleSchema", () => {
+  it("accepts combat category", () => {
+    const result = storyPromptRuleSchema.safeParse({
+      id: "rule_combat_declaration",
+      title: "战斗伤害宣告规则",
+      category: "combat",
+      content: "测试内容",
+      enabled: true,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts all valid categories", () => {
+    for (const cat of ["knowledge_forcing", "group_chat_boundary", "scenario_injection", "state_output", "history_state", "combat", "custom"]) {
+      const result = storyPromptRuleSchema.safeParse({
+        id: "rule_test",
+        title: "Test",
+        category: cat,
+        content: "test",
+        enabled: true,
+      });
+      expect(result.success).toBe(true);
+    }
+  });
+
+  it("rejects unknown category", () => {
+    const result = storyPromptRuleSchema.safeParse({
+      id: "rule_test",
+      title: "Test",
+      category: "unknown_type",
+      content: "test",
+      enabled: true,
+    });
+    expect(result.success).toBe(false);
   });
 });

@@ -61,7 +61,7 @@ export function AudioManagerProvider({
       const audio = new Audio(url);
       audio.loop = true;
       audio.volume = volumeRef.current;
-      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+      audio.play().then(() => setIsPlaying(true)).catch((err) => { console.warn("BGM playback failed:", err); setIsPlaying(false); });
       bgmRef.current = audio;
     },
     [manifest, packageId, getUrl]
@@ -74,7 +74,7 @@ export function AudioManagerProvider({
       if (!relPath) return;
       const sfx = new Audio(getUrl(relPath));
       sfx.volume = volumeRef.current;
-      sfx.play().catch(() => {});
+      sfx.play().catch((err) => { console.warn("SFX playback failed:", eventName, err); });
     },
     [manifest, packageId, getUrl]
   );

@@ -14,8 +14,8 @@ export const characterSchema = z.object({
   avatar: z.string(),
   personaPrompt: z.string(),
   rules: z.array(z.string()).default([]),
-  skillIds: z.array(safeIdSchema).default([]),
   knowledgeBaseIds: z.array(safeIdSchema).default([]),
+  attackableTargetIds: z.array(z.string()).default([]),
   sourceNote: z.string().optional()
 });
 export type Character = z.infer<typeof characterSchema>;
@@ -85,6 +85,7 @@ export const storyPromptRuleSchema = z.object({
     "scenario_injection",
     "state_output",
     "history_state",
+    "combat",
     "custom"
   ]),
   content: z.string(),
@@ -112,14 +113,8 @@ export const uiThemeConfigSchema = z.object({
 }).default({});
 export type UiThemeConfig = z.infer<typeof uiThemeConfigSchema>;
 
-export const uiSceneConfigSchema = z.object({ heading: z.string().default("山道暮色"), introNarration: z.string().default(""), emptyTitle: z.string().default(""), emptyHint: z.string().default(""), backgroundImage: z.string().optional() }).default({});
+export const uiSceneConfigSchema = z.object({ heading: z.string().default(""), introNarration: z.string().default(""), emptyTitle: z.string().default(""), emptyHint: z.string().default(""), backgroundImage: z.string().optional() }).default({});
 
-const _old = z.object({
-  heading: z.string().default("山道暮色 · 枯松岭"),
-  introNarration: z.string().default("暮色低垂，枯松岭上寒风凛冽。毒雾从谷底翻涌而上，令人心神俱颤。"),
-  emptyTitle: z.string().default("山道毒雾初起"),
-  emptyHint: z.string().default('点击"继续"让角色轮流推动剧情，也可以点选头像或输入 @角色 指定发言。'),
-}).default({});
 export type UiSceneConfig = z.infer<typeof uiSceneConfigSchema>;
 
 export const uiLabelConfigSchema = z.object({
@@ -253,7 +248,7 @@ export const storyPackageSchema = z.object({
   storySettingPrompt: z.string().default(""),
   scenario: scenarioSchema,
   characters: z.array(characterSchema),
-  skills: z.array(skillSchema),
+  skills: z.array(skillSchema).default([]),
   knowledgeDocuments: z.array(knowledgeDocumentSchema).default([]),
   promptRules: z.array(storyPromptRuleSchema).default([]),
   debugConfig: z.object({
@@ -309,14 +304,8 @@ export type Message = z.infer<typeof messageSchema>;
 
 export const llmActionSchema = z.object({
   type: z.enum(["skill", "observe", "command", "defend", "escape"]),
-  skillId: z.preprocess(
-    (v) => (v === "" || v === null ? undefined : v),
-    safeIdSchema.optional()
-  ),
-  targetIds: z.array(z.preprocess(
-    (v) => (v === "" || v === null ? undefined : v),
-    safeIdSchema
-  )).default([])
+  skillId: z.string().nullable().optional(),
+  targetIds: z.array(z.string()).default([])
 });
 
 export const llmStoryOutputSchema = z.object({

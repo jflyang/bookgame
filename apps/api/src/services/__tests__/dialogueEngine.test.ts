@@ -118,7 +118,6 @@ function makeStoryPackage(overrides: Partial<StoryPackage> = {}): StoryPackage {
 describe("DialogueEngine", () => {
   let engine: DialogueEngine;
   let mockCharacters: Record<string, ReturnType<typeof vi.fn>>;
-  let mockSkills: Record<string, ReturnType<typeof vi.fn>>;
   let mockScenarios: Record<string, ReturnType<typeof vi.fn>>;
   let mockMemory: Record<string, ReturnType<typeof vi.fn>>;
   let mockStates: Record<string, ReturnType<typeof vi.fn>>;
@@ -141,7 +140,6 @@ describe("DialogueEngine", () => {
       list: vi.fn(),
       update: vi.fn(),
     };
-    mockSkills = { get: vi.fn(), list: vi.fn() };
     mockScenarios = { replaceAll: vi.fn() };
     mockMemory = {
       append: vi.fn(),
@@ -176,7 +174,6 @@ describe("DialogueEngine", () => {
     };
 
     mockCharacters.list.mockReturnValue([character]);
-    mockSkills.list.mockReturnValue([skill]);
     mockKnowledgeBase.list.mockReturnValue([]);
     mockStates.createSession.mockReturnValue(gameState);
     mockStates.get.mockReturnValue(gameState);
@@ -187,7 +184,6 @@ describe("DialogueEngine", () => {
 
     engine = new DialogueEngine(
       mockCharacters as never,
-      mockSkills as never,
       mockScenarios as never,
       mockMemory as never,
       mockStates as never,
@@ -216,7 +212,7 @@ describe("DialogueEngine", () => {
     expect(mockActivator.activate).not.toHaveBeenCalled();
     expect(result.sessionId).toBe("sess_001");
     expect(result.characters).toEqual([character]);
-    expect(result.skills).toEqual([skill]);
+    expect(result.skills).toEqual([]);
   });
 
   it("createSession with storyPackageId activates and overrides input", () => {
@@ -236,7 +232,6 @@ describe("DialogueEngine", () => {
   it("createSession persists via sessionCollector when available", () => {
     engine = new DialogueEngine(
       mockCharacters as never,
-      mockSkills as never,
       mockScenarios as never,
       mockMemory as never,
       mockStates as never,
@@ -279,7 +274,7 @@ describe("DialogueEngine", () => {
     expect(mockStates.get).toHaveBeenCalledWith("sess_001");
     expect(result.gameState).toBe(gameState);
     expect(result.characters).toEqual([character]);
-    expect(result.skills).toEqual([skill]);
+    expect(result.skills).toEqual([]);
     expect(result.knowledgeDocuments).toEqual([]);
   });
 
@@ -322,7 +317,6 @@ describe("DialogueEngine", () => {
 
     engine = new DialogueEngine(
       mockCharacters as never,
-      mockSkills as never,
       mockScenarios as never,
       mockMemory as never,
       mockStates as never,
@@ -354,7 +348,7 @@ describe("DialogueEngine", () => {
     const result = engine.getCharacters();
 
     expect(result.characters).toEqual([character]);
-    expect(result.skills).toEqual([skill]);
+    expect(result.skills).toEqual([]);
     expect(result.knowledgeDocuments).toEqual([]);
   });
 

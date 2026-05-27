@@ -8,16 +8,60 @@ import type { GameStateService } from "./gameStateService.js";
 import type { MemoryService } from "./memoryService.js";
 import type { PromptService } from "./promptService.js";
 import type { RuleChecker } from "./ruleChecker.js";
-import type { SkillService } from "./skillService.js";
 import type { SpeakerSelector } from "./speakerSelector.js";
+import type { SkillIndex } from "./skillIndex.js";
 import type { RuntimeStatsCollector } from "../modules/runtime-stats/runtimeStatsCollector.js";
 
 const logger = createModuleLogger("turnProcessor");
 
+/** Incrementally extracts narration + dialogue text from a streaming JSON buffer.
+ *  Falls back to raw pass-through when the buffer doesn't look like JSON. */
+class StreamContentExtractor {
+  private emitted = 0;
+  private buf = "";
+  private detectedJson = false;
+
+  feed(chunk: string): string {
+    this.buf += chunk;
+    // Detect JSON early
+    if (!this.detectedJson && /\{"speakerId"\s*:/.test(this.buf)) {
+      this.detectedJson = true;
+    }
+    if (!this.detectedJson) return chunk; // pass-through until JSON confirmed
+
+    const full = extractNarrationDialogue(this.buf);
+    if (full.length <= this.emitted) return "";
+    const delta = full.slice(this.emitted);
+    this.emitted = full.length;
+    return delta;
+  }
+}
+
+function extractNarrationDialogue(raw: string): string {
+  // Simple JSON string extraction: find "narration":"..." and "dialogue":"..."
+  const out: string[] = [];
+  for (const key of ["narration", "dialogue"]) {
+    const re = new RegExp(`"${key}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"?`, 'g');
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(raw)) !== null) {
+      out.push(unescapeJsonString(m[1]));
+    }
+  }
+  return out.join("\n\n");
+}
+
+function unescapeJsonString(s: string): string {
+  return s.replace(/\\(.)/g, (_match, char) => {
+    if (char === "n") return "\n";
+    if (char === "t") return "\t";
+    if (char === "r") return "\r";
+    return char; // \" \\ \/ etc
+  });
+}
+
 export class TurnProcessor {
   constructor(
     private readonly characters: CharacterService,
-    private readonly skills: SkillService,
     private readonly memory: MemoryService,
     private readonly states: GameStateService,
     private readonly prompts: PromptService,
@@ -26,6 +70,7 @@ export class TurnProcessor {
     private readonly auditLog: AuditLogService,
     private readonly speakerSelector: SpeakerSelector,
     private readonly stats: RuntimeStatsCollector,
+    private readonly skills: SkillIndex,
     private readonly getStoryPackageForSession: (sessionId: string) => StoryPackage | undefined
   ) {}
 
@@ -37,54 +82,58 @@ export class TurnProcessor {
     const prompt = this.prompts.buildPrompt(speakerId, state, this.memory.recent(sessionId), input.text, storyPackage);
     logger.debug({ sessionId, promptLength: prompt.length }, "prompt built");
 
-    const startTime = Date.now();
-    const llmResult = await this.llm.complete({ speakerId, prompt });
-    const latency = Date.now() - startTime;
+    return this.states.withLock(sessionId, async () => {
+      const startTime = Date.now();
+      let llmResult: Awaited<ReturnType<typeof this.llm.complete>> | undefined;
+      let latency = 0;
 
-    try {
-      const result = this.applyOutput(sessionId, speakerId, llmResult.output);
-      this.stats.recordCompleteTurn({
-        sessionId,
-        round,
-        speakerId,
-        speakerName,
-        prompt,
-        rawLlmResponse: llmResult.raw,
-        parsedOutput: llmResult.output,
-        validationResult: "passed",
-        validationErrors: [],
-        stateDelta: result.message.stateDelta,
-        stageBefore,
-        stageAfter: result.gameState.scenario.currentStage,
-        latencyMs: latency,
-        tokenUsage: llmResult.usage ?? null,
-        timestamp: new Date().toISOString(),
-      });
-      return result;
-    } catch (err) {
-      const validationErrors =
-        err && typeof err === "object" && "issues" in err
-          ? (err as { issues: unknown[] }).issues
-          : [String(err)];
-      this.stats.recordCompleteTurn({
-        sessionId,
-        round,
-        speakerId,
-        speakerName,
-        prompt,
-        rawLlmResponse: llmResult.raw,
-        parsedOutput: null,
-        validationResult: "failed",
-        validationErrors,
-        stateDelta: null,
-        stageBefore,
-        stageAfter: stageBefore,
-        latencyMs: latency,
-        tokenUsage: llmResult.usage ?? null,
-        timestamp: new Date().toISOString(),
-      });
-      throw err;
-    }
+      try {
+        llmResult = await this.llm.complete({ speakerId, prompt });
+        latency = Date.now() - startTime;
+        const result = this.applyOutput(sessionId, speakerId, llmResult.output);
+        this.stats.recordCompleteTurn({
+          sessionId,
+          round,
+          speakerId,
+          speakerName,
+          prompt,
+          rawLlmResponse: llmResult.raw,
+          parsedOutput: llmResult.output,
+          validationResult: "passed",
+          validationErrors: [],
+          stateDelta: result.message.stateDelta,
+          stageBefore,
+          stageAfter: result.gameState.scenario.currentStage,
+          latencyMs: latency,
+          tokenUsage: llmResult.usage ?? null,
+          timestamp: new Date().toISOString(),
+        });
+        return result;
+      } catch (err) {
+        const validationErrors =
+          err && typeof err === "object" && "issues" in err
+            ? (err as { issues: unknown[] }).issues
+            : [String(err)];
+        this.stats.recordCompleteTurn({
+          sessionId,
+          round,
+          speakerId,
+          speakerName,
+          prompt,
+          rawLlmResponse: llmResult?.raw ?? "",
+          parsedOutput: null,
+          validationResult: "failed",
+          validationErrors,
+          stateDelta: null,
+          stageBefore,
+          stageAfter: stageBefore,
+          latencyMs: latency,
+          tokenUsage: llmResult?.usage ?? null,
+          timestamp: new Date().toISOString(),
+        });
+        throw err;
+      }
+    });
   }
 
   async *sendMessageStream(sessionId: string, input: SendMessageRequest) {
@@ -99,19 +148,37 @@ export class TurnProcessor {
 
     const streamStart = Date.now();
     let rawBuffer = "";
-    for await (const token of this.llm.stream({ speakerId, prompt })) {
-      rawBuffer += token;
-      yield { type: "token" as const, token, speakerId };
+    const extractor = new StreamContentExtractor();
+    try {
+      for await (const token of this.llm.stream({ speakerId, prompt })) {
+        rawBuffer += token;
+        const displayText = extractor.feed(token);
+        if (displayText) {
+          yield { type: "token" as const, token: displayText, speakerId };
+        }
+      }
+    } catch (streamErr) {
+      const latency = Date.now() - streamStart;
+      this.stats.recordCompleteTurn({
+        sessionId, round, speakerId, speakerName, prompt,
+        rawLlmResponse: rawBuffer, parsedOutput: null,
+        validationResult: "failed",
+        validationErrors: [String(streamErr)],
+        stateDelta: null, stageBefore, stageAfter: stageBefore,
+        latencyMs: latency, tokenUsage: null,
+        timestamp: new Date().toISOString(),
+      });
+      throw streamErr;
     }
     const latency = Date.now() - streamStart;
     logger.debug({ sessionId, speakerId }, "stream response received");
 
-    let parsedOutput: unknown;
     let rawOutput: unknown;
     try {
       rawOutput = JSON.parse(rawBuffer);
-    } catch {
-      rawOutput = { speakerId, narration: rawBuffer, dialogue: "", action: { type: "command" as const, targetIds: [] } };
+    } catch (parseErr) {
+      logger.warn({ parseErr, rawBufferPreview: rawBuffer.slice(0, 200) }, "LLM returned non-JSON output, using fallback");
+      rawOutput = { speakerId, narration: rawBuffer, dialogue: rawBuffer.slice(0, 50), action: { type: "observe" as const, targetIds: [] } };
     }
 
     try {
@@ -186,21 +253,21 @@ export class TurnProcessor {
   private applyOutput(sessionId: string, speakerId: CharacterId, rawOutput: unknown) {
     const speaker = this.characters.get(speakerId);
     const output = this.rules.validateOutput(speakerId, rawOutput);
-    const suggestedSkill = output.action.skillId ? this.skills.get(output.action.skillId) : undefined;
-    const skill = suggestedSkill && suggestedSkill.ownerId === speakerId ? suggestedSkill : undefined;
+    const usedSkill = this.resolveSkillDamage(speakerId, output);
 
     logger.info({
       sessionId,
       speakerId,
       speakerName: speaker.name,
-      skillUsed: skill?.name ?? "none",
       actionType: output.action.type,
+      skillId: usedSkill?.id ?? null,
+      deltaSuggestion: output.stateDeltaSuggestion,
       narrationPreview: output.narration.slice(0, 80),
       dialoguePreview: output.dialogue.slice(0, 80),
       stageSuggestion: output.stageSuggestion
     }, "llm response");
 
-    const { state: gameState, delta } = this.states.applyAssistantTurn(sessionId, speakerId, output, skill);
+    const { state: gameState, delta } = this.states.applyAssistantTurn(sessionId, speakerId, output);
     logger.info({
       sessionId,
       round: gameState.round,
@@ -213,17 +280,18 @@ export class TurnProcessor {
       type: "llm_response",
       sessionId,
       speakerId,
-      summary: `${speaker.name}${skill ? ` 使用${skill.name}` : ""} → ${output.narration.slice(0, 50)}`,
-      details: { usedSkill: skill?.id ?? null, delta, narration: output.narration, dialogue: output.dialogue }
+      summary: `${speaker.name} → ${output.narration.slice(0, 50)}`,
+      details: { delta, narration: output.narration, dialogue: output.dialogue }
     });
     if (gameState.status === "completed") {
       logger.info({ sessionId }, "session completed");
       this.auditLog.append({ type: "session_completed", sessionId, summary: "Session completed" });
     }
 
-    const statusLine = this.formatStatusLine(gameState);
-    const content = `${output.narration}\n\n${speaker.name}：“${output.dialogue}”\n\n${statusLine}`;
-    const message = this.createMessage(sessionId, "assistant", speakerId, content, skill ? [skill.id] : [], delta);
+    const combatLine = this.formatCombatLine(speaker, usedSkill, output);
+    const content = `${output.narration}\n\n${speaker.name}："${output.dialogue}"${combatLine}`;
+    const usedSkillIds = usedSkill ? [usedSkill.id] : [];
+    const message = this.createMessage(sessionId, "assistant", speakerId, content, usedSkillIds, delta);
     this.memory.append(message);
 
     return {
@@ -231,11 +299,54 @@ export class TurnProcessor {
       gameState,
       debug: {
         selectedSpeakerId: speakerId,
-        usedSkill: skill?.id ?? null,
-        promptLayers: ["system", "groupRules", "persona", "skills", "scenario", "state", "history"],
+        usedSkill: usedSkill?.name ?? null,
+        promptLayers: ["system", "groupRules", "persona", "scenario", "state", "history"],
         validation: "passed"
       }
     };
+  }
+
+  private resolveSkillDamage(speakerId: CharacterId, output: { action: { type: string; skillId?: string | null; targetIds: string[] }; stateDeltaSuggestion: Record<string, number> }) {
+    if (output.action.type !== "skill" || !output.action.skillId) return undefined;
+    const skill = this.skills.get(output.action.skillId);
+    if (!skill) return undefined;
+
+    const dmg = skill.damage
+      ? Math.floor(Math.random() * (skill.damage.max - skill.damage.min + 1)) + skill.damage.min
+      : 0;
+    const mpCost = skill.cost.mp;
+
+    if (mpCost > 0 && mpCost < 999) {
+      output.stateDeltaSuggestion[`${speakerId}_mp`] = -mpCost;
+    }
+
+    // Remove any self-HP the LLM incorrectly set on the speaker
+    const selfHpKey = `${speakerId}_hp`;
+    if (output.stateDeltaSuggestion[selfHpKey] !== undefined && !output.action.targetIds.includes(speakerId)) {
+      delete output.stateDeltaSuggestion[selfHpKey];
+    }
+
+    // If the LLM forgot to specify targets for a damage skill, use character's attackable targets
+    let targetIds = output.action.targetIds;
+    if (targetIds.length === 0 && skill.damage && dmg > 0) {
+      const allChars = this.characters.list();
+      const speakerChar = allChars.find((c) => c.id === speakerId);
+      const attackableIds = speakerChar?.attackableTargetIds ?? [];
+      const enemy = allChars.find((c) => attackableIds.includes(c.id) && c.id !== speakerId)
+        ?? allChars.find((c) => c.id !== speakerId);
+      if (enemy) {
+        targetIds = [enemy.id];
+        logger.warn({ speakerId, skillId: skill.id, fallbackTarget: enemy.id, source: "attackableTargetIds" }, "LLM omitted targetIds, falling back to character's attackable target");
+      }
+    }
+
+    for (const targetId of targetIds) {
+      if (skill.damage) {
+        output.stateDeltaSuggestion[`${targetId}_hp`] = -dmg;
+      }
+    }
+
+    return skill;
   }
 
   private createMessage(
@@ -256,6 +367,39 @@ export class TurnProcessor {
       stateDelta,
       createdAt: new Date().toISOString()
     };
+  }
+
+  private formatCombatLine(
+    speaker: { name: string },
+    skill: { name: string; cost: { mp: number }; damage?: { min: number; max: number } } | undefined,
+    output: { action: { type: string; targetIds: string[] }; stateDeltaSuggestion: Record<string, number> }
+  ): string {
+    const roster = this.characters.list();
+    const parts: string[] = [];
+
+    if (skill) {
+      parts.push(`⚔ ${speaker.name} 施展【${skill.name}】`);
+
+      // Show target and HP damage
+      for (const targetId of output.action.targetIds) {
+        const targetName = roster.find((c) => c.id === targetId)?.name ?? targetId;
+        const hpDelta = output.stateDeltaSuggestion[`${targetId}_hp`];
+        if (hpDelta !== undefined && hpDelta < 0) {
+          parts.push(`→ ${targetName} 气血${hpDelta}`);
+        }
+      }
+
+      // Show MP cost
+      const speakerId = roster.find((c) => c.name === speaker.name)?.id;
+      if (speakerId) {
+        const mpDelta = output.stateDeltaSuggestion[`${speakerId}_mp`];
+        if (mpDelta !== undefined && mpDelta < 0) {
+          parts.push(`｜ ${speaker.name} 内力${mpDelta}`);
+        }
+      }
+    }
+
+    return parts.length > 0 ? `\n\n${parts.join(" ")}` : "";
   }
 
   private formatStatusLine(gameState: { characters: Array<{ characterId: CharacterId; hp: number; mp: number }> }) {

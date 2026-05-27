@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 import {
   createSessionRequestSchema,
   scenarioSchema,
@@ -26,7 +27,12 @@ export async function gameRoutes(app: FastifyInstance) {
   app.post("/sessions/:id/messages", async (request, reply) => {
     const { id } = request.params as { id: string };
     const input = sendMessageRequestSchema.parse(request.body);
-    return reply.send(await gameApplicationService.sendMessage(id, input));
+    try {
+      return reply.send(await gameApplicationService.sendMessage(id, input));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return reply.code(500).send({ error: message });
+    }
   });
 
   app.put("/sessions/:id/scenario", async (request, reply) => {
@@ -66,8 +72,20 @@ export async function gameRoutes(app: FastifyInstance) {
   });
 
   app.post("/sessions/restore", async (request, reply) => {
-    const { storyPackageId, saveId } = request.body as { storyPackageId: string; saveId: string };
-    const result = gameApplicationService.restoreSession(storyPackageId, saveId);
-    return reply.send(result);
+    try {
+      const { storyPackageId, saveId, slot } = z.object({
+        storyPackageId: z.string(),
+        saveId: z.string().optional(),
+        slot: z.number().int().min(1).max(3).optional()
+      }).parse(request.body);
+      const result = gameApplicationService.restoreSession(storyPackageId, saveId, slot);
+      return reply.send(result);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return reply.code(400).send({ error: "请求参数无效" });
+      }
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return reply.code(500).send({ error: message });
+    }
   });
 }

@@ -38,7 +38,7 @@ export function AuditLogPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/admin/audit-log");
+      const res = await fetch("/api/admin/audit-log?limit=100");
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setEntries(data.entries ?? []);

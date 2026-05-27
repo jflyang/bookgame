@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-import { createSession, sendMessage, listSaves, saveSession, loadSession, deleteSave } from "../gameApi.js";
+import { createSession, sendMessage, listSaves, saveSession, loadSession, loadSessionBySlot, deleteSave } from "../gameApi.js";
 
 function mockResponse(data: unknown, ok = true) {
   return {
@@ -73,31 +73,48 @@ describe("gameApi", () => {
   });
 
   describe("listSaves", () => {
-    it("fetches saves for a story package", async () => {
-      mockFetch.mockResolvedValue(mockResponse({ saves: [{ sessionId: "s1", label: "存档1", round: 5, status: "active", messageCount: 12, createdAt: "t", updatedAt: "t" }] }));
-      const saves = await listSaves("pkg_1");
-      expect(saves).toHaveLength(1);
-      expect(saves[0].label).toBe("存档1");
+    it("fetches 3 save slots for a story package", async () => {
+      mockFetch.mockResolvedValue(mockResponse({
+        slots: [
+          { slot: 1, save: { sessionId: "s1", label: "存档1", round: 5, status: "active", messageCount: 12, createdAt: "t", updatedAt: "t" } },
+          { slot: 2, save: null },
+          { slot: 3, save: null },
+        ]
+      }));
+      const slots = await listSaves("pkg_1");
+      expect(slots).toHaveLength(3);
+      expect(slots[0].save?.label).toBe("存档1");
+      expect(slots[1].save).toBeNull();
     });
   });
 
   describe("saveSession", () => {
-    it("posts save data", async () => {
-      mockFetch.mockResolvedValue(mockResponse({ save: { sessionId: "s1", label: "Q" } }));
-      await saveSession("pkg_1", "sess_x", "快速存档");
+    it("posts save data with slot", async () => {
+      mockFetch.mockResolvedValue(mockResponse({ save: { sessionId: "s1", label: "Q" }, slot: 2 }));
+      await saveSession("pkg_1", "sess_x", "快速存档", 2);
       const call = mockFetch.mock.calls[0];
       const body = JSON.parse(call[1].body);
-      expect(body).toEqual({ sessionId: "sess_x", label: "快速存档" });
+      expect(body).toEqual({ sessionId: "sess_x", label: "快速存档", slot: 2 });
     });
   });
 
   describe("loadSession", () => {
-    it("fetches save then restores", async () => {
-      mockFetch
-        .mockResolvedValueOnce(mockResponse({ save: { sessionId: "s1", label: "Q" } }))
-        .mockResolvedValueOnce(mockResponse(mockSessionPayload));
+    it("restores session by saveId", async () => {
+      mockFetch.mockResolvedValueOnce(mockResponse(mockSessionPayload));
       const result = await loadSession("pkg_1", "save_1");
-      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(result.sessionId).toBe("sess_001");
+    });
+  });
+
+  describe("loadSessionBySlot", () => {
+    it("restores session by slot number", async () => {
+      mockFetch.mockResolvedValueOnce(mockResponse(mockSessionPayload));
+      const result = await loadSessionBySlot("pkg_1", 2);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body);
+      expect(body).toEqual({ storyPackageId: "pkg_1", slot: 2 });
       expect(result.sessionId).toBe("sess_001");
     });
   });

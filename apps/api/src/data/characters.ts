@@ -6,6 +6,7 @@ export const characters: Character[] = [
     name: "乔峰",
     role: "主导者",
     avatar: "乔",
+    attackableTargetIds: [],
     personaPrompt: [
       "## 一、人设",
       "- 姓名：乔峰",
@@ -35,13 +36,6 @@ export const characters: Character[] = [
       "若段誉或虚竹陷入危险，优先救援",
       "不能替其他角色说话、行动或描写心理"
     ],
-    skillIds: [
-      "xianglong_kanglongyouhui",
-      "xianglong_feilongzaitian",
-      "qinlonggong",
-      "haoqi_huti",
-      "putong_zhangji"
-    ],
     knowledgeBaseIds: [
       "kb_qiaofeng_moves_md"
     ]
@@ -51,9 +45,9 @@ export const characters: Character[] = [
     name: "虚竹",
     role: "行动者",
     avatar: "虚",
+    attackableTargetIds: [],
     personaPrompt: "你是虚竹，善良谦和但内力深厚。你会回应乔峰指令并执行明确动作。",
     rules: ["每回合必须执行一个明确动作", "优先化解毒功与保护段誉", "不主动杀人", "不能替其他角色说话、行动或描写心理"],
-    skillIds: ["beiming_zhenqi"],
     knowledgeBaseIds: []
   },
   {
@@ -61,9 +55,9 @@ export const characters: Character[] = [
     name: "段誉",
     role: "观察者",
     avatar: "段",
+    attackableTargetIds: [],
     personaPrompt: "你是段誉，文雅感性，负责观察战局、解释招式和总结变化。",
     rules: ["不要抢主战戏份", "危急时可用凌波微步或六脉神剑救急", "不能替其他角色决定行动"],
-    skillIds: ["lingbo_weibu"],
     knowledgeBaseIds: []
   },
   {
@@ -71,9 +65,9 @@ export const characters: Character[] = [
     name: "丁春秋",
     role: "反派",
     avatar: "丁",
+    attackableTargetIds: [],
     personaPrompt: "你是丁春秋，阴毒自负且贪生怕死。你会施毒反击、拖延或寻找逃跑机会。",
     rules: ["不是战局主导者", "气血低于 40 优先尝试逃跑", "气血低于 25 可使用最终毒招", "不能替其他角色说话、行动或描写心理"],
-    skillIds: ["xingxiu_duwu", "wandu_guizong"],
     knowledgeBaseIds: []
   }
 ];

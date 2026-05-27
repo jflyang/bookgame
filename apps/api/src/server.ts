@@ -16,7 +16,7 @@ const app = Fastify({
     level,
     transport: { target: pinoPrettyPath, options: { colorize: true, translateTime: "SYS:HH:MM:ss" } }
   },
-  bodyLimit: 10 * 1024 * 1024
+  bodyLimit: 25 * 1024 * 1024
 });
 const port = Number(process.env.PORT ?? 4000);
 const defaultWebOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
@@ -29,7 +29,7 @@ await app.register(cors, {
   origin: webOrigins
 });
 
-await app.register(multipart, { limits: { fileSize: 2 * 1024 * 1024 } });
+await app.register(multipart, { limits: { fileSize: 20 * 1024 * 1024 } });
 
 app.get("/health", async () => ({ ok: true }));
 await registerRoutes(app);

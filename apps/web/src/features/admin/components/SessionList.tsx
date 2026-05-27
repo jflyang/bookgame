@@ -31,7 +31,7 @@ export function SessionList() {
 
   const load = useCallback(async () => {
     try {
-      const result = await fetchSessions(storyFilter || undefined, statusFilter || undefined);
+      const result = await fetchSessions(storyFilter || undefined, statusFilter || undefined, 100);
       setSessions(result.sessions);
       setError(null);
     } catch (err) {
@@ -307,16 +307,20 @@ function SessionMessages({ detail }: { detail: SessionDetail }) {
 function SessionLlmCalls({ sessionId }: { sessionId: string }) {
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
+    setFetchError(null);
+    setLoading(true);
     fetch(`/api/admin/runtime-stats/sessions/${sessionId}`)
       .then((r) => r.json())
       .then((data) => setRecords(data.records ?? []))
-      .catch(() => {})
+      .catch((err) => setFetchError(err instanceof Error ? err.message : "加载失败"))
       .finally(() => setLoading(false));
   }, [sessionId]);
 
   if (loading) return <p className="muted" style={{ padding: 24, textAlign: "center" }}>加载中...</p>;
+  if (fetchError) return <p className="error-banner" style={{ margin: 16 }}>{fetchError}</p>;
   if (records.length === 0) return <p className="muted" style={{ padding: 24, textAlign: "center" }}>暂无 LLM 调用记录</p>;
 
   return (

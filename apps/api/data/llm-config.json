@@ -3,6 +3,6 @@
   "baseUrl": "https://api.deepseek.com",
   "model": "deepseek-v4-flash",
   "temperature": 0.8,
-  "maxTokens": 4096,
-  "apiKey": "sk-0e9d7c414d4f4667919ee7956de99bf2"
+  "maxTokens": 800,
+  "apiKey": "sk-new"
 }

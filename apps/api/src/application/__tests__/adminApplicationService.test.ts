@@ -74,9 +74,12 @@ function createMockStoryPackageService() {
 function createMockSessionSaveService() {
   return {
     list: vi.fn(),
+    listSlots: vi.fn(),
     get: vi.fn(),
     save: vi.fn(),
+    saveToSlot: vi.fn(),
     delete: vi.fn(),
+    deleteBySlot: vi.fn(),
   } as any;
 }
 
@@ -238,10 +241,10 @@ describe("AdminApplicationService", () => {
   });
 
   it("listSaves delegates to sessionSaveService", () => {
-    const saves = [{ sessionId: "s1", label: "Save 1", round: 3, status: "active", messageCount: 5, createdAt: "2026-01-01", updatedAt: "2026-01-02" }];
-    mockSS.list.mockReturnValue(saves);
-    expect(service.listSaves("pkg_001")).toEqual({ saves });
-    expect(mockSS.list).toHaveBeenCalledWith("pkg_001");
+    const slots = [{ slot: 1, save: { sessionId: "s1", label: "Save 1", round: 3, status: "active", messageCount: 5, createdAt: "2026-01-01", updatedAt: "2026-01-02" } }];
+    mockSS.listSlots.mockReturnValue(slots);
+    expect(service.listSaves("pkg_001")).toEqual({ slots });
+    expect(mockSS.listSlots).toHaveBeenCalledWith("pkg_001");
   });
 
   it("getSave delegates to sessionSaveService", () => {
@@ -257,13 +260,14 @@ describe("AdminApplicationService", () => {
     const save = { sessionId: "s1", label: "存档", gameState: state.gameState, messages, createdAt: "", updatedAt: "" };
     mockDE.getSessionState.mockReturnValue(state);
     mockDE.getMessages.mockReturnValue(messages);
-    mockSS.save.mockReturnValue(save);
+    mockSS.saveToSlot.mockReturnValue(save);
 
     const result = service.saveCurrentSession("pkg_001", "s1");
     expect(result.save).toBe(save);
+    expect(result.slot).toBe(1);
     expect(mockDE.getSessionState).toHaveBeenCalledWith("s1");
     expect(mockDE.getMessages).toHaveBeenCalledWith("s1");
-    expect(mockSS.save).toHaveBeenCalledWith("pkg_001", expect.any(String), state.gameState, messages);
+    expect(mockSS.saveToSlot).toHaveBeenCalledWith("pkg_001", 1, expect.any(String), state.gameState, messages);
   });
 
   it("deleteSave delegates to sessionSaveService", () => {

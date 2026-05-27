@@ -44,6 +44,19 @@ export class MediaService {
     if (files.length > 0) logger.info({ id: safeId }, "image removed");
   }
 
+  /** Save a background image and return the URL path */
+  saveBackgroundImage(id: string, buffer: Buffer, originalName: string): string {
+    const safeId = assertSafeId(id);
+    const ext = normalizeImageExtension(originalName);
+    const mediaDir = this.mediaDir(safeId);
+    const oldFiles = readdirSync(mediaDir).filter((f) => f.startsWith("background."));
+    for (const old of oldFiles) unlinkSync(resolveInside(mediaDir, old));
+    const filename = `background${ext}`;
+    writeFileSync(resolveInside(mediaDir, filename), buffer);
+    logger.info({ id: safeId, filename }, "background image saved");
+    return `/api/story-assets/${safeId}/media/${filename}`;
+  }
+
   /** Find the file path for an image, or null if not found */
   imagePath(id: string): string | null {
     const safeId = assertSafeId(id);

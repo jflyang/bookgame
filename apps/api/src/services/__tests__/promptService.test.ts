@@ -131,7 +131,8 @@ describe("PromptService", () => {
 
     svc = new PromptService(
       mockCharacters as never,
-      mockAgents as never
+      mockAgents as never,
+      { list: vi.fn().mockReturnValue([]) } as never
     );
   });
 
@@ -148,8 +149,8 @@ describe("PromptService", () => {
     );
 
     expect(prompt).toContain("多人角色互动故事游戏");
-    expect(prompt).toContain("输出必须是符合约定 schema 的 JSON");
-    expect(prompt).toContain("speakerId,narration,dialogue,action");
+    expect(prompt).toContain("输出必须是严格 JSON");
+    expect(prompt).toContain("speakerId: 当前发言角色 ID");
   });
 
   it("buildPrompt includes character persona", () => {
@@ -301,5 +302,241 @@ describe("PromptService", () => {
     // Should use JSON.stringify(state.scenario) as scenario setting
     expect(prompt).toContain("Test Story");
     expect(prompt).toContain("climax");
+  });
+
+  it("buildPrompt includes combat declaration rule when provided", () => {
+    const pkg = makeStoryPackage({
+      promptRules: [
+        { id: "rule_combat", title: "战斗伤害宣告规则", category: "combat", content: "【战斗宣告】攻击时必须宣告目标与伤害数值，并与stateDeltaSuggestion一致。", enabled: true },
+      ],
+    });
+
+    const prompt = svc.buildPrompt(
+      "qiaofeng",
+      makeGameState(),
+      [],
+      "攻击",
+      pkg
+    );
+
+    expect(prompt).toContain("【故事包规则：战斗伤害宣告规则】");
+    expect(prompt).toContain("攻击时必须宣告目标与伤害数值");
+    expect(prompt).toContain("stateDeltaSuggestion");
+  });
+
+  it("buildPrompt includes attackable targets when configured", () => {
+    const qiaofengWithTargets = makeCharacter({ attackableTargetIds: ["dingchunqiu"] });
+    const dingchunqiu: Character = {
+      id: "dingchunqiu", name: "丁春秋", role: "反派", avatar: "丁",
+      personaPrompt: "Villain", rules: [], skillIds: [], knowledgeBaseIds: [],
+      attackableTargetIds: [],
+    };
+
+    mockCharacters.get.mockReturnValue(qiaofengWithTargets);
+    mockCharacters.list.mockReturnValue([qiaofengWithTargets, xuzhu, dingchunqiu]);
+    mockAgents.buildAgentContext.mockReturnValue({
+      character: qiaofengWithTargets,
+      knowledgeHits: [],
+    });
+
+    const prompt = svc.buildPrompt(
+      "qiaofeng",
+      makeGameState(),
+      [],
+      "攻击",
+      undefined
+    );
+
+    expect(prompt).toContain("当前角色可攻击的目标");
+    expect(prompt).toContain("丁春秋");
+    expect(prompt).toContain("targetIds 必须从这些目标中选择");
+  });
+
+  it("buildPrompt emphasizes stateDeltaSuggestion consistency", () => {
+    const prompt = svc.buildPrompt(
+      "qiaofeng",
+      makeGameState(),
+      [],
+      "继续",
+      undefined
+    );
+
+    expect(prompt).toContain("若你在叙事/对话中宣告了攻击和伤害");
+  });
+
+  it("buildPrompt includes intro narration when provided", () => {
+    const pkg = makeStoryPackage({
+      uiConfig: {
+        scene: { introNarration: "暮色低垂，寒风凛冽，山道上两道人影对峙。" },
+      },
+    });
+
+    const prompt = svc.buildPrompt(
+      "qiaofeng",
+      makeGameState(),
+      [],
+      "开始",
+      pkg
+    );
+
+    expect(prompt).toContain("开场旁白");
+    expect(prompt).toContain("暮色低垂，寒风凛冽");
+  });
+
+  it("buildPrompt omits intro narration when storyPackage has no uiConfig", () => {
+    const prompt = svc.buildPrompt(
+      "qiaofeng",
+      makeGameState(),
+      [],
+      "开始",
+      undefined
+    );
+
+    expect(prompt).not.toContain("开场旁白");
+  });
+
+  it("buildPrompt omits intro narration when uiConfig.scene has empty introNarration", () => {
+    const pkg = makeStoryPackage({
+      uiConfig: { scene: { introNarration: "" } },
+    });
+
+    const prompt = svc.buildPrompt(
+      "qiaofeng",
+      makeGameState(),
+      [],
+      "开始",
+      pkg
+    );
+
+    expect(prompt).not.toContain("开场旁白");
+  });
+
+  it("buildPrompt renders skills list when skills are available", () => {
+    const svcWithSkills = new PromptService(
+      mockCharacters as never,
+      mockAgents as never,
+      {
+        list: vi.fn().mockReturnValue([
+          { id: "xianglong_zhang", name: "降龙十八掌", cost: { mp: 30 }, damage: { min: 40, max: 80 }, effect: "刚猛掌法" },
+          { id: "beiming_shengong", name: "北冥神功", cost: { mp: 50 }, damage: { min: 0, max: 0 }, effect: "吸人内力" },
+        ]),
+      } as never
+    );
+
+    const prompt = svcWithSkills.buildPrompt(
+      "qiaofeng",
+      makeGameState(),
+      [],
+      "出招",
+      undefined
+    );
+
+    expect(prompt).toContain("可用技能列表");
+    expect(prompt).toContain("xianglong_zhang");
+    expect(prompt).toContain("内力:30");
+    expect(prompt).toContain("伤害:40~80");
+    expect(prompt).toContain("刚猛掌法");
+    expect(prompt).toContain("beiming_shengong");
+    expect(prompt).toContain("内力:50");
+    expect(prompt).toContain("吸人内力");
+  });
+
+  it("buildPrompt shows empty skills section when no skills", () => {
+    const prompt = svc.buildPrompt(
+      "qiaofeng",
+      makeGameState(),
+      [],
+      "hello",
+      undefined
+    );
+
+    expect(prompt).not.toContain("可用技能列表");
+  });
+
+  it("buildPrompt handles stage details with missing optional fields", () => {
+    const state = makeGameState({
+      scenario: {
+        id: "sc_001", title: "Test", currentStage: "middle", currentGoal: "Survive",
+        premise: "Test", rules: [], stages: ["start", "middle", "end"],
+        stageDetails: [
+          { id: "start" },
+          { id: "middle", title: "中途" },
+          { id: "end", description: "结局" },
+        ],
+        initialStates: [],
+      },
+    });
+
+    const prompt = svc.buildPrompt("qiaofeng", state as GameState, [], "继续", undefined);
+
+    expect(prompt).toContain("中途");
+    expect(prompt).toContain("结局");
+    // Missing title should not crash
+    expect(prompt).toContain("start");
+  });
+
+  it("buildPrompt handles empty stageDetails array gracefully", () => {
+    const state = makeGameState({
+      scenario: {
+        id: "sc_001", title: "Test", currentStage: "opening", currentGoal: "Go",
+        premise: "Test", rules: [], stages: ["opening", "climax"],
+        stageDetails: [],
+        initialStates: [],
+      },
+    });
+
+    const prompt = svc.buildPrompt("qiaofeng", state as GameState, [], "继续", undefined);
+    // Stages render with ID only when no details available
+    expect(prompt).toContain("1. opening");
+    expect(prompt).toContain("2. climax");
+  });
+
+  it("buildPrompt substitutes multiple variables in rules", () => {
+    const pkg = makeStoryPackage({
+      promptRules: [
+        {
+          id: "r_multi",
+          title: "角色规则",
+          content: "{currentCharacterName}对{otherCharacterNames}说话，场景是{scenarioSetting}",
+          enabled: true,
+        },
+      ],
+    });
+
+    const prompt = svc.buildPrompt("qiaofeng", makeGameState(), [], "你好", pkg);
+
+    expect(prompt).toContain("乔峰对虚竹说话");
+    expect(prompt).toContain("这是一个发生在武侠世界的恩怨故事");
+  });
+
+  it("buildPrompt includes multiple knowledge hits", () => {
+    mockAgents.buildAgentContext.mockReturnValue({
+      character,
+      knowledgeHits: [
+        { documentId: "kb_1", title: "降龙十八掌", content: "天下第一刚猛掌法", score: 5 },
+        { documentId: "kb_2", title: "打狗棒法", content: "丐帮镇帮之宝", score: 3 },
+      ],
+    });
+
+    const prompt = svc.buildPrompt("qiaofeng", makeGameState(), [], "绝学", undefined);
+
+    expect(prompt).toContain("天下第一刚猛掌法");
+    expect(prompt).toContain("丐帮镇帮之宝");
+  });
+
+  it("buildPrompt excludes attackable targets section when none configured", () => {
+    const prompt = svc.buildPrompt("qiaofeng", makeGameState(), [], "hello", undefined);
+
+    expect(prompt).not.toContain("当前角色可攻击的目标");
+  });
+
+  it("buildPrompt excludes attackable targets when list is empty", () => {
+    const charNoTargets = makeCharacter({ attackableTargetIds: [] });
+    mockCharacters.get.mockReturnValue(charNoTargets);
+    mockAgents.buildAgentContext.mockReturnValue({ character: charNoTargets, knowledgeHits: [] });
+
+    const prompt = svc.buildPrompt("qiaofeng", makeGameState(), [], "hello", undefined);
+
+    expect(prompt).not.toContain("当前角色可攻击的目标");
   });
 });

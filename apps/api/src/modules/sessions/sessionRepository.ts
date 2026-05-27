@@ -78,59 +78,57 @@ function fromDb(row: SessionRow): SessionSummary {
 
 export class SessionRepository {
   private db: Database.Database;
-  private insertStmt: Database.Statement;
-  private updateStmt: Database.Statement;
+  private upsertStmt?: Database.Statement;
 
   constructor() {
     this.db = getDatabase();
-    this.insertStmt = this.db.prepare(`
-      INSERT INTO sessions
-        (id, story_package_id, story_package_title, round, status,
-         current_stage, character_states, message_count, created_at, updated_at)
-      VALUES
-        (@id, @story_package_id, @story_package_title, @round, @status,
-         @current_stage, @character_states, @message_count, @created_at, @updated_at)
-    `);
-    this.updateStmt = this.db.prepare(`
-      UPDATE sessions SET
-        story_package_title = @story_package_title,
-        round = @round,
-        status = @status,
-        current_stage = @current_stage,
-        character_states = @character_states,
-        message_count = @message_count,
-        updated_at = @updated_at
-      WHERE id = @id
-    `);
   }
+
+  private upsertStmt?: Database.Statement;
 
   upsert(input: SessionUpsertInput): void {
-    const existing = this.db.prepare(`SELECT id FROM sessions WHERE id = ?`).get(input.id) as SessionRow | undefined;
-    if (existing) {
-      this.updateStmt.run(toDb(input, new Date().toISOString()));
-    } else {
-      this.insertStmt.run(toDb(input, new Date().toISOString()));
+    if (!this.upsertStmt) {
+      this.upsertStmt = this.db.prepare(`
+        INSERT INTO sessions
+          (id, story_package_id, story_package_title, round, status,
+           current_stage, character_states, message_count, created_at, updated_at)
+        VALUES
+          (@id, @story_package_id, @story_package_title, @round, @status,
+           @current_stage, @character_states, @message_count, @created_at, @updated_at)
+        ON CONFLICT(id) DO UPDATE SET
+          story_package_id = excluded.story_package_id,
+          story_package_title = excluded.story_package_title,
+          round = excluded.round,
+          status = excluded.status,
+          current_stage = excluded.current_stage,
+          character_states = excluded.character_states,
+          message_count = excluded.message_count,
+          updated_at = excluded.updated_at
+      `);
     }
+    this.upsertStmt.run(toDb(input, new Date().toISOString()));
   }
 
-  listAll(): SessionSummary[] {
+  // Remove old insertStmt/updateStmt — they're replaced by upsertStmt
+
+  listAll(limit?: number): SessionSummary[] {
     const rows = this.db.prepare(`
-      SELECT * FROM sessions ORDER BY updated_at DESC
-    `).all() as SessionRow[];
+      SELECT * FROM sessions ORDER BY updated_at DESC ${limit ? "LIMIT ?" : ""}
+    `).all(...(limit ? [limit] : [])) as SessionRow[];
     return rows.map(fromDb);
   }
 
-  findByPackage(storyPackageId: string): SessionSummary[] {
+  findByPackage(storyPackageId: string, limit?: number): SessionSummary[] {
     const rows = this.db.prepare(`
-      SELECT * FROM sessions WHERE story_package_id = ? ORDER BY updated_at DESC
-    `).all(storyPackageId) as SessionRow[];
+      SELECT * FROM sessions WHERE story_package_id = ? ORDER BY updated_at DESC ${limit ? "LIMIT ?" : ""}
+    `).all(...(limit ? [storyPackageId, limit] : [storyPackageId])) as SessionRow[];
     return rows.map(fromDb);
   }
 
-  findByStatus(status: string): SessionSummary[] {
+  findByStatus(status: string, limit?: number): SessionSummary[] {
     const rows = this.db.prepare(`
-      SELECT * FROM sessions WHERE status = ? ORDER BY updated_at DESC
-    `).all(status) as SessionRow[];
+      SELECT * FROM sessions WHERE status = ? ORDER BY updated_at DESC ${limit ? "LIMIT ?" : ""}
+    `).all(...(limit ? [status, limit] : [status])) as SessionRow[];
     return rows.map(fromDb);
   }
 

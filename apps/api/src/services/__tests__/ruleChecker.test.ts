@@ -33,4 +33,22 @@ describe("RuleChecker", () => {
     const result = checker.validateOutput("qiaofeng", valid);
     expect(result.speakerId).toBe("qiaofeng");
   });
+
+  it("accepts observe action without skillId", () => {
+    const v = { ...valid, action: { type: "observe" as const, targetIds: [] } };
+    const result = checker.validateOutput("qiaofeng", v);
+    expect(result.action.type).toBe("observe");
+  });
+
+  it("accepts command action with null skillId", () => {
+    const v = { ...valid, action: { type: "command" as const, skillId: null, targetIds: ["xuzhu"] } };
+    const result = checker.validateOutput("qiaofeng", v);
+    expect(result.action.skillId).toBeNull();
+  });
+
+  it("accepts escape action without skillId", () => {
+    const v = { ...valid, action: { type: "escape" as const, targetIds: [] } };
+    const result = checker.validateOutput("qiaofeng", v);
+    expect(result.action.type).toBe("escape");
+  });
 });

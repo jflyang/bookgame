@@ -1,7 +1,12 @@
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
+  root: __dirname,
   plugins: [react()],
   server: {
     port: 5173,
@@ -19,9 +24,6 @@ export default defineConfig({
         changeOrigin: true,
       }
     },
-    headers: {
-      "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:* ws://localhost:*; font-src 'self' data: http://localhost:*; img-src 'self' data: http://localhost:*; media-src 'self' http://localhost:*;"
-    }
   },
   worker: {
     format: "es"

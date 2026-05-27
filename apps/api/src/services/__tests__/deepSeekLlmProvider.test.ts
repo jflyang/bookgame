@@ -110,7 +110,7 @@ describe("DeepSeekLlmProvider", () => {
     expect(body.temperature).toBe(0.8);
     expect(body.max_tokens).toBe(800);
     expect(body.stream).toBeUndefined();
-    expect(body.thinking).toEqual({ type: "disabled" });
+    expect(body.response_format).toEqual({ type: "json_object" });
     expect(body.messages).toHaveLength(2);
     expect(body.messages[0].role).toBe("system");
     expect(body.messages[1].role).toBe("user");

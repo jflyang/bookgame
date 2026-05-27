@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import { Image, PanelLeft, Palette, PlayCircle, Save, Sparkles, Zap } from "lucide-react";
+import { Image, PanelLeft, Palette, PlayCircle, Save, Sparkles, Upload, Zap } from "lucide-react";
 import type { StoryPackage, UiConfig, UiThemeConfig } from "@story-game/shared";
 import { useGameStore } from "../../../store/gameStore.js";
+import { uploadBackgroundImage } from "../../../lib/adminApi.js";
 
 type ThemePresetId = "classic" | "clean" | "night";
 
@@ -77,6 +78,8 @@ export function UiConfigPanel() {
   const { editingPackageId, storyPackages, saveStoryPackage } = useGameStore();
   const storyPackage = storyPackages.find((p) => p.id === editingPackageId);
   const [draft, setDraft] = useState<UiConfig>(cloneUiConfig(storyPackage?.uiConfig));
+  const [bgUploading, setBgUploading] = useState(false);
+  const bgFileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setDraft(cloneUiConfig(storyPackage?.uiConfig));
@@ -87,6 +90,7 @@ export function UiConfigPanel() {
   const layout = draft.layout ?? {};
   const theme = draft.theme ?? {};
   const avatar = draft.avatar ?? {};
+  const scene = draft.scene ?? {};
   const activePreset = detectPreset(theme);
 
   function handleSave() {
@@ -103,6 +107,23 @@ export function UiConfigPanel() {
 
   function updateAvatarStyle(style: "gradient" | "emoji" | "url") {
     setDraft((prev) => ({ ...prev, avatar: { ...prev.avatar, style } }));
+  }
+
+  function updateScene(key: string, value: string) {
+    setDraft((prev) => ({ ...prev, scene: { ...prev.scene, [key]: value } }));
+  }
+
+  async function handleBgUpload(file: File | undefined) {
+    if (!file || !editingPackageId) return;
+    setBgUploading(true);
+    try {
+      const result = await uploadBackgroundImage(editingPackageId, file);
+      setDraft((prev) => ({ ...prev, scene: { ...prev.scene, backgroundImage: result.path } }));
+    } catch (err) {
+      console.error("Failed to upload background image:", err);
+    } finally {
+      setBgUploading(false);
+    }
   }
 
   return (
@@ -176,6 +197,93 @@ export function UiConfigPanel() {
                 <small>{preset.description}</small>
               </button>
             ))}
+          </div>
+        </section>
+
+        <section className="ui-config-card">
+          <div className="ui-section-heading">
+            <Sparkles size={18} />
+            <div>
+              <strong>场景设置</strong>
+              <small>对话页面的场景标题、开场文案和背景图。</small>
+            </div>
+          </div>
+          <div className="ui-scene-fields">
+            <label className="ui-field">
+              <span>场景标题</span>
+              <input
+                type="text"
+                value={scene.heading ?? ""}
+                onChange={(e) => updateScene("heading", e.target.value)}
+                placeholder="如：别墅密室"
+              />
+            </label>
+            <label className="ui-field">
+              <span>背景图片</span>
+              <div className="ui-field-row">
+                <input
+                  type="text"
+                  value={scene.backgroundImage ?? ""}
+                  onChange={(e) => updateScene("backgroundImage", e.target.value)}
+                  placeholder="上传图片或手动输入 URL"
+                  style={{ flex: 1 }}
+                />
+                <input
+                  ref={bgFileRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  style={{ display: "none" }}
+                  onChange={(e) => handleBgUpload(e.target.files?.[0])}
+                />
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ minHeight: 36, fontSize: "0.82rem", whiteSpace: "nowrap" }}
+                  disabled={bgUploading}
+                  onClick={() => bgFileRef.current?.click()}
+                >
+                  <Upload size={14} /> {bgUploading ? "上传中..." : "上传"}
+                </button>
+                {scene.backgroundImage && (
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    style={{ minHeight: 36, fontSize: "0.82rem" }}
+                    onClick={() => updateScene("backgroundImage", "")}
+                    title="清除背景图"
+                  >
+                    清除
+                  </button>
+                )}
+              </div>
+            </label>
+            <label className="ui-field">
+              <span>开场旁白</span>
+              <textarea
+                rows={2}
+                value={scene.introNarration ?? ""}
+                onChange={(e) => updateScene("introNarration", e.target.value)}
+                placeholder="故事开始前显示的叙述文字"
+              />
+            </label>
+            <label className="ui-field">
+              <span>空状态标题</span>
+              <input
+                type="text"
+                value={scene.emptyTitle ?? ""}
+                onChange={(e) => updateScene("emptyTitle", e.target.value)}
+                placeholder="尚无消息时显示的标题"
+              />
+            </label>
+            <label className="ui-field">
+              <span>空状态提示</span>
+              <input
+                type="text"
+                value={scene.emptyHint ?? ""}
+                onChange={(e) => updateScene("emptyHint", e.target.value)}
+                placeholder="尚无消息时显示的提示文字"
+              />
+            </label>
           </div>
         </section>
 

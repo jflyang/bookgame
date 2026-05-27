@@ -1,0 +1,49 @@
+{
+  "layout": {
+    "showCharacterPanel": true,
+    "showQuickActions": true,
+    "showDiceButton": true,
+    "showAutoPlay": true
+  },
+  "theme": {
+    "primaryColor": "#1f5b51",
+    "accentColor": "#2b987a",
+    "backgroundColor": "#f7f1e7",
+    "surfaceColor": "#fffaf2",
+    "textColor": "#2f3133",
+    "headingFont": "STKaiti",
+    "bodyFont": "Inter",
+    "navBackground": "#0a1728"
+  },
+  "scene": {
+    "heading": "别墅卧室",
+    "introNarration": "柔软的午后阳光透过落地窗洒进宽敞的卧室，空气中隐隐浮动着淡淡的薰衣草香气。小薇正蜷坐在一张精致的大床上，背靠着松软的枕头，膝上摊开一本文学小说。她穿着简单的白色棉质吊带睡裙，乌黑的长发随意披在肩头，赤裸的脚丫轻轻晃动，脸上还带着大学女生特有的天真与慵懒。这些天她一直住在这栋奢华得像宫殿一样的豪宅里，少爷对她温柔体贴，仆人们也恭敬有加。她以为自己只是被好心的少爷“暂时收留”，却完全没有注意到，这间看似温馨的卧室里，早已暗藏玄机——床头那根看似装饰的金属横杆，其实是坚固的悬吊杠；床架是特制的冰冷铁床，床柱上隐藏着丝滑却结实的束缚扣环。门把轻轻转动的声音响起。小薇抬起头，脸上绽放出明亮的笑容：“少爷！大姐，你们来啦？我正在看这本——”她的话忽然顿住。走进来的不仅仅是平日里总是带着温柔笑意的少爷，还有那位气质成熟、身材高挑、穿着合身深色制服的大姐——那位经验丰富的女仆长。此刻，大姐的手里提着一个精致的黑色皮箱，嘴角挂着意味深长的浅笑。而少爷的目光，则不再是往日那般温和，而是带着一种猎人审视猎物的专注与占有欲，缓缓落在她身上。卧室的空气仿佛在一瞬间变得黏稠而炽热起来。小薇下意识地夹紧了双腿，书本从膝上滑落，却没有察觉到，自己即将面对的，是早已被安排好的命运——今天，就是她彻底成为少爷私有物的第一天。少爷轻轻关上门，声音低沉而富有磁性：“小薇，今天……我们来好好认识一下，你的新生活。”\n\n",
+    "emptyTitle": "",
+    "emptyHint": "",
+    "backgroundImage": "/api/story-assets/story_sSw0IetszN/media/background.png"
+  },
+  "labels": {
+    "hp": "气血",
+    "mp": "内力",
+    "characters": "登场角色",
+    "lastSpeaker": "上轮发言",
+    "continue": "继续",
+    "autoPlay": "自动继续",
+    "send": "发送",
+    "manageCharacters": "角色管理",
+    "rules": "故事规则",
+    "scenarioRules": "剧情规则",
+    "promptRules": "提示词规则",
+    "currentStatus": "当前状态",
+    "round": "回合",
+    "currentStage": "当前阶段",
+    "statusActive": "进行中",
+    "statusCompleted": "已结束",
+    "interactiveStory": "互动故事",
+    "storyManagement": "故事管理",
+    "viewRules": "查看规则"
+  },
+  "avatar": {
+    "style": "url"
+  }
+}

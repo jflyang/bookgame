@@ -27,7 +27,12 @@ export function StoryPerformanceOverlay({
 
   useEffect(() => {
     const timer = window.setTimeout(() => doneRef.current(), performance.durationMs + 250);
-    return () => window.clearTimeout(timer);
+    const handleKey = (e: KeyboardEvent) => { if (e.key === "Enter") doneRef.current(); };
+    window.addEventListener("keydown", handleKey);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("keydown", handleKey);
+    };
   }, [performance.durationMs, performanceId]);
 
   useEffect(() => {
@@ -153,6 +158,10 @@ function ImageFallback({
 
 function playAudio(url: string) {
   const audio = new Audio(url);
-  audio.play().catch(() => {});
+  audio.preload = "auto";
+  audio.volume = 0.9;
+  audio.play().catch((error) => {
+    console.warn("Performance audio playback was blocked or failed.", { url, error });
+  });
   return audio;
 }

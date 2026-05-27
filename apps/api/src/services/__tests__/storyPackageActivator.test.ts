@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { StoryPackageActivator } from "../storyPackageActivator.js";
 import type { StoryPackageService } from "../storyPackageService.js";
 import type { CharacterService } from "../characterService.js";
-import type { SkillService } from "../skillService.js";
 import type { KnowledgeBaseService } from "../knowledgeBaseService.js";
 import type { ScenarioService } from "../scenarioService.js";
 import type { StoryPackage, Character, Skill, Scenario, KnowledgeDocument } from "@story-game/shared";
@@ -68,27 +67,25 @@ describe("StoryPackageActivator", () => {
   let activator: StoryPackageActivator;
   let mockStoryPackages: StoryPackageService;
   let mockCharacters: CharacterService;
-  let mockSkills: SkillService;
   let mockKnowledgeBase: KnowledgeBaseService;
   let mockScenarios: ScenarioService;
+  let mockSkills: { replaceAll: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn>; list: ReturnType<typeof vi.fn>; clear: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    mockSkills = { replaceAll: vi.fn(), get: vi.fn(), list: vi.fn().mockReturnValue([]), clear: vi.fn() };
     mockStoryPackages = {
       get: vi.fn(),
     } as unknown as StoryPackageService;
     mockCharacters = {
       replaceAll: vi.fn(),
     } as unknown as CharacterService;
-    mockSkills = {
-      replaceAll: vi.fn(),
-    } as unknown as SkillService;
     mockKnowledgeBase = {
       replaceAll: vi.fn(),
     } as unknown as KnowledgeBaseService;
     mockScenarios = {
       replaceAll: vi.fn(),
     } as unknown as ScenarioService;
-    activator = new StoryPackageActivator(mockStoryPackages, mockCharacters, mockSkills, mockKnowledgeBase, mockScenarios);
+    activator = new StoryPackageActivator(mockStoryPackages, mockCharacters, mockKnowledgeBase, mockScenarios, mockSkills as never);
   });
 
   it("activate gets package and replaces all services with its data", () => {
@@ -96,7 +93,6 @@ describe("StoryPackageActivator", () => {
     activator.activate("pkg_001");
     expect(mockStoryPackages.get).toHaveBeenCalledWith("pkg_001");
     expect(mockCharacters.replaceAll).toHaveBeenCalledWith(mockStoryPackage.characters);
-    expect(mockSkills.replaceAll).toHaveBeenCalledWith(mockStoryPackage.skills);
     expect(mockKnowledgeBase.replaceAll).toHaveBeenCalledWith(mockStoryPackage.knowledgeDocuments);
     expect(mockScenarios.replaceAll).toHaveBeenCalledWith([mockStoryPackage.scenario]);
   });
@@ -124,5 +120,39 @@ describe("StoryPackageActivator", () => {
     expect(mockScenarios.replaceAll).toHaveBeenCalledWith(
       expect.arrayContaining([expect.objectContaining({ id: "sc1" })])
     );
+  });
+
+  it("activate merges attack targets from knowledge docs into characters", () => {
+    const pkgWithTargets = structuredClone(mockStoryPackage);
+    pkgWithTargets.knowledgeDocuments = [{
+      ...mockDoc,
+      ownerId: "qiaofeng",
+      content: "可攻击目标：丁春秋\n\n## 技能卡\n\n...",
+    }];
+    pkgWithTargets.characters = [
+      { ...mockCharacter, id: "qiaofeng", attackableTargetIds: [] },
+      { ...mockCharacter, id: "dingchunqiu", name: "丁春秋", attackableTargetIds: [] },
+    ];
+    (mockStoryPackages.get as any).mockReturnValue(pkgWithTargets);
+    activator.activate("pkg_001");
+    const chars = mockCharacters.replaceAll.mock.calls[0][0];
+    const qiaofeng = chars.find((c: any) => c.id === "qiaofeng");
+    expect(qiaofeng.attackableTargetIds).toContain("dingchunqiu");
+  });
+
+  it("activate parses skills from knowledge docs and stores in SkillIndex", () => {
+    const pkgWithSkills = structuredClone(mockStoryPackage);
+    pkgWithSkills.knowledgeDocuments = [{
+      ...mockDoc,
+      ownerId: "xuzhu",
+      content: "## 天山六阳掌\n\n- 内力：30\n- 伤害：35~50\n- 效果：阳刚掌力",
+    }];
+    (mockStoryPackages.get as any).mockReturnValue(pkgWithSkills);
+    activator.activate("pkg_001");
+    expect(mockSkills.replaceAll).toHaveBeenCalled();
+    const parsed = mockSkills.replaceAll.mock.calls[0][0];
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].id).toBe("天山六阳掌");
+    expect(parsed[0].cost.mp).toBe(30);
   });
 });

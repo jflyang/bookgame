@@ -45,26 +45,6 @@
         "main": "assets/performances/123123/audio/qiaofeng_heroic_entrance.mp3"
       }
     },
-    "qiaofeng_heroic_entrance": {
-      "name": "乔峰英雄登场",
-      "renderer": "video",
-      "durationMs": 4200,
-      "trigger": {
-        "type": "firstAppearance",
-        "characterId": "qiaofeng"
-      },
-      "playOnce": "session",
-      "video": {
-        "webm": "assets/performances/qiaofeng_heroic_entrance/video/qiaofeng_heroic_entrance.webm",
-        "mp4": "assets/performances/qiaofeng_heroic_entrance/video/qiaofeng_heroic_entrance.mp4",
-        "poster": "assets/performances/qiaofeng_heroic_entrance/images/qiaofeng_hero_frame.jpg",
-        "containsAudio": true
-      },
-      "layers": {},
-      "audio": {
-        "fallback": "assets/performances/qiaofeng_heroic_entrance/audio/qiaofeng_heroic_entrance.mp3"
-      }
-    },
     "qiao_feng_kang_long_you_hui": {
       "name": "亢龙有悔",
       "renderer": "layeredCss",
@@ -99,9 +79,453 @@
       "audio": {
         "main": "assets/performances/qiao_feng_kang_long_you_hui/audio/kanglong-full-sequence.mp3"
       }
+    },
+    "sfx_qiaofeng_feilong_zaitian": {
+      "name": "飞龙在天",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "qiaofeng",
+        "knowledgeTitle": "降龙十八掌·飞龙在天",
+        "keywords": [
+          "飞龙在天",
+          "降龙十八掌·飞龙在天"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/qing_gong_luo_di_08.wav"
+      }
+    },
+    "sfx_qiaofeng_qinlonggong": {
+      "name": "擒龙功",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "qiaofeng",
+        "knowledgeTitle": "擒龙功",
+        "keywords": [
+          "擒龙功"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/zhang_fa_feng_ya_11.wav"
+      }
+    },
+    "sfx_qiaofeng_haoqi_huti": {
+      "name": "豪气护体",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "qiaofeng",
+        "knowledgeTitle": "豪气护体",
+        "keywords": [
+          "豪气护体"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/zhang_fa_nei_li_bao_10.wav"
+      }
+    },
+    "sfx_qiaofeng_putong_zhangji": {
+      "name": "普通掌击",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "qiaofeng",
+        "knowledgeTitle": "普通掌击",
+        "keywords": [
+          "普通掌击"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/quan_jiao_zhong_quan_05.wav"
+      }
+    },
+    "sfx_xuzhu_tianshan_liuyangzhang": {
+      "name": "天山六阳掌",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xuzhu",
+        "knowledgeTitle": "天山六阳掌",
+        "keywords": [
+          "天山六阳掌"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/zhang_fa_nei_li_bao_10.wav"
+      }
+    },
+    "sfx_xuzhu_tianshan_zhemeishou": {
+      "name": "天山折梅手",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xuzhu",
+        "knowledgeTitle": "天山折梅手",
+        "keywords": [
+          "天山折梅手"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/quan_jiao_ge_dang_07.wav"
+      }
+    },
+    "sfx_xuzhu_beiming_zhenqi": {
+      "name": "北冥真气",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xuzhu",
+        "knowledgeTitle": "北冥真气",
+        "keywords": [
+          "北冥真气"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/zhang_fa_feng_ya_11.wav"
+      }
+    },
+    "sfx_xuzhu_shengsifu_hanyi": {
+      "name": "生死符",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xuzhu",
+        "knowledgeTitle": "生死符·寒意初现",
+        "keywords": [
+          "生死符",
+          "寒意初现"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/dao_jian_lie_kong_02.wav"
+      }
+    },
+    "sfx_xuzhu_fomen_huti": {
+      "name": "佛门护体",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xuzhu",
+        "knowledgeTitle": "佛门护体",
+        "keywords": [
+          "佛门护体"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/zhang_fa_nei_li_bao_10.wav"
+      }
+    },
+    "sfx_xuzhu_putong_zhangji": {
+      "name": "虚竹普通掌击",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xuzhu",
+        "knowledgeTitle": "普通掌击",
+        "keywords": [
+          "普通掌击"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/quan_jiao_zhong_quan_05.wav"
+      }
+    },
+    "sfx_duanyu_lingbo_weibu": {
+      "name": "凌波微步",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "duanyu",
+        "knowledgeTitle": "凌波微步",
+        "keywords": [
+          "凌波微步"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/qing_gong_luo_di_08.wav"
+      }
+    },
+    "sfx_duanyu_liumai_shaoshang": {
+      "name": "少商剑",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "duanyu",
+        "knowledgeTitle": "六脉神剑·少商剑",
+        "keywords": [
+          "少商剑",
+          "六脉神剑·少商剑"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/dao_jian_lie_kong_02.wav"
+      }
+    },
+    "sfx_duanyu_liumai_shangyang": {
+      "name": "商阳剑",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "duanyu",
+        "knowledgeTitle": "六脉神剑·商阳剑",
+        "keywords": [
+          "商阳剑",
+          "六脉神剑·商阳剑"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/dao_jian_kuai_sao_01.wav"
+      }
+    },
+    "sfx_dingchunqiu_huagong_dafa": {
+      "name": "化功大法",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "dingchunqiu",
+        "knowledgeTitle": "化功大法",
+        "keywords": [
+          "化功大法"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/zhang_fa_tui_zhang_09.wav"
+      }
+    },
+    "sfx_dingchunqiu_xingxiu_duwu": {
+      "name": "星宿毒雾",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "dingchunqiu",
+        "knowledgeTitle": "星宿毒雾",
+        "keywords": [
+          "星宿毒雾"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/zhang_fa_feng_ya_11.wav"
+      }
+    },
+    "sfx_dingchunqiu_fushi_duzhang": {
+      "name": "腐尸毒掌",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "dingchunqiu",
+        "knowledgeTitle": "腐尸毒掌",
+        "keywords": [
+          "腐尸毒掌"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/zhang_fa_tui_zhang_09.wav"
+      }
+    },
+    "sfx_dingchunqiu_duwu_dunshen": {
+      "name": "毒雾遁身",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "dingchunqiu",
+        "knowledgeTitle": "毒雾遁身",
+        "keywords": [
+          "毒雾遁身"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/qing_gong_luo_di_08.wav"
+      }
+    },
+    "sfx_dingchunqiu_xingxiu_yaofeng": {
+      "name": "星宿妖风",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "dingchunqiu",
+        "knowledgeTitle": "星宿妖风",
+        "keywords": [
+          "星宿妖风"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/zhang_fa_feng_ya_11.wav"
+      }
+    },
+    "sfx_dingchunqiu_wandu_guizong": {
+      "name": "万毒归宗",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "dingchunqiu",
+        "knowledgeTitle": "万毒归宗",
+        "keywords": [
+          "万毒归宗"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/zhang_fa_nei_li_bao_10.wav"
+      }
+    },
+    "sfx_dingchunqiu_putong_duzhang": {
+      "name": "普通毒掌",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "dingchunqiu",
+        "knowledgeTitle": "普通毒掌",
+        "keywords": [
+          "普通毒掌"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/quan_jiao_kuai_ti_06.wav"
+      }
     }
   },
   "entry": "story.json",
   "createdAt": "2026-05-26T15:15:56.48Z",
-  "updatedAt": "2026-05-27T06:48:53.273Z"
+  "updatedAt": "2026-05-27T15:54:23.694Z"
 }

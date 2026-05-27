@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname } from "node:path";
 import AdmZip from "adm-zip";
-import type { Character, KnowledgeDocument, Scenario, Skill, StoryPackage } from "@story-game/shared";
+import type { Character, KnowledgeDocument, Scenario, StoryPackage } from "@story-game/shared";
 import { storyPackageSchema } from "@story-game/shared";
 import { defaultPromptRules } from "../data/defaultPromptRules.js";
 import { createModuleLogger } from "../utils/logger.js";
@@ -20,7 +20,6 @@ const performanceImageExts = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 
 interface SeedData {
   characters: Character[];
-  skills: Skill[];
   scenarios: Scenario[];
   knowledgeDocuments: KnowledgeDocument[];
 }
@@ -47,14 +46,14 @@ export class StoryPackageService {
     let pkgs = [...this.storyPackages].sort(
       (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
-    if (!opts?.includeHidden) {
-      pkgs = pkgs.filter((p) => !(p as any).hidden);
-    }
-    // Pin default package to top
+    // Pin default package to top FIRST, then filter hidden for the rest
     const defaultIdx = pkgs.findIndex((p) => p.id === DEFAULT_PACKAGE_ID);
     if (defaultIdx > 0) {
       const [def] = pkgs.splice(defaultIdx, 1);
       pkgs.unshift(def);
+    }
+    if (!opts?.includeHidden) {
+      pkgs = pkgs.filter((p) => p.id === DEFAULT_PACKAGE_ID || !(p as any).hidden);
     }
     return pkgs;
   }
@@ -141,17 +140,30 @@ export class StoryPackageService {
   }
 
   savePerformanceImageAsset(id: string, performanceId: string, buffer: Buffer, filename: string) {
+    return this.savePerformanceAsset(id, performanceId, buffer, filename, performanceImageExts, "images", "图片");
+  }
+
+  savePerformanceVideoAsset(id: string, performanceId: string, buffer: Buffer, filename: string) {
+    const videoExts = new Set([".mp4", ".webm"]);
+    return this.savePerformanceAsset(id, performanceId, buffer, filename, videoExts, "video", "视频");
+  }
+
+  private savePerformanceAsset(
+    id: string, performanceId: string,
+    buffer: Buffer, filename: string,
+    allowedExts: Set<string>, subdir: string, label: string
+  ) {
     assertSafeId(id);
     assertSafeId(performanceId, "performanceId");
     const ext = extname(basename(filename)).toLowerCase();
-    if (!performanceImageExts.has(ext)) throw new Error("只支持 png、jpg、jpeg、webp 图片文件");
-    if (buffer.byteLength > maxEntryBytes) throw new Error("图片文件过大");
+    if (!allowedExts.has(ext)) throw new Error(`只支持 ${label}文件`);
+    if (buffer.byteLength > maxEntryBytes) throw new Error(`${label}文件过大`);
 
     const safeName = basename(filename, ext)
       .toLowerCase()
       .replace(/[^a-z0-9_-]+/g, "_")
-      .replace(/^_+|_+$/g, "") || "image";
-    const relPath = `assets/performances/${performanceId}/images/${safeName}${ext}`;
+      .replace(/^_+|_+$/g, "") || subdir;
+    const relPath = `assets/performances/${performanceId}/${subdir}/${safeName}${ext}`;
     const targetPath = resolveInside(this.repository.packageDir(id), relPath);
     const targetDir = dirname(targetPath);
     if (!existsSync(targetDir)) mkdirSync(targetDir, { recursive: true });
@@ -200,6 +212,10 @@ export class StoryPackageService {
       updatedAt: now,
     };
 
+    if (!pkg.promptRules || pkg.promptRules.length === 0) {
+      pkg.promptRules = this.getDefaultPromptRules();
+    }
+
     // Save the JSON
     this.upsert(pkg);
 
@@ -241,6 +257,69 @@ export class StoryPackageService {
 
     logger.info({ id: pkg.id, title: pkg.title }, "story package imported from zip");
     return pkg;
+  }
+
+  /** Import a story package from a JSON buffer. Creates the full directory structure. */
+  importJson(jsonBuffer: Buffer, title?: string) {
+    const raw = jsonBuffer.toString("utf-8");
+    const parsed = JSON.parse(raw);
+    const now = new Date().toISOString();
+
+    // Fill in missing required fields with sensible defaults
+    const pkg: StoryPackage = storyPackageSchema.parse({
+      id: `story_${nanoid(10)}`,
+      title: title || parsed.title || "导入的故事包",
+      description: parsed.description ?? "",
+      thumbnail: parsed.thumbnail,
+      hidden: parsed.hidden ?? false,
+      storySettingPrompt: parsed.storySettingPrompt ?? "",
+      scenario: {
+        id: parsed.scenario?.id ?? `scenario_${nanoid(8)}`,
+        title: parsed.scenario?.title ?? (parsed.title ?? "未命名"),
+        premise: parsed.scenario?.premise ?? "",
+        currentStage: parsed.scenario?.currentStage ?? (parsed.scenario?.stages?.[0] ?? "start"),
+        stages: parsed.scenario?.stages ?? ["start"],
+        stageDetails: parsed.scenario?.stageDetails ?? [],
+        currentGoal: parsed.scenario?.currentGoal ?? "",
+        rules: parsed.scenario?.rules ?? [],
+        initialStates: parsed.scenario?.initialStates ?? [],
+        defaultSpeakerId: parsed.scenario?.defaultSpeakerId,
+      },
+      characters: (parsed.characters ?? []).map((c: Record<string, unknown>) => ({
+        ...c,
+        id: c.id || `char_${nanoid(10)}`,
+        rules: c.rules ?? [],
+        knowledgeBaseIds: c.knowledgeBaseIds ?? [],
+        attackableTargetIds: c.attackableTargetIds ?? [],
+        sourceNote: c.sourceNote,
+      })),
+      knowledgeDocuments: (parsed.knowledgeDocuments ?? []).map((d: Record<string, unknown>) => ({
+        ...d,
+        id: d.id || `kb_${nanoid(10)}`,
+        sourceType: d.sourceType ?? "manual",
+        createdAt: d.createdAt || now,
+        updatedAt: d.updatedAt || now,
+      })),
+      skills: (parsed.skills ?? []).map((s: Record<string, unknown>) => ({
+        ...s,
+        id: s.id || `skill_${nanoid(10)}`,
+      })),
+      promptRules: (parsed.promptRules && parsed.promptRules.length > 0) ? parsed.promptRules : this.getDefaultPromptRules(),
+      debugConfig: parsed.debugConfig ?? { showPromptLayers: false, showRawOutput: false, showValidation: false },
+      uiConfig: parsed.uiConfig,
+      pluginManifest: parsed.pluginManifest,
+      createdAt: parsed.createdAt || now,
+      updatedAt: now,
+    });
+
+    this.upsert(pkg);
+    logger.info({ id: pkg.id, title: pkg.title }, "story package imported from json");
+    return pkg;
+  }
+
+  private getDefaultPromptRules() {
+    const def = this.storyPackages.find((p) => p.id === DEFAULT_PACKAGE_ID);
+    return def?.promptRules ?? defaultPromptRules;
   }
 
   private filePath(id: string) {
@@ -312,7 +391,7 @@ export class StoryPackageService {
       ].join("\n"),
       scenario: structuredClone(seed.scenarios[0]),
       characters: structuredClone(seed.characters),
-      skills: structuredClone(seed.skills),
+      skills: [],
       knowledgeDocuments: structuredClone(seed.knowledgeDocuments),
       promptRules: structuredClone(defaultPromptRules),
       debugConfig: {
@@ -323,7 +402,7 @@ export class StoryPackageService {
       uiConfig: {
         layout: { showCharacterPanel: true, showQuickActions: true, showDiceButton: true, showAutoPlay: true },
         theme: { primaryColor: "#1f5b51", accentColor: "#2b987a", backgroundColor: "#f7f1e7", surfaceColor: "#fffaf2", textColor: "#2f3133", headingFont: "STKaiti", bodyFont: "Inter", navBackground: "#0a1728" },
-        scene: { heading: "山道暮色 · 枯松岭", introNarration: "暮色低垂，枯松岭上寒风凛冽。毒雾从谷底翻涌而上，令人心神俱颤。", emptyTitle: "山道毒雾初起", emptyHint: '点击"继续"让角色轮流推动剧情，也可以点选头像或输入 @角色 指定发言。' },
+        scene: { heading: "", introNarration: "", emptyTitle: "", emptyHint: "" },
         labels: {
           hp: "气血", mp: "内力", characters: "登场角色", lastSpeaker: "上轮发言", continue: "继续",
           autoPlay: "自动继续", send: "发送", manageCharacters: "角色管理", rules: "故事规则",

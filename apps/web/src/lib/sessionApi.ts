@@ -29,24 +29,36 @@ export interface SessionDetail {
   messages: Message[] | null;
 }
 
-export async function fetchSessions(storyPackageId?: string, status?: string) {
+async function parseResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const body = await response.text();
+    try {
+      const parsed = JSON.parse(body);
+      if (parsed?.error) throw new Error(parsed.error);
+    } catch (e) {
+      if (e instanceof Error && e.message !== body) throw e;
+    }
+    throw new Error(body || `Request failed with status ${response.status}`);
+  }
+  return response.json() as Promise<T>;
+}
+
+export async function fetchSessions(storyPackageId?: string, status?: string, limit?: number) {
   const params = new URLSearchParams();
   if (storyPackageId) params.set("storyPackageId", storyPackageId);
   if (status) params.set("status", status);
+  if (limit) params.set("limit", String(limit));
   const qs = params.toString();
   const response = await fetch(`${API_BASE}/api/admin/sessions${qs ? `?${qs}` : ""}`);
-  if (!response.ok) throw new Error(await response.text());
-  return response.json() as Promise<{ sessions: SessionSummary[] }>;
+  return parseResponse<{ sessions: SessionSummary[] }>(response);
 }
 
 export async function fetchSessionDetail(id: string) {
   const response = await fetch(`${API_BASE}/api/admin/sessions/${id}`);
-  if (!response.ok) throw new Error(await response.text());
-  return response.json() as Promise<SessionDetail>;
+  return parseResponse<SessionDetail>(response);
 }
 
 export async function clearSessions() {
   const response = await fetch(`${API_BASE}/api/admin/sessions`, { method: "DELETE" });
-  if (!response.ok) throw new Error(await response.text());
-  return response.json() as Promise<{ ok: boolean }>;
+  return parseResponse<{ ok: boolean }>(response);
 }

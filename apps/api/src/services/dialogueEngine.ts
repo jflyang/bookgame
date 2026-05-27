@@ -14,7 +14,6 @@ import { CharacterService } from "./characterService.js";
 import { GameStateService } from "./gameStateService.js";
 import { MemoryService } from "./memoryService.js";
 import { ScenarioService } from "./scenarioService.js";
-import { SkillService } from "./skillService.js";
 import { StoryPackageService } from "./storyPackageService.js";
 import { KnowledgeBaseService } from "./knowledgeBaseService.js";
 import { StoryPackageActivator } from "./storyPackageActivator.js";
@@ -26,7 +25,6 @@ const logger = createModuleLogger("dialogueEngine");
 export class DialogueEngine {
   constructor(
     private readonly characters: CharacterService,
-    private readonly skills: SkillService,
     private readonly scenarios: ScenarioService,
     private readonly memory: MemoryService,
     private readonly states: GameStateService,
@@ -43,8 +41,8 @@ export class DialogueEngine {
     let storyPackage: StoryPackage | undefined;
     if (input.storyPackageId) {
       storyPackage = this.storyPackageActivator.activate(input.storyPackageId);
-      input.scenarioId = storyPackage.scenario.id;
-      input.characterIds = storyPackage.characters.map((character) => character.id);
+      input.scenarioId = storyPackage!.scenario.id;
+      input.characterIds = storyPackage!.characters.map((character) => character.id);
     }
     const gameState = this.states.createSession(input);
     if (input.storyPackageId) {
@@ -67,11 +65,11 @@ export class DialogueEngine {
         this.sessionCollector.create(gameState.sessionId, storyPackage, gameState);
       } catch (err) { logger.warn({ err }, "failed to persist session"); }
     }
-    return { sessionId: gameState.sessionId, gameState, characters: this.characters.list(), skills: this.skills.list(), knowledgeDocuments: this.knowledgeBase.list() };
+    return { sessionId: gameState.sessionId, gameState, characters: this.characters.list(), skills: [] as any[], knowledgeDocuments: this.knowledgeBase.list() };
   }
 
   getSessionState(sessionId: string) {
-    return { gameState: this.states.get(sessionId), characters: this.characters.list(), skills: this.skills.list(), knowledgeDocuments: this.knowledgeBase.list() };
+    return { gameState: this.states.get(sessionId), characters: this.characters.list(), skills: [] as any[], knowledgeDocuments: this.knowledgeBase.list() };
   }
 
   getMessages(sessionId: string) {
@@ -93,11 +91,11 @@ export class DialogueEngine {
         this.sessionCollector.restore(gameState.sessionId, storyPackageId, storyPackage.title, gameState, messages.length);
       } catch (err) { logger.warn({ err }, "failed to persist restored session"); }
     }
-    return { sessionId: gameState.sessionId, gameState, messages, characters: this.characters.list(), skills: this.skills.list(), knowledgeDocuments: this.knowledgeBase.list() };
+    return { sessionId: gameState.sessionId, gameState, messages, characters: this.characters.list(), skills: [] as any[], knowledgeDocuments: this.knowledgeBase.list() };
   }
 
   getCharacters() {
-    return { characters: this.characters.list(), skills: this.skills.list(), knowledgeDocuments: this.knowledgeBase.list() };
+    return { characters: this.characters.list(), skills: [] as any[], knowledgeDocuments: this.knowledgeBase.list() };
   }
 
   updateCharacter(characterId: CharacterId, character: Character) {

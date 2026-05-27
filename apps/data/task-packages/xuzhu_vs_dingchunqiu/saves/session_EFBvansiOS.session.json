@@ -1,0 +1,174 @@
+{
+  "sessionId": "session_EFBvansiOS",
+  "label": "2026/5/27 21:27:15 起因",
+  "gameState": {
+    "sessionId": "session_EFBvansiOS",
+    "scenarioId": "xuzhu_vs_dingchunqiu",
+    "round": 0,
+    "lastSpeakerId": null,
+    "status": "active",
+    "scenario": {
+      "id": "xuzhu_vs_dingchunqiu",
+      "title": "虚竹除害星宿老怪",
+      "premise": "虚竹得知丁春秋原是逍遥派叛逆，欺师灭祖，另立星宿派并以毒功残害江湖中人；虚竹在乔峰、段誉同行下，决定为逍遥派清理门户。",
+      "currentStage": "origin",
+      "stages": [
+        "origin",
+        "encounter",
+        "escalation",
+        "first_clash",
+        "poison_counter",
+        "fear_retreat",
+        "death_talisman",
+        "defeat",
+        "resolution"
+      ],
+      "stageDetails": [
+        {
+          "id": "origin",
+          "title": "起因",
+          "description": "虚竹得知丁春秋欺师灭祖、另立星宿派并以毒功残害江湖，决定为逍遥派清理门户；乔峰压阵，段誉观察。",
+          "enterWhen": "故事开局或需要交代行动动机时进入。",
+          "guidance": "交代虚竹仁厚但不得不出手的矛盾，让乔峰与段誉自然进入同伴位置，不要提前开战。"
+        },
+        {
+          "id": "encounter",
+          "title": "相遇",
+          "description": "三人在山道旁遇见丁春秋和星宿派弟子，丁春秋轻视虚竹并出言讥讽。",
+          "enterWhen": "角色抵达山道并与丁春秋正面碰面。",
+          "guidance": "用星宿派弟子的吹捧、丁春秋的轻蔑和虚竹的劝诫建立冲突。"
+        },
+        {
+          "id": "escalation",
+          "title": "冲突升级",
+          "description": "丁春秋放出惨绿色毒雾，试图先废虚竹内力；乔峰提醒虚竹先破毒雾。",
+          "enterWhen": "丁春秋拒绝悔改并开始主动施毒。",
+          "guidance": "重点描写毒雾压迫感和虚竹以北冥真气化解毒雾，表现丁春秋首次动摇。"
+        },
+        {
+          "id": "first_clash",
+          "title": "初次交手",
+          "description": "丁春秋施展化功大法贴近虚竹，乔峰提醒掌中有毒，虚竹以天山折梅手拆解毒掌。",
+          "enterWhen": "毒雾被化开后，丁春秋转为近身化功。",
+          "guidance": "让战斗从毒雾转入招式拆解，突出虚竹看似笨拙但功力深厚。"
+        },
+        {
+          "id": "poison_counter",
+          "title": "施毒反扑",
+          "description": "丁春秋恼羞成怒，袖袍震出星宿毒雾，想让三人同时中毒；乔峰以掌风震毒并指挥虚竹攻右肩。",
+          "enterWhen": "丁春秋被逼退后恼怒反扑，毒雾威胁扩大到乔峰与段誉。",
+          "guidance": "推进一次明显反击：乔峰护场，虚竹以天山六阳掌击中丁春秋肩头。"
+        },
+        {
+          "id": "fear_retreat",
+          "title": "畏惧退意",
+          "description": "丁春秋发现虚竹内力深不可测，又有乔峰指点，毒功难以奏效，于是嘲讽拖延并暗中后退。",
+          "enterWhen": "丁春秋受伤、毒功受限，气势明显转弱。",
+          "guidance": "让段誉识破逃意，乔峰提醒虚竹封锁退路，为生死符做铺垫。"
+        },
+        {
+          "id": "death_talisman",
+          "title": "生死符出手",
+          "description": "虚竹不愿用狠招，但见丁春秋执迷不悟，只得弹出生死符制住其经脉。",
+          "enterWhen": "丁春秋试图借毒雾逃走，若放走必继续害人。",
+          "guidance": "表现虚竹的慈悲与决断并存；生死符要像无形寒意入经脉，不要写成直接杀戮。"
+        },
+        {
+          "id": "defeat",
+          "title": "败北",
+          "description": "丁春秋倒地惨叫，星宿派弟子的吹捧戛然而止；乔峰警告丁春秋莫再害人。",
+          "enterWhen": "生死符命中，丁春秋失去继续施毒的能力。",
+          "guidance": "收束战斗张力，描写丁春秋狂态尽失、毒雾消散，但仍保留虚竹不杀他的选择。"
+        },
+        {
+          "id": "resolution",
+          "title": "结局",
+          "description": "丁春秋被生死符制住，星宿派弟子四散逃走；虚竹清理门户但留其性命。",
+          "enterWhen": "丁春秋战败且不再能施毒。",
+          "guidance": "用乔峰肯定、段誉感叹和虚竹合十收尾，强调天理循环与慈悲克制。"
+        }
+      ],
+      "currentGoal": "从山道相遇开始，逐步推进毒雾、化功大法、星宿反扑、丁春秋退意、生死符制敌与最终收束。",
+      "rules": [
+        "不要一次性说完整个故事，每次只推进一小步",
+        "保持武侠战斗张力，乔峰负责提醒和压阵，虚竹负责主要行动，段誉负责观察战局",
+        "每招伤害在技能卡范围内取值",
+        "攻击高取上限，攻击低取下限",
+        "防御高减伤 20%",
+        "克制关系伤害 +50%",
+        "气血归零者败",
+        "丁春秋气血低于 30 时尝试逃跑"
+      ],
+      "initialStates": [
+        {
+          "characterId": "xuzhu",
+          "hp": 360,
+          "mp": 2000,
+          "attack": "中",
+          "defense": "极高",
+          "speed": "极高"
+        },
+        {
+          "characterId": "qiaofeng",
+          "hp": 700,
+          "mp": 800,
+          "attack": "极高",
+          "defense": "高",
+          "speed": "中上"
+        },
+        {
+          "characterId": "duanyu",
+          "hp": 180,
+          "mp": 260,
+          "attack": "低",
+          "defense": "中",
+          "speed": "极高"
+        },
+        {
+          "characterId": "dingchunqiu",
+          "hp": 400,
+          "mp": 180,
+          "attack": "中",
+          "defense": "中",
+          "speed": "中"
+        }
+      ],
+      "defaultSpeakerId": "duanyu"
+    },
+    "characters": [
+      {
+        "characterId": "qiaofeng",
+        "hp": 700,
+        "mp": 800,
+        "conditions": [],
+        "isDefeated": false
+      },
+      {
+        "characterId": "xuzhu",
+        "hp": 360,
+        "mp": 2000,
+        "conditions": [],
+        "isDefeated": false
+      },
+      {
+        "characterId": "duanyu",
+        "hp": 180,
+        "mp": 260,
+        "conditions": [],
+        "isDefeated": false
+      },
+      {
+        "characterId": "dingchunqiu",
+        "hp": 400,
+        "mp": 180,
+        "conditions": [],
+        "isDefeated": false
+      }
+    ],
+    "createdAt": "2026-05-27T13:26:19.980Z",
+    "updatedAt": "2026-05-27T13:26:19.980Z"
+  },
+  "messages": [],
+  "createdAt": "2026-05-27T13:27:15.393Z",
+  "updatedAt": "2026-05-27T13:27:15.393Z"
+}

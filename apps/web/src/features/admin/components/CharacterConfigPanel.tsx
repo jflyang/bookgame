@@ -153,6 +153,7 @@ function RoleEditorPanel({
   onChange,
   ownedDocs,
   initialState,
+  allCharacters,
   onImport,
   onRemoveDoc,
   onSave,
@@ -164,6 +165,7 @@ function RoleEditorPanel({
   onChange: (next: Character) => void;
   ownedDocs: KnowledgeDocument[];
   initialState: { hp: number; mp: number };
+  allCharacters: Character[];
   onImport: (files: FileList | null) => void;
   onRemoveDoc: (id: string) => void;
   onSave: () => void;
@@ -238,6 +240,46 @@ function RoleEditorPanel({
             />
           </label>
         </div>
+      </div>
+
+      {/* 可攻击目标 */}
+      <div className="role-editor-section">
+        <h4 className="role-section-title">可攻击目标</h4>
+        <p className="role-section-desc">
+          选择该角色可以使用技能攻击的目标角色。未选择时，系统将回退到自动选择非己方角色。
+        </p>
+        <div className="attack-targets-grid">
+          {allCharacters
+            .filter((c) => c.id !== draft.id)
+            .map((c) => {
+              const isSelected = (draft.attackableTargetIds ?? []).includes(c.id);
+              return (
+                <label
+                  key={c.id}
+                  className={`attack-target-chip ${isSelected ? "selected" : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => {
+                      const next = isSelected
+                        ? (draft.attackableTargetIds ?? []).filter((id) => id !== c.id)
+                        : [...(draft.attackableTargetIds ?? []), c.id];
+                      onChange({ ...draft, attackableTargetIds: next });
+                    }}
+                  />
+                  <span className="attack-target-avatar" style={{ background: getAvatarBg(c.id) }}>
+                    {isImageAvatar(c.avatar) ? null : getAvatarChar(c.name)}
+                  </span>
+                  <span>{c.name}</span>
+                  <span className="attack-target-role">{c.role}</span>
+                </label>
+              );
+            })}
+        </div>
+        {allCharacters.filter((c) => c.id !== draft.id).length === 0 && (
+          <p className="muted" style={{ marginTop: 8 }}>暂无其他角色可供选择。</p>
+        )}
       </div>
 
       {/* 角色 Prompt */}
@@ -518,7 +560,6 @@ export function CharacterConfigPanel() {
       avatar: "",
       personaPrompt: newForm.personaPrompt,
       rules: [],
-      skillIds: [],
       knowledgeBaseIds: [],
     };
     const nextCharacters = [...characters, newChar];
@@ -576,27 +617,31 @@ export function CharacterConfigPanel() {
 
   async function importMarkdown(files: FileList | null) {
     if (!draft || !files?.length) return;
-    const now = new Date().toISOString();
-    const imported: KnowledgeDocument[] = await Promise.all(
-      Array.from(files).map(async (file) => ({
-        id: `kb_${draft.id}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-        title: file.name.replace(/\.(md|txt)$/i, ""),
-        ownerId: draft.id,
-        content: await file.text(),
-        sourceType: "markdown" as const,
-        createdAt: now,
-        updatedAt: now,
-      })),
-    );
-    const nextDraft = {
-      ...draft,
-      knowledgeBaseIds: [...draft.knowledgeBaseIds, ...imported.map((d) => d.id)],
-    };
-    const nextCharacters = characters.map((c) =>
-      c.id === nextDraft.id ? nextDraft : c,
-    );
-    await saveKnowledgeDocuments([...knowledgeDocuments, ...imported], nextCharacters);
-    setDraft(nextDraft);
+    try {
+      const now = new Date().toISOString();
+      const imported: KnowledgeDocument[] = await Promise.all(
+        Array.from(files).map(async (file) => ({
+          id: `kb_${draft.id}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          title: file.name.replace(/\.(md|txt)$/i, ""),
+          ownerId: draft.id,
+          content: await file.text(),
+          sourceType: "markdown" as const,
+          createdAt: now,
+          updatedAt: now,
+        })),
+      );
+      const nextDraft = {
+        ...draft,
+        knowledgeBaseIds: [...draft.knowledgeBaseIds, ...imported.map((d) => d.id)],
+      };
+      const nextCharacters = characters.map((c) =>
+        c.id === nextDraft.id ? nextDraft : c,
+      );
+      await saveKnowledgeDocuments([...knowledgeDocuments, ...imported], nextCharacters);
+      setDraft(nextDraft);
+    } catch (err) {
+      console.error("Failed to import markdown files:", err);
+    }
   }
 
   async function removeDocument(documentId: string) {
@@ -640,6 +685,7 @@ export function CharacterConfigPanel() {
           onChange={setDraft}
           ownedDocs={ownedDocs}
           initialState={initialStateDraft}
+          allCharacters={characters}
           onImport={importMarkdown}
           onRemoveDoc={removeDocument}
           onSave={() => void handleSaveRole()}

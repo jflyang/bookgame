@@ -48,7 +48,12 @@ export interface StreamDoneEvent {
   debug: Record<string, unknown>;
 }
 
-export type StreamEvent = StreamMetaEvent | StreamTokenEvent | StreamDoneEvent;
+export interface StreamErrorEvent {
+  type: "error";
+  message: string;
+}
+
+export type StreamEvent = StreamMetaEvent | StreamTokenEvent | StreamDoneEvent | StreamErrorEvent;
 
 export async function sendMessageStream(
   sessionId: string,
@@ -86,15 +91,19 @@ export async function sendMessageStream(
         const payload = trimmed.slice(5).trim();
         if (!payload) continue;
 
+        let event: StreamEvent;
         try {
-          const event = JSON.parse(payload) as StreamEvent;
-          if (event.type === "token") onToken(event);
-          else if (event.type === "meta") onMeta(event);
-          else if (event.type === "done") {
-            onDone(event);
-            return;
-          }
-        } catch { /* skip unparseable */ }
+          event = JSON.parse(payload) as StreamEvent;
+        } catch {
+          continue; // skip unparseable JSON lines
+        }
+        if (event.type === "token") onToken(event);
+        else if (event.type === "meta") onMeta(event);
+        else if (event.type === "error") throw new Error(event.message);
+        else if (event.type === "done") {
+          onDone(event);
+          return;
+        }
       }
     }
   } finally {
@@ -116,26 +125,27 @@ export interface SaveMeta {
   updatedAt: string;
 }
 
-export async function listSaves(storyPackageId: string): Promise<SaveMeta[]> {
-  const response = await fetch(`${API_BASE}/api/admin/story-packages/${storyPackageId}/saves`);
-  const data = await parseResponse<{ saves: SaveMeta[] }>(response);
-  return data.saves;
+export interface SaveSlot {
+  slot: number;
+  save: SaveMeta | null;
 }
 
-export async function saveSession(storyPackageId: string, sessionId: string, label: string) {
+export async function listSaves(storyPackageId: string): Promise<SaveSlot[]> {
+  const response = await fetch(`${API_BASE}/api/admin/story-packages/${storyPackageId}/saves`);
+  const data = await parseResponse<{ slots: SaveSlot[] }>(response);
+  return data.slots;
+}
+
+export async function saveSession(storyPackageId: string, sessionId: string, label: string, slot: number) {
   const response = await fetch(`${API_BASE}/api/admin/story-packages/${storyPackageId}/saves`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sessionId, label })
+    body: JSON.stringify({ sessionId, label, slot })
   });
-  return parseResponse<{ save: { sessionId: string; label: string } }>(response);
+  return parseResponse<{ save: { sessionId: string; label: string }; slot: number }>(response);
 }
 
 export async function loadSession(storyPackageId: string, saveId: string): Promise<SessionPayload> {
-  // First get the save data, then restore via game API
-  const saveResponse = await fetch(`${API_BASE}/api/admin/story-packages/${storyPackageId}/saves/${saveId}`);
-  const saveData = await parseResponse<{ save: { sessionId: string; label: string } }>(saveResponse);
-  // Then restore
   const response = await fetch(`${API_BASE}/api/game/sessions/restore`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -144,14 +154,33 @@ export async function loadSession(storyPackageId: string, saveId: string): Promi
   return parseResponse<SessionPayload>(response);
 }
 
-export async function deleteSave(storyPackageId: string, saveId: string) {
-  const response = await fetch(`${API_BASE}/api/admin/story-packages/${storyPackageId}/saves/${saveId}`, {
+export async function loadSessionBySlot(storyPackageId: string, slot: number): Promise<SessionPayload> {
+  const response = await fetch(`${API_BASE}/api/game/sessions/restore`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ storyPackageId, slot })
+  });
+  return parseResponse<SessionPayload>(response);
+}
+
+export async function deleteSave(storyPackageId: string, saveId: string, slot?: number) {
+  const query = slot !== undefined ? `?slot=${slot}` : "";
+  const response = await fetch(`${API_BASE}/api/admin/story-packages/${storyPackageId}/saves/${saveId}${query}`, {
     method: "DELETE"
   });
   return parseResponse<{ ok: boolean }>(response);
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) throw new Error(await response.text());
+  if (!response.ok) {
+    const body = await response.text();
+    try {
+      const parsed = JSON.parse(body);
+      if (parsed?.error) throw new Error(parsed.error);
+    } catch (e) {
+      if (e instanceof Error && e.message !== body) throw e;
+    }
+    throw new Error(body || `Request failed with status ${response.status}`);
+  }
   return response.json() as Promise<T>;
 }

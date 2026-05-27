@@ -126,7 +126,6 @@ function shouldPlayForKnowledgeUse(
   knowledgeDocuments: KnowledgeDocument[]
 ) {
   const trigger = performance.trigger;
-  if (trigger.characterId && latestMessage.speakerId !== trigger.characterId) return false;
 
   const candidates = trigger.matchBoldOnly === false
     ? [latestMessage.content]

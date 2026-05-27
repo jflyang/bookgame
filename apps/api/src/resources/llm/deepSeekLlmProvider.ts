@@ -34,29 +34,38 @@ export class DeepSeekLlmProvider implements LlmProvider {
     }
 
     const start = Date.now();
-    const response = await fetch(`${config.baseUrl.replace(/\/$/, "")}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${config.apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: config.model,
-        temperature: config.temperature,
-        max_tokens: config.maxTokens,
-        response_format: { type: "json_object" },
-        messages: [
-          {
-            role: "system",
-            content: "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。输出格式：{\"speakerId\":\"角色id\",\"narration\":\"旁白叙述\",\"dialogue\":\"角色对话\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId\":\"技能id(可选)\",\"targetIds\":[]},\"stateDeltaSuggestion\":{},\"stageSuggestion\":\"阶段名(可选)\"}"
-          },
-          {
-            role: "user",
-            content: input.prompt
-          }
-        ]
-      })
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
+    let response: Response;
+    try {
+      response = await fetch(`${config.baseUrl.replace(/\/$/, "")}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${config.apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: config.model,
+          temperature: config.temperature,
+          max_tokens: config.maxTokens,
+          response_format: { type: "json_object" },
+          thinking: { type: "disabled" },
+          messages: [
+            {
+              role: "system",
+              content: "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。输出格式：{\"speakerId\":\"角色id\",\"narration\":\"旁白叙述\",\"dialogue\":\"角色对话\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId\":\"技能中文名(仅type=skill时填写,从可用技能列表中选,非skill类型省略此字段)\",\"targetIds\":[\"英文角色ID\"]},\"stateDeltaSuggestion\":{\"角色ID_hp\":-35,\"角色ID_mp\":-20},\"stageSuggestion\":\"阶段名(可选)\"}"
+            },
+            {
+              role: "user",
+              content: input.prompt
+            }
+          ]
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
       throw new Error(`DeepSeek request failed: ${response.status} ${await response.text()}`);
@@ -78,7 +87,26 @@ export class DeepSeekLlmProvider implements LlmProvider {
     const latency = Date.now() - start;
     logger.info({ model: config.model, latency }, "llm complete");
 
-    const output = llmStoryOutputSchema.parse(JSON.parse(content));
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(content);
+    } catch (err) {
+      throw new Error(`DeepSeek 返回了非 JSON 内容（前 200 字符）: ${content.slice(0, 200)}`, { cause: err });
+    }
+
+    // Fallback: ensure action is a valid object with required type field
+    if (parsed && typeof parsed === "object" && "action" in parsed) {
+      const action = (parsed as Record<string, unknown>).action;
+      // If action is a string (e.g. "observe") or array, replace with default object
+      if (typeof action === "string" || Array.isArray(action)) {
+        (parsed as Record<string, unknown>).action = { type: "observe", targetIds: [] };
+      } else if (action && typeof action === "object" && !("type" in action)) {
+        (action as Record<string, unknown>).type = "observe";
+        (action as Record<string, unknown>).targetIds = (action as Record<string, unknown>).targetIds ?? [];
+      }
+    }
+
+    const output = llmStoryOutputSchema.parse(parsed);
     return {
       output,
       raw: content,
@@ -93,30 +121,38 @@ export class DeepSeekLlmProvider implements LlmProvider {
     }
 
     const start = Date.now();
-    const response = await fetch(`${config.baseUrl.replace(/\/$/, "")}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${config.apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: config.model,
-        temperature: config.temperature,
-        max_tokens: config.maxTokens,
-        stream: true,
-        thinking: { type: "disabled" },
-        messages: [
-          {
-            role: "system",
-            content: "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。输出格式：{\"speakerId\":\"角色id\",\"narration\":\"旁白叙述\",\"dialogue\":\"角色对话\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId\":\"技能id(可选)\",\"targetIds\":[]},\"stateDeltaSuggestion\":{},\"stageSuggestion\":\"阶段名(可选)\"}"
-          },
-          {
-            role: "user",
-            content: input.prompt
-          }
-        ]
-      })
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120_000);
+    let response: Response;
+    try {
+      response = await fetch(`${config.baseUrl.replace(/\/$/, "")}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${config.apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: config.model,
+          temperature: config.temperature,
+          max_tokens: config.maxTokens,
+          stream: true,
+          thinking: { type: "disabled" },
+          messages: [
+            {
+              role: "system",
+              content: "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。输出格式：{\"speakerId\":\"角色id\",\"narration\":\"旁白叙述\",\"dialogue\":\"角色对话\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId\":\"技能中文名(仅type=skill时填写,从可用技能列表中选,非skill类型省略此字段)\",\"targetIds\":[\"英文角色ID\"]},\"stateDeltaSuggestion\":{\"角色ID_hp\":-35,\"角色ID_mp\":-20},\"stageSuggestion\":\"阶段名(可选)\"}"
+            },
+            {
+              role: "user",
+              content: input.prompt
+            }
+          ]
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
       throw new Error(`DeepSeek stream request failed: ${response.status} ${await response.text()}`);
@@ -149,8 +185,8 @@ export class DeepSeekLlmProvider implements LlmProvider {
             const delta = parsed?.choices?.[0]?.delta;
             const content = (delta?.content || delta?.reasoning_content) as string | undefined;
             if (content) yield content;
-          } catch {
-            // skip unparseable lines
+          } catch (err) {
+            logger.warn({ err, payload: payload.slice(0, 120) }, "unparseable SSE data line");
           }
         }
       }
