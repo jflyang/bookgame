@@ -6,7 +6,7 @@ import { useGameStore } from "../../../store/gameStore.js";
 import { uploadPerformanceAudio, uploadPerformanceImage, uploadPerformanceVideo } from "../../../lib/adminApi.js";
 
 type PerfRenderer = "audio" | "image" | "video" | "layeredCss" | "none";
-type PerfTriggerType = "knowledgeUse" | "firstAppearance" | "stageEnter";
+type PerfTriggerType = "knowledgeUse" | "firstAppearance" | "stageEnter" | "skillUse" | "messageEvent";
 
 const RENDERER_LABELS: Record<PerfRenderer, string> = {
   audio: "声音", image: "图片", video: "视频", layeredCss: "CSS图层", none: "仅记账",
@@ -16,6 +16,7 @@ const RENDERER_ICONS: Record<PerfRenderer, typeof Music> = {
 };
 const TRIGGER_LABELS: Record<PerfTriggerType, string> = {
   knowledgeUse: "知识库命中", firstAppearance: "首次出场", stageEnter: "阶段进入",
+  skillUse: "技能使用", messageEvent: "消息事件",
 };
 
 interface PerfAssetFile {
@@ -36,6 +37,8 @@ interface PerformanceDraft {
   keywordsText: string;
   durationMs: number;
   playOnce: "session" | "story" | "never";
+  skillId: string;
+  eventId: string;
   containsAudio: boolean;
   // Multi-asset paths (role → path)
   assets: Record<string, string>;
@@ -83,6 +86,8 @@ export function PerformanceConfigPanel() {
       keywordsText: (trigger.keywords ?? []).join("、"),
       durationMs: perf.durationMs,
       playOnce: perf.playOnce,
+      skillId: trigger.skillId ?? "",
+      eventId: trigger.eventId ?? "",
       containsAudio: perf.video?.containsAudio ?? true,
       assets: {
         ...(perf.video?.webm ? { webm: perf.video.webm } : {}),
@@ -188,6 +193,8 @@ export function PerformanceConfigPanel() {
         matchBoldOnly: true,
       } : {}),
       ...(t === "stageEnter" ? { stageId: draft.stageId || undefined } : {}),
+      ...(t === "skillUse" ? { skillId: draft.skillId || undefined } : {}),
+      ...(t === "messageEvent" ? { eventId: draft.eventId || undefined } : {}),
     };
   }
 
@@ -342,6 +349,26 @@ export function PerformanceConfigPanel() {
               </label>
             </>
           )}
+          {draft.triggerType === "skillUse" && (
+            <label className="form-field">
+              <span className="form-label">关联技能</span>
+              <select className="form-input" value={draft.skillId}
+                onChange={(e) => setDraft({ ...draft, skillId: e.target.value })}>
+                <option value="">选择技能</option>
+                {pkg.skills.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.ownerId})</option>)}
+              </select>
+              <span className="form-hint" style={{ marginTop: 4 }}>当 LLM 使用此技能时自动触发对应演出。</span>
+            </label>
+          )}
+          {draft.triggerType === "messageEvent" && (
+            <label className="form-field">
+              <span className="form-label">事件 ID</span>
+              <input className="form-input" value={draft.eventId}
+                onChange={(e) => setDraft({ ...draft, eventId: e.target.value })}
+                placeholder="custom_event_001" />
+              <span className="form-hint" style={{ marginTop: 4 }}>当消息携带此事件 ID 时触发演出（需服务端配合注入 usedSkills）。</span>
+            </label>
+          )}
         </fieldset>
 
         {/* Assets */}
@@ -480,6 +507,8 @@ function makeEmptyDraft(pkg: StoryPackage | null): PerformanceDraft {
     knowledgeTitle: "", keywordsText: "",
     durationMs: 3800,
     playOnce: "session",
+    skillId: "",
+    eventId: "",
     containsAudio: true,
     assets: {},
   };
