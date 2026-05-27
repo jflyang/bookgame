@@ -27,6 +27,7 @@ const mockPackage = {
   id: "pkg1",
   title: "Test Story",
   description: "",
+  hidden: false,
   storySettingPrompt: "",
   scenario: {
     id: "sc1", title: "Test", premise: "", currentStage: "start",

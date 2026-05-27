@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Camera, FileUp, Plus, Save, X } from "lucide-react";
+import { Camera, FileUp, Plus, Save, Trash2, X } from "lucide-react";
 import type { Character, CharacterId, KnowledgeDocument } from "@story-game/shared";
 import { useGameStore } from "../../../store/gameStore.js";
 
@@ -25,7 +25,34 @@ function isImageAvatar(avatar: string) {
 function readAvatarFile(file: File): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      if (!file.type.startsWith("image/")) {
+        resolve(dataUrl);
+        return;
+      }
+      const image = document.createElement("img");
+      image.onload = () => {
+        const maxSize = 512;
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        if (scale === 1 && file.size < 500 * 1024) {
+          resolve(dataUrl);
+          return;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext("2d");
+        if (!context) {
+          resolve(dataUrl);
+          return;
+        }
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.86));
+      };
+      image.onerror = () => resolve(dataUrl);
+      image.src = dataUrl;
+    };
     reader.readAsDataURL(file);
   });
 }
@@ -34,17 +61,11 @@ function readAvatarFile(file: File): Promise<string> {
 
 function RoleCard({
   character,
-  hp,
-  mp,
-  skillCount,
   selected,
   onClick,
   onAvatarUpload,
 }: {
   character: Character;
-  hp: number;
-  mp: number;
-  skillCount: number;
   selected: boolean;
   onClick: () => void;
   onAvatarUpload: (file: File) => void;
@@ -55,8 +76,8 @@ function RoleCard({
       className={`role-card ${selected ? "selected" : ""}`}
       onClick={onClick}
       type="button"
+      aria-label={`编辑角色 ${character.name}`}
     >
-      {selected && <span className="role-card-badge">编辑中</span>}
       <div className="role-card-top">
         <span
           className="role-card-avatar"
@@ -85,13 +106,7 @@ function RoleCard({
         </span>
         <div className="role-card-info">
           <span className="role-card-name">{character.name}</span>
-          <span className="role-card-role">{character.role}</span>
         </div>
-      </div>
-      <div className="role-card-stats">
-        <span className="role-card-stat">气血 {hp}</span>
-        <span className="role-card-stat">内力 {mp}</span>
-        <span className="role-card-stat">技能 {skillCount}</span>
       </div>
     </button>
   );
@@ -101,16 +116,12 @@ function RoleCard({
 
 function RoleCardList({
   characters,
-  initialStates,
-  skills,
   selectedId,
   onSelect,
   onAvatarUpload,
   onAddCharacter,
 }: {
   characters: Character[];
-  initialStates: { characterId: CharacterId; hp: number; mp: number }[];
-  skills: { ownerId: CharacterId }[];
   selectedId: string;
   onSelect: (id: string) => void;
   onAvatarUpload: (characterId: string, file: File) => void;
@@ -119,22 +130,15 @@ function RoleCardList({
   return (
     <aside className="role-card-list">
       <h3 className="role-card-list-title">角色列表</h3>
-      {characters.map((ch) => {
-        const init = initialStates.find((s) => s.characterId === ch.id);
-        const skillCount = skills.filter((s) => s.ownerId === ch.id).length;
-        return (
-          <RoleCard
-            key={ch.id}
-            character={ch}
-            hp={init?.hp ?? 0}
-            mp={init?.mp ?? 0}
-            skillCount={skillCount}
-            selected={selectedId === ch.id}
-            onClick={() => onSelect(ch.id)}
-            onAvatarUpload={(file) => onAvatarUpload(ch.id, file)}
-          />
-        );
-      })}
+      {characters.map((ch) => (
+        <RoleCard
+          key={ch.id}
+          character={ch}
+          selected={selectedId === ch.id}
+          onClick={() => onSelect(ch.id)}
+          onAvatarUpload={(file) => onAvatarUpload(ch.id, file)}
+        />
+      ))}
       <button className="add-character-btn" onClick={onAddCharacter} type="button">
         <Plus size={18} /> 新增角色
       </button>
@@ -148,18 +152,24 @@ function RoleEditorPanel({
   draft,
   onChange,
   ownedDocs,
+  initialState,
   onImport,
   onRemoveDoc,
   onSave,
   onAvatarUpload,
+  onInitialStateChange,
+  onDelete,
 }: {
   draft: Character;
   onChange: (next: Character) => void;
   ownedDocs: KnowledgeDocument[];
+  initialState: { hp: number; mp: number };
   onImport: (files: FileList | null) => void;
   onRemoveDoc: (id: string) => void;
   onSave: () => void;
   onAvatarUpload: (file: File) => void;
+  onInitialStateChange: (field: "hp" | "mp", value: number) => void;
+  onDelete: () => void;
 }) {
   const hasImage = isImageAvatar(draft.avatar);
   return (
@@ -209,6 +219,22 @@ function RoleEditorPanel({
             <input
               value={draft.role}
               onChange={(e) => onChange({ ...draft, role: e.target.value })}
+            />
+          </label>
+          <label className="role-field">
+            <span>初始气血</span>
+            <input
+              type="number"
+              value={initialState.hp}
+              onChange={(e) => onInitialStateChange("hp", Number(e.target.value) || 0)}
+            />
+          </label>
+          <label className="role-field">
+            <span>初始内力</span>
+            <input
+              type="number"
+              value={initialState.mp}
+              onChange={(e) => onInitialStateChange("mp", Number(e.target.value) || 0)}
             />
           </label>
         </div>
@@ -276,8 +302,11 @@ function RoleEditorPanel({
 
       {/* 操作区 */}
       <div className="editor-actions">
-        <button className="btn-continue" onClick={onSave}>
+        <button className="admin-save-button" onClick={onSave}>
           <Save size={16} /> 保存角色
+        </button>
+        <button className="danger-button" onClick={onDelete}>
+          <Trash2 size={16} /> 删除角色
         </button>
       </div>
     </section>
@@ -385,11 +414,11 @@ export function CharacterConfigPanel() {
   const {
     characters,
     knowledgeDocuments,
-    skills,
     storyPackages,
     editingPackageId,
     saveCharacter,
     saveKnowledgeDocuments,
+    saveStoryPackage,
   } = useGameStore();
 
   const storyPackage = useMemo(
@@ -405,12 +434,19 @@ export function CharacterConfigPanel() {
     [characters, selectedId],
   );
   const [draft, setDraft] = useState<Character | null>(selected ?? null);
+  const [initialStateDraft, setInitialStateDraft] = useState<{ hp: number; mp: number }>({ hp: 0, mp: 0 });
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newForm, setNewForm] = useState({ ...DEFAULT_NEW_FORM });
 
   useEffect(() => {
     setDraft(selected ?? null);
   }, [selected]);
+
+  useEffect(() => {
+    if (!selected) return;
+    const initialState = initialStates.find((state) => state.characterId === selected.id);
+    setInitialStateDraft({ hp: initialState?.hp ?? 0, mp: initialState?.mp ?? 0 });
+  }, [selected?.id, storyPackage?.id]);
 
   useEffect(() => {
     if (characters.length > 0 && !characters.find((c) => c.id === selectedId)) {
@@ -421,18 +457,50 @@ export function CharacterConfigPanel() {
   if (!draft && !isAddingNew) return null;
 
   const ownedDocs = draft ? knowledgeDocuments.filter((d) => d.ownerId === draft.id) : [];
-
   async function handleAvatarUpload(characterId: string, file: File) {
     const dataUrl = await readAvatarFile(file);
     const target = characterId === draft?.id ? draft : characters.find((c) => c.id === characterId);
-    if (!target) return;
+    if (!target || !storyPackage) return;
     const updated = { ...target, avatar: dataUrl };
     if (characterId === draft?.id) {
       setDraft(updated);
     }
     const nextCharacters = characters.map((c) => (c.id === characterId ? updated : c));
-    await saveKnowledgeDocuments(knowledgeDocuments, nextCharacters);
-    await saveCharacter(updated);
+    await saveStoryPackage({
+      ...storyPackage,
+      characters: nextCharacters,
+      knowledgeDocuments
+    });
+  }
+
+  function updateInitialState(field: "hp" | "mp", value: number) {
+    setInitialStateDraft((prev) => ({ ...prev, [field]: value }));
+  }
+
+  async function handleSaveRole() {
+    if (!draft) return;
+    if (!storyPackage) {
+      await saveCharacter(draft);
+      return;
+    }
+    const nextCharacters = characters.map((character) => (character.id === draft.id ? draft : character));
+    const existing = storyPackage.scenario.initialStates.find((state) => state.characterId === draft.id);
+    const nextInitialStates = existing
+      ? storyPackage.scenario.initialStates.map((state) =>
+          state.characterId === draft.id ? { ...state, ...initialStateDraft } : state
+        )
+      : [...storyPackage.scenario.initialStates, { characterId: draft.id as CharacterId, ...initialStateDraft }];
+
+    await saveStoryPackage({
+      ...storyPackage,
+      characters: nextCharacters,
+      knowledgeDocuments,
+      scenario: {
+        ...storyPackage.scenario,
+        initialStates: nextInitialStates
+      }
+    });
+    setDraft(draft);
   }
 
   function handleAddCharacter() {
@@ -476,6 +544,34 @@ export function CharacterConfigPanel() {
   function handleCancelAdd() {
     setIsAddingNew(false);
     setNewForm({ ...DEFAULT_NEW_FORM });
+  }
+
+  async function handleDeleteCharacter(characterId: string) {
+    if (characters.length <= 1) {
+      window.alert("至少保留一个角色");
+      return;
+    }
+    const target = characters.find((c) => c.id === characterId);
+    if (!target) return;
+    if (!window.confirm(`确定删除角色 ${target.name}？此操作不可撤销。`)) return;
+
+    const pkg = storyPackages.find((p) => p.id === editingPackageId);
+    if (!pkg) return;
+
+    const nextCharacters = characters.filter((c) => c.id !== characterId);
+    const nextInitialStates = pkg.scenario.initialStates.filter((s) => s.characterId !== characterId);
+    const nextDocs = knowledgeDocuments.filter((d) => d.ownerId !== characterId);
+
+    await saveStoryPackage({
+      ...pkg,
+      characters: nextCharacters,
+      scenario: { ...pkg.scenario, initialStates: nextInitialStates },
+      knowledgeDocuments: nextDocs,
+    });
+
+    if (selectedId === characterId) {
+      setSelectedId(nextCharacters[0]?.id ?? "");
+    }
   }
 
   async function importMarkdown(files: FileList | null) {
@@ -526,8 +622,6 @@ export function CharacterConfigPanel() {
     <div className="role-config-layout">
       <RoleCardList
         characters={characters}
-        initialStates={initialStates}
-        skills={skills}
         selectedId={isAddingNew ? "" : draft?.id ?? ""}
         onSelect={(id) => { setIsAddingNew(false); setSelectedId(id); }}
         onAvatarUpload={handleAvatarUpload}
@@ -545,13 +639,18 @@ export function CharacterConfigPanel() {
           draft={draft}
           onChange={setDraft}
           ownedDocs={ownedDocs}
+          initialState={initialStateDraft}
           onImport={importMarkdown}
           onRemoveDoc={removeDocument}
-          onSave={() => void saveCharacter(draft)}
+          onSave={() => void handleSaveRole()}
           onAvatarUpload={async (file) => {
             const dataUrl = await readAvatarFile(file);
-            setDraft({ ...draft, avatar: dataUrl });
+            const updated = { ...draft, avatar: dataUrl };
+            setDraft(updated);
+            await handleAvatarUpload(draft.id, file);
           }}
+          onInitialStateChange={updateInitialState}
+          onDelete={() => { void handleDeleteCharacter(draft.id); }}
         />
       ) : null}
     </div>

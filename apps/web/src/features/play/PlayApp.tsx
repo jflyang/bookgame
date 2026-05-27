@@ -1,30 +1,36 @@
 import { useEffect, useState } from "react";
-import { BookOpen, CircleHelp, FolderOpen, MoreVertical, RefreshCw, RotateCcw, Save, ScrollText, Send, Settings, X } from "lucide-react";
+import { CircleHelp, FolderOpen, MoreVertical, RefreshCw, RotateCcw, Save, ScrollText, Send, Settings, X } from "lucide-react";
 import { CharacterRail } from "./components/CharacterRail.js";
 import { Composer } from "./components/Composer.js";
 import { MessageList } from "./components/MessageList.js";
 import UiConfigContext, { useLabels, useUiConfig } from "./UiConfigContext.js";
+import { StoryAssetsProvider } from "./contexts/StoryAssetsContext.js";
+import { AudioManagerProvider } from "./contexts/AudioManager.js";
+import { StoryPerformanceRuntime } from "./performances/StoryPerformanceRuntime.js";
+import { useCustomFonts } from "./hooks/useCustomFonts.js";
+import { useCustomCss } from "./hooks/useCustomCss.js";
 import type { UiConfig } from "@story-game/shared";
 import { useGameStore } from "../../store/gameStore.js";
 
 function themeVars(uiConfig?: UiConfig): React.CSSProperties {
   const theme = uiConfig?.theme;
-  if (!theme) return {};
+  const scene = uiConfig?.scene;
   const vars: Record<string, string> = {};
-  if (theme.primaryColor) vars["--color-primary"] = theme.primaryColor;
-  if (theme.accentColor) {
+  if (theme?.primaryColor) vars["--color-primary"] = theme.primaryColor;
+  if (theme?.accentColor) {
     vars["--color-accent"] = theme.accentColor;
     vars["--color-selected-indicator"] = theme.accentColor;
   }
-  if (theme.backgroundColor) vars["--color-bg"] = theme.backgroundColor;
-  if (theme.surfaceColor) vars["--color-surface"] = theme.surfaceColor;
-  if (theme.textColor) vars["--color-text"] = theme.textColor;
-  if (theme.headingFont) {
+  if (theme?.backgroundColor) vars["--color-bg"] = theme.backgroundColor;
+  if (theme?.surfaceColor) vars["--color-surface"] = theme.surfaceColor;
+  if (theme?.textColor) vars["--color-text"] = theme.textColor;
+  if (theme?.headingFont) {
     vars["--font-heading"] = theme.headingFont;
     vars["--font-narrator"] = theme.headingFont;
   }
-  if (theme.bodyFont) vars["--font-body"] = theme.bodyFont;
-  if (theme.navBackground) vars["--color-nav-bg"] = theme.navBackground;
+  if (theme?.bodyFont) vars["--font-body"] = theme.bodyFont;
+  if (theme?.navBackground) vars["--color-nav-bg"] = theme.navBackground;
+  if (scene?.backgroundImage) vars["--stage-bg-image"] = `url(${scene.backgroundImage})`;
   return vars as React.CSSProperties;
 }
 
@@ -80,9 +86,21 @@ export function PlayApp() {
 
   const isCompleted = gameState?.status === "completed";
 
+  const pluginManifest = storyPackage?.pluginManifest ?? null;
+
+  useCustomFonts(pluginManifest, editingPackageId ?? null);
+  useCustomCss(pluginManifest, editingPackageId ?? null);
+
   return (
+    <StoryAssetsProvider packageId={editingPackageId ?? null} manifest={pluginManifest}>
+    <AudioManagerProvider
+      packageId={editingPackageId ?? null}
+      manifest={pluginManifest}
+      currentStage={gameState?.scenario?.currentStage}
+    >
+    <StoryPerformanceRuntime />
     <UiConfigContext.Provider value={uiConfig ?? {} as UiConfig}>
-      <main className="play-shell" style={themeVars(uiConfig)}>
+      <main className="play-shell" style={themeVars(uiConfig)} data-story-plugin={editingPackageId ?? ""}>
         <aside className="play-nav" aria-label="主导航">
           <div className="window-dots" aria-hidden="true"><span /><span /><span /></div>
           <p className="nav-section-title">故事包</p>
@@ -94,8 +112,12 @@ export function PlayApp() {
                 onClick={() => { if (editingPackageId !== pkg.id) void start(pkg.id); }}
                 title={pkg.title}
               >
-                <BookOpen size={20} />
                 <span className="nav-package-title">{pkg.title}</span>
+                {pkg.thumbnail ? (
+                  <img className="nav-package-thumb" src={`${pkg.thumbnail}?t=${pkg.updatedAt ?? Date.now()}`} alt="" />
+                ) : (
+                  <span className="nav-package-thumb placeholder" aria-hidden="true">{pkg.title.charAt(0)}</span>
+                )}
               </button>
             ))}
           </div>
@@ -257,5 +279,7 @@ export function PlayApp() {
         )}
       </main>
     </UiConfigContext.Provider>
+    </AudioManagerProvider>
+    </StoryAssetsProvider>
   );
 }

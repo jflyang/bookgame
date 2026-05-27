@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   characterSchema, skillSchema, scenarioSchema, llmStoryOutputSchema,
-  storyPackageSchema, uiConfigSchema, messageSchema, createSessionRequestSchema
+  storyPackageSchema, uiConfigSchema, messageSchema, createSessionRequestSchema,
+  storyPerformanceTriggerSchema
 } from "./index.js";
 
 describe("characterSchema", () => {
@@ -43,6 +44,18 @@ describe("messageSchema", () => {
   const validMsg = { id: "msg_1", sessionId: "sess_1", role: "assistant" as const, speakerId: "qiaofeng" as const, content: "Hello", usedSkills: [], stateDelta: {}, createdAt: new Date().toISOString() };
   it("accepts valid message", () => { expect(() => messageSchema.parse(validMsg)).not.toThrow(); });
   it("rejects invalid role", () => { expect(() => messageSchema.parse({ ...validMsg, role: "invalid" })).toThrow(); });
+});
+
+describe("storyPerformanceTriggerSchema", () => {
+  it("accepts knowledgeUse triggers for knowledge-driven performances", () => {
+    const parsed = storyPerformanceTriggerSchema.parse({
+      type: "knowledgeUse",
+      characterId: "qiaofeng",
+      knowledgeTitle: "降龙十八掌·亢龙有悔",
+      keywords: ["亢龙有悔"]
+    });
+    expect(parsed.type).toBe("knowledgeUse");
+  });
 });
 
 describe("createSessionRequestSchema", () => {

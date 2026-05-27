@@ -71,7 +71,8 @@ export const scenarioSchema = z.object({
   stageDetails: z.array(scenarioStageDetailSchema).optional().default([]),
   currentGoal: z.string(),
   rules: z.array(z.string()),
-  initialStates: z.array(initialCharacterStateSchema)
+  initialStates: z.array(initialCharacterStateSchema),
+  defaultSpeakerId: safeIdSchema.optional()
 });
 export type Scenario = z.infer<typeof scenarioSchema>;
 
@@ -100,8 +101,8 @@ export const uiLayoutConfigSchema = z.object({
 export type UiLayoutConfig = z.infer<typeof uiLayoutConfigSchema>;
 
 export const uiThemeConfigSchema = z.object({
-  primaryColor: z.string().default("#1f5b51"),
-  accentColor: z.string().default("#2b987a"),
+  primaryColor: z.string().default("#1a6b54"),
+  accentColor: z.string().default("#14b8a6"),
   backgroundColor: z.string().default("#f7f1e7"),
   surfaceColor: z.string().default("#fffaf2"),
   textColor: z.string().default("#2f3133"),
@@ -111,7 +112,9 @@ export const uiThemeConfigSchema = z.object({
 }).default({});
 export type UiThemeConfig = z.infer<typeof uiThemeConfigSchema>;
 
-export const uiSceneConfigSchema = z.object({
+export const uiSceneConfigSchema = z.object({ heading: z.string().default("山道暮色"), introNarration: z.string().default(""), emptyTitle: z.string().default(""), emptyHint: z.string().default(""), backgroundImage: z.string().optional() }).default({});
+
+const _old = z.object({
   heading: z.string().default("山道暮色 · 枯松岭"),
   introNarration: z.string().default("暮色低垂，枯松岭上寒风凛冽。毒雾从谷底翻涌而上，令人心神俱颤。"),
   emptyTitle: z.string().default("山道毒雾初起"),
@@ -156,11 +159,97 @@ export const uiConfigSchema = z.object({
 }).default({});
 export type UiConfig = z.infer<typeof uiConfigSchema>;
 
+// ===== Plugin Manifest (v2 story packages) =====
+
+export const manifestCapabilitiesSchema = z.object({
+  audio: z.boolean().default(false),
+  customFonts: z.boolean().default(false),
+  customCss: z.boolean().default(false),
+  characterPortraits: z.boolean().default(false),
+  backgroundImages: z.boolean().default(false),
+  performances: z.boolean().default(false),
+}).default({});
+export type ManifestCapabilities = z.infer<typeof manifestCapabilitiesSchema>;
+
+export const manifestAudioConfigSchema = z.object({
+  bgm: z.object({
+    default: z.string().optional(),
+    scenes: z.record(z.string(), z.string()).default({}),
+  }).default({}),
+  sfx: z.record(z.string(), z.string()).default({}),
+}).default({});
+export type ManifestAudioConfig = z.infer<typeof manifestAudioConfigSchema>;
+
+export const manifestImagesConfigSchema = z.object({
+  portraits: z.record(z.string(), z.string()).default({}),
+  backgrounds: z.record(z.string(), z.string()).default({}),
+}).default({});
+export type ManifestImagesConfig = z.infer<typeof manifestImagesConfigSchema>;
+
+export const manifestFontsConfigSchema = z.object({
+  heading: z.string().optional(),
+  body: z.string().optional(),
+  ui: z.string().optional(),
+}).default({});
+export type ManifestFontsConfig = z.infer<typeof manifestFontsConfigSchema>;
+
+export const storyPerformanceTriggerSchema = z.object({
+  type: z.enum(["firstAppearance", "skillUse", "stageEnter", "messageEvent", "knowledgeUse"]),
+  characterId: safeIdSchema.optional(),
+  skillId: safeIdSchema.optional(),
+  stageId: z.string().optional(),
+  eventId: safeIdSchema.optional(),
+  knowledgeTitle: z.string().optional(),
+  keywords: z.array(z.string()).optional(),
+  matchBoldOnly: z.boolean().optional(),
+});
+export type StoryPerformanceTrigger = z.infer<typeof storyPerformanceTriggerSchema>;
+
+export const storyPerformanceVideoSchema = z.object({
+  webm: z.string().optional(),
+  mp4: z.string().optional(),
+  poster: z.string().optional(),
+  containsAudio: z.boolean().default(false),
+}).default({});
+export type StoryPerformanceVideo = z.infer<typeof storyPerformanceVideoSchema>;
+
+export const storyPerformanceDefinitionSchema = z.object({
+  name: z.string(),
+  renderer: z.enum(["video", "layeredCss", "audio", "image", "none"]),
+  durationMs: z.number().int().positive().default(3800),
+  trigger: storyPerformanceTriggerSchema,
+  playOnce: z.enum(["session", "story", "never"]).default("session"),
+  video: storyPerformanceVideoSchema.optional(),
+  layers: z.record(z.string(), z.string()).default({}),
+  audio: z.record(z.string(), z.string()).default({}),
+});
+export type StoryPerformanceDefinition = z.infer<typeof storyPerformanceDefinitionSchema>;
+
+export const storyPluginManifestSchema = z.object({
+  id: safeIdSchema,
+  type: z.literal("story-plugin"),
+  schemaVersion: z.literal("2"),
+  title: z.string(),
+  description: z.string().default(""),
+  version: z.string().default("1.0.0"),
+  author: z.string().default(""),
+  capabilities: manifestCapabilitiesSchema,
+  audio: manifestAudioConfigSchema,
+  images: manifestImagesConfigSchema,
+  fonts: manifestFontsConfigSchema,
+  performances: z.record(z.string(), storyPerformanceDefinitionSchema).default({}),
+  entry: z.string().default("story.json"),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type StoryPluginManifest = z.infer<typeof storyPluginManifestSchema>;
+
 export const storyPackageSchema = z.object({
   id: safeIdSchema,
   title: z.string(),
   description: z.string(),
   thumbnail: z.string().optional(),
+  hidden: z.boolean().default(false),
   storySettingPrompt: z.string().default(""),
   scenario: scenarioSchema,
   characters: z.array(characterSchema),
@@ -173,6 +262,7 @@ export const storyPackageSchema = z.object({
     showValidation: z.boolean()
   }),
   uiConfig: uiConfigSchema.optional(),
+  pluginManifest: storyPluginManifestSchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string()
 });
@@ -219,8 +309,14 @@ export type Message = z.infer<typeof messageSchema>;
 
 export const llmActionSchema = z.object({
   type: z.enum(["skill", "observe", "command", "defend", "escape"]),
-  skillId: safeIdSchema.optional(),
-  targetIds: z.array(safeIdSchema).default([])
+  skillId: z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    safeIdSchema.optional()
+  ),
+  targetIds: z.array(z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    safeIdSchema
+  )).default([])
 });
 
 export const llmStoryOutputSchema = z.object({
@@ -284,3 +380,48 @@ export const updateLlmConfigRequestSchema = llmConfigSchema.extend({
   apiKey: z.string().optional()
 });
 export type UpdateLlmConfigRequest = z.infer<typeof updateLlmConfigRequestSchema>;
+
+// ===== Runtime Stats =====
+
+export const runtimeStatsTokenUsageSchema = z.object({
+  promptTokens: z.number().int().nonnegative(),
+  completionTokens: z.number().int().nonnegative(),
+}).nullable();
+export type RuntimeStatsTokenUsage = z.infer<typeof runtimeStatsTokenUsageSchema>;
+
+export const runtimeTurnRecordSchema = z.object({
+  id: z.string(),
+  sessionId: z.string(),
+  round: z.number().int().nonnegative(),
+  speakerId: z.string(),
+  speakerName: z.string(),
+  prompt: z.string(),
+  rawLlmResponse: z.string(),
+  parsedOutput: z.any().nullable(),
+  validationResult: z.enum(["passed", "failed"]),
+  validationErrors: z.array(z.any()).default([]),
+  stateDelta: z.record(z.string(), z.number().int()).nullable(),
+  stageBefore: z.string(),
+  stageAfter: z.string(),
+  latencyMs: z.number().int().nonnegative(),
+  tokenUsage: runtimeStatsTokenUsageSchema,
+  timestamp: z.string(),
+});
+export type RuntimeTurnRecord = z.infer<typeof runtimeTurnRecordSchema>;
+
+export const runtimeStatsAggregateSchema = z.object({
+  totalTurns: z.number().int().nonnegative(),
+  totalSessions: z.number().int().nonnegative(),
+  avgLatencyMs: z.number().nonnegative(),
+  maxLatencyMs: z.number().int().nonnegative(),
+  minLatencyMs: z.number().int().nonnegative(),
+  totalPromptTokens: z.number().int().nonnegative(),
+  totalCompletionTokens: z.number().int().nonnegative(),
+  avgPromptTokens: z.number().nonnegative(),
+  avgCompletionTokens: z.number().nonnegative(),
+  validationPassCount: z.number().int().nonnegative(),
+  validationFailCount: z.number().int().nonnegative(),
+  stageChanges: z.number().int().nonnegative(),
+  activeSpeakers: z.array(z.string()),
+});
+export type RuntimeStatsAggregate = z.infer<typeof runtimeStatsAggregateSchema>;

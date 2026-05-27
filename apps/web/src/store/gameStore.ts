@@ -27,7 +27,7 @@ interface GameStore {
   streamingSpeakerId: string | null;
   streamingSpeakerName: string | null;
   saves: SaveMeta[];
-  loadStoryPackages: () => Promise<void>;
+  loadStoryPackages: (includeHidden?: boolean) => Promise<void>;
   loadLlmConfig: () => Promise<void>;
   saveLlmConfig: (config: LlmConfig) => Promise<void>;
   showLibrary: () => void;
@@ -77,10 +77,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   streamingSpeakerId: null,
   streamingSpeakerName: null,
   saves: [],
-  async loadStoryPackages() {
+  async loadStoryPackages(includeHidden?: boolean) {
     set({ error: null });
     try {
-      const result = await adminApi.listStoryPackages();
+      const result = await adminApi.listStoryPackages(includeHidden);
       set({ storyPackages: result.storyPackages });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : "加载故事列表失败" });

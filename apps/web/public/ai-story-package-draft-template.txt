@@ -1,0 +1,105 @@
+你是互动故事游戏的故事包设计师。请根据我的主题，生成一个可导入系统的 StoryPackageDraft JSON。
+
+主题：
+【在这里写你的故事想法。例如：生成一个三国谋略互动故事，诸葛亮与司马懿隔空斗法，姜维作为年轻行动者参与。】
+
+输出要求：
+1. 只输出合法 JSON，不要 Markdown，不要解释。
+2. 所有 id 必须使用小写英文、数字、下划线，例如 qiaofeng、stage_opening。
+3. 不要输出 createdAt、updatedAt、debugConfig、uiConfig、pluginManifest、promptRules。
+4. 故事阶段 stages 需要 4 到 8 个。
+5. 人物 characters 需要 2 到 6 个。
+6. 每个人物至少 2 个技能。
+7. skills[].ownerId 必须匹配 characters[].id。
+8. scenario.currentStage 必须等于第一个 stage 的 id。
+9. initialStates 必须覆盖所有角色。
+10. knowledgeDocuments 用来写世界观、门派/阵营、技能规则、背景知识，不要写成完整剧情正文。
+11. 每次故事推进只应推进一小步，不要一次说完整结局。
+12. 人物设定 personaPrompt 要详细，包含身份、性格、说话风格、职责、行动策略。
+
+请严格使用这个 JSON 结构：
+
+{
+  "title": "故事标题",
+  "description": "一句话说明这个故事包",
+  "storySettingPrompt": "完整故事设定。包含世界观、开局背景、叙事风格、推进规则。",
+  "scenario": {
+    "title": "场景标题",
+    "premise": "故事前提",
+    "currentStage": "stage_opening",
+    "stages": [
+      "stage_opening",
+      "stage_conflict",
+      "stage_turning_point",
+      "stage_finale"
+    ],
+    "stageDetails": [
+      {
+        "id": "stage_opening",
+        "title": "开局",
+        "description": "这一阶段发生什么",
+        "enterWhen": "什么时候进入这一阶段",
+        "guidance": "大模型推进这一阶段时应注意什么"
+      }
+    ],
+    "currentGoal": "当前目标",
+    "rules": [
+      "规则1",
+      "规则2"
+    ],
+    "initialStates": [
+      {
+        "characterId": "character_id",
+        "hp": 100,
+        "mp": 100,
+        "attack": "攻击特点",
+        "defense": "防御特点",
+        "speed": "速度特点"
+      }
+    ]
+  },
+  "characters": [
+    {
+      "id": "character_id",
+      "name": "角色名",
+      "role": "角色定位",
+      "avatar": "一到两个汉字或 emoji",
+      "personaPrompt": "详细人设提示词",
+      "rules": [
+        "这个角色必须遵守的规则"
+      ],
+      "skillIds": [
+        "skill_id_1",
+        "skill_id_2"
+      ],
+      "knowledgeBaseIds": [
+        "kb_character_id"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "skill_id_1",
+      "name": "技能名",
+      "ownerId": "character_id",
+      "cost": {
+        "mp": 20
+      },
+      "damage": {
+        "min": 10,
+        "max": 25
+      },
+      "effect": "技能效果",
+      "description": "技能演出描述",
+      "sampleLine": "使用技能时可能说的话"
+    }
+  ],
+  "knowledgeDocuments": [
+    {
+      "id": "kb_character_id",
+      "title": "知识库标题",
+      "ownerId": "character_id",
+      "content": "Markdown 格式知识内容"
+    }
+  ]
+}

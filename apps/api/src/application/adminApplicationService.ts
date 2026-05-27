@@ -37,8 +37,8 @@ export class AdminApplicationService {
     return this.dialogueEngine.updateCharacter(character.id, character);
   }
 
-  listStoryPackages() {
-    return this.dialogueEngine.listStoryPackages();
+  listStoryPackages(includeHidden?: boolean) {
+    return this.dialogueEngine.listStoryPackages(includeHidden);
   }
 
   createStoryPackage(title: string, sourcePackageId?: string) {
@@ -89,6 +89,16 @@ export class AdminApplicationService {
     return { ok: true };
   }
 
+  uploadPerformanceAudio(id: string, performanceId: string, buffer: Buffer, filename: string) {
+    const path = this.storyPackages.savePerformanceAudioAsset(id, performanceId, buffer, filename);
+    return { path };
+  }
+
+  uploadPerformanceImage(id: string, performanceId: string, buffer: Buffer, filename: string) {
+    const path = this.storyPackages.savePerformanceImageAsset(id, performanceId, buffer, filename);
+    return { path };
+  }
+
   listSaves(storyPackageId: string) {
     return { saves: this.sessionSaves.list(storyPackageId) };
   }
@@ -107,6 +117,54 @@ export class AdminApplicationService {
   deleteSave(storyPackageId: string, saveId: string) {
     this.sessionSaves.delete(storyPackageId, saveId);
     return { ok: true };
+  }
+
+  async testLlmConnection(config: LlmConfig): Promise<{ ok: boolean; latency: number; error?: string }> {
+    const start = Date.now();
+    try {
+      const testConfig = { ...config };
+      if (!testConfig.apiKey) {
+        testConfig.apiKey = this.llmConfig.getConfig().apiKey;
+      }
+
+      if (testConfig.provider === "mock") {
+        return { ok: true, latency: 0, error: "Mock 模式无需真实连接" };
+      }
+
+      if (!testConfig.apiKey) {
+        return { ok: false, latency: 0, error: "未配置 API Key，请先填写并保存密钥" };
+      }
+
+      const response = await fetch(`${testConfig.baseUrl.replace(/\/$/, "")}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${testConfig.apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: testConfig.model,
+          temperature: 0,
+          max_tokens: 200,
+          messages: [{ role: "user", content: "Hi" }]
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        return { ok: false, latency: Date.now() - start, error: `${response.status} ${errText}` };
+      }
+
+      const data = await response.json() as any;
+      const content = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.message?.reasoning_content;
+      if (!content) {
+        const raw = JSON.stringify(data).slice(0, 300);
+        return { ok: false, latency: Date.now() - start, error: `模型返回空内容，请检查 model 名称是否正确。原始响应: ${raw}` };
+      }
+
+      return { ok: true, latency: Date.now() - start };
+    } catch (err) {
+      return { ok: false, latency: Date.now() - start, error: err instanceof Error ? err.message : "Unknown error" };
+    }
   }
 
   listAuditLog(type?: string, sessionId?: string) {

@@ -5,7 +5,13 @@ export interface LlmRequest {
   prompt: string;
 }
 
+export interface LlmCompletionResult {
+  output: LlmStoryOutput;
+  raw: string;
+  usage?: { promptTokens: number; completionTokens: number };
+}
+
 export interface LlmProvider {
-  complete(input: LlmRequest): Promise<LlmStoryOutput>;
+  complete(input: LlmRequest): Promise<LlmCompletionResult>;
   stream(input: LlmRequest): AsyncIterable<string>;
 }

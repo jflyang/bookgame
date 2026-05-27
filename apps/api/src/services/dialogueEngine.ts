@@ -19,6 +19,7 @@ import { StoryPackageService } from "./storyPackageService.js";
 import { KnowledgeBaseService } from "./knowledgeBaseService.js";
 import { StoryPackageActivator } from "./storyPackageActivator.js";
 import { TurnProcessor } from "./turnProcessor.js";
+import type { SessionCollector } from "../modules/sessions/sessionCollector.js";
 
 const logger = createModuleLogger("dialogueEngine");
 
@@ -34,12 +35,14 @@ export class DialogueEngine {
     private readonly auditLog: AuditLogService,
     private readonly storyPackageActivator: StoryPackageActivator,
     private readonly turnProcessor: TurnProcessor,
-    private readonly sessionStoryPackageIds = new Map<string, string>()
+    private readonly sessionStoryPackageIds = new Map<string, string>(),
+    private readonly sessionCollector?: SessionCollector
   ) {}
 
   createSession(input: CreateSessionRequest) {
+    let storyPackage: StoryPackage | undefined;
     if (input.storyPackageId) {
-      const storyPackage = this.storyPackageActivator.activate(input.storyPackageId);
+      storyPackage = this.storyPackageActivator.activate(input.storyPackageId);
       input.scenarioId = storyPackage.scenario.id;
       input.characterIds = storyPackage.characters.map((character) => character.id);
     }
@@ -59,6 +62,11 @@ export class DialogueEngine {
       sessionId: gameState.sessionId,
       summary: `Session created with story package ${input.storyPackageId ?? "default"}`
     });
+    if (this.sessionCollector && storyPackage) {
+      try {
+        this.sessionCollector.create(gameState.sessionId, storyPackage, gameState);
+      } catch (err) { logger.warn({ err }, "failed to persist session"); }
+    }
     return { sessionId: gameState.sessionId, gameState, characters: this.characters.list(), skills: this.skills.list(), knowledgeDocuments: this.knowledgeBase.list() };
   }
 
@@ -79,6 +87,12 @@ export class DialogueEngine {
     // Restore messages
     this.memory.restore(gameState.sessionId, messages);
     logger.info({ sessionId: gameState.sessionId, storyPackageId }, "session restored");
+    if (this.sessionCollector) {
+      try {
+        const storyPackage = this.storyPackages.get(storyPackageId);
+        this.sessionCollector.restore(gameState.sessionId, storyPackageId, storyPackage.title, gameState, messages.length);
+      } catch (err) { logger.warn({ err }, "failed to persist restored session"); }
+    }
     return { sessionId: gameState.sessionId, gameState, messages, characters: this.characters.list(), skills: this.skills.list(), knowledgeDocuments: this.knowledgeBase.list() };
   }
 
@@ -87,15 +101,26 @@ export class DialogueEngine {
   }
 
   updateCharacter(characterId: CharacterId, character: Character) {
-    return { character: this.characters.update(characterId, character), characters: this.characters.list() };
+    const result = { character: this.characters.update(characterId, character), characters: this.characters.list() };
+    // Persist back to the owning story package
+    for (const pkg of this.storyPackages.list()) {
+      const idx = pkg.characters.findIndex((c) => c.id === characterId);
+      if (idx !== -1) {
+        pkg.characters[idx] = character;
+        pkg.updatedAt = new Date().toISOString();
+        this.storyPackages.upsert(pkg);
+        break;
+      }
+    }
+    return result;
   }
 
   updateScenario(sessionId: string, scenario: Scenario) {
     return { gameState: this.states.updateScenario(sessionId, scenario) };
   }
 
-  listStoryPackages() {
-    return { storyPackages: this.storyPackages.list() };
+  listStoryPackages(includeHidden?: boolean) {
+    return { storyPackages: this.storyPackages.list({ includeHidden }) };
   }
 
   createStoryPackage(title: string, sourcePackageId?: string) {
@@ -120,10 +145,24 @@ export class DialogueEngine {
   }
 
   async sendMessage(sessionId: string, input: SendMessageRequest) {
-    return this.turnProcessor.sendMessage(sessionId, input);
+    const result = await this.turnProcessor.sendMessage(sessionId, input);
+    if (this.sessionCollector) {
+      try {
+        const messages = this.memory.list(sessionId);
+        this.sessionCollector.markActive(sessionId, result.gameState, messages.length);
+      } catch (err) { logger.warn({ err }, "failed to update session after turn"); }
+    }
+    return result;
   }
 
   async *sendMessageStream(sessionId: string, input: SendMessageRequest) {
     yield* this.turnProcessor.sendMessageStream(sessionId, input);
+    if (this.sessionCollector) {
+      try {
+        const gameState = this.states.get(sessionId);
+        const messages = this.memory.list(sessionId);
+        this.sessionCollector.markActive(sessionId, gameState, messages.length);
+      } catch (err) { logger.warn({ err }, "failed to update session after stream"); }
+    }
   }
 }

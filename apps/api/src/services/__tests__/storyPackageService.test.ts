@@ -90,6 +90,30 @@ describe("StoryPackageService", () => {
     expect(() => svc.upsert({ ...structuredClone(svc.list()[0]), id: "../outside" })).toThrow();
   });
 
+  it("saves performance audio assets inside the story package", () => {
+    const pkg = svc.list()[0];
+    const relPath = svc.savePerformanceAudioAsset(pkg.id, "qf_audio", Buffer.from("mp3"), "Palm Hit.mp3");
+    expect(relPath).toBe("assets/performances/qf_audio/audio/palm_hit.mp3");
+    expect(existsSync(join(tmpDir, pkg.id, relPath))).toBe(true);
+  });
+
+  it("rejects non-audio performance assets", () => {
+    const pkg = svc.list()[0];
+    expect(() => svc.savePerformanceAudioAsset(pkg.id, "qf_audio", Buffer.from("bad"), "bad.exe")).toThrow(/只支持/);
+  });
+
+  it("saves performance image assets inside the story package", () => {
+    const pkg = svc.list()[0];
+    const relPath = svc.savePerformanceImageAsset(pkg.id, "qf_image", Buffer.from("png"), "Skill Card.png");
+    expect(relPath).toBe("assets/performances/qf_image/images/skill_card.png");
+    expect(existsSync(join(tmpDir, pkg.id, relPath))).toBe(true);
+  });
+
+  it("rejects non-image performance assets", () => {
+    const pkg = svc.list()[0];
+    expect(() => svc.savePerformanceImageAsset(pkg.id, "qf_image", Buffer.from("bad"), "bad.exe")).toThrow(/只支持/);
+  });
+
   it("migrates legacy flat packages into task package directories", () => {
     const legacyDir = mkdtempSync(join(tmpdir(), "legacy-story-pkg-"));
     const dataDir = mkdtempSync(join(tmpdir(), "task-pkg-data-"));

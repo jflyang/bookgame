@@ -19,9 +19,14 @@ const app = Fastify({
   bodyLimit: 10 * 1024 * 1024
 });
 const port = Number(process.env.PORT ?? 4000);
+const defaultWebOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
+const webOrigins = process.env.WEB_ORIGIN
+  ? process.env.WEB_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean)
+  : defaultWebOrigins;
 
 await app.register(cors, {
-  origin: process.env.WEB_ORIGIN ?? "http://localhost:5173"
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  origin: webOrigins
 });
 
 await app.register(multipart, { limits: { fileSize: 2 * 1024 * 1024 } });

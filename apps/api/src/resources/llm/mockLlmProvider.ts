@@ -1,5 +1,5 @@
 import type { LlmStoryOutput } from "@story-game/shared";
-import type { LlmProvider, LlmRequest } from "./llmProvider.js";
+import type { LlmCompletionResult, LlmProvider, LlmRequest } from "./llmProvider.js";
 
 const samples: Record<string, Partial<LlmStoryOutput>> = {
   qiaofeng: {
@@ -25,19 +25,21 @@ const samples: Record<string, Partial<LlmStoryOutput>> = {
 };
 
 export class MockLlmProvider implements LlmProvider {
-  async complete(input: LlmRequest): Promise<LlmStoryOutput> {
+  async complete(input: LlmRequest): Promise<LlmCompletionResult> {
     const base = samples[input.speakerId] ?? samples.duanyu;
-    return {
+    const output: LlmStoryOutput = {
       speakerId: input.speakerId as LlmStoryOutput["speakerId"],
       narration: base.narration ?? "",
       dialogue: base.dialogue ?? "",
       action: base.action ?? { type: "observe", targetIds: [] },
       stateDeltaSuggestion: {}
     };
+    const raw = JSON.stringify(output);
+    return { output, raw };
   }
 
   async *stream(input: LlmRequest): AsyncIterable<string> {
-    const output = await this.complete(input);
-    yield `${output.narration}\n${output.dialogue}`;
+    const result = await this.complete(input);
+    yield `${result.output.narration}\n${result.output.dialogue}`;
   }
 }

@@ -2,6 +2,8 @@
 
 前后端分离的 LLM 互动故事网页游戏骨架。项目从技术报告抽象出的领域模型重新开始，不依赖旧桌面端代码。
 
+> 给 AI / coding agent 的快速模块索引见 [`AI_GUIDE.md`](./AI_GUIDE.md)。
+
 ## 结构
 
 - `apps/api`: Fastify + TypeScript 后端，负责会话、调度、状态结算、Prompt 编排和 LLM provider 抽象。

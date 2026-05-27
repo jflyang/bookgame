@@ -123,7 +123,7 @@ export function PromptRulesPanel() {
         ))}
       </div>
       <div className="prompt-rules-footer">
-        <button type="button" onClick={() => void saveStoryPackage(activePackage)}><Save size={16} /> 保存规则</button>
+        <button type="button" className="admin-save-button" onClick={() => void saveStoryPackage(activePackage)}><Save size={16} /> 保存规则</button>
         <span>编辑后会写入当前任务包，导出故事包时一起带走。</span>
       </div>
     </section>

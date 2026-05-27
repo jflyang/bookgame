@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import type { CharacterId, Message, SendMessageRequest, StoryPackage } from "@story-game/shared";
-import type { LlmProvider } from "../resources/llm/llmProvider.js";
+import type { LlmCompletionResult, LlmProvider } from "../resources/llm/llmProvider.js";
 import { createModuleLogger } from "../utils/logger.js";
 import type { AuditLogService } from "./auditLogService.js";
 import type { CharacterService } from "./characterService.js";
@@ -10,6 +10,7 @@ import type { PromptService } from "./promptService.js";
 import type { RuleChecker } from "./ruleChecker.js";
 import type { SkillService } from "./skillService.js";
 import type { SpeakerSelector } from "./speakerSelector.js";
+import type { RuntimeStatsCollector } from "../modules/runtime-stats/runtimeStatsCollector.js";
 
 const logger = createModuleLogger("turnProcessor");
 
@@ -24,33 +25,88 @@ export class TurnProcessor {
     private readonly llm: LlmProvider,
     private readonly auditLog: AuditLogService,
     private readonly speakerSelector: SpeakerSelector,
+    private readonly stats: RuntimeStatsCollector,
     private readonly getStoryPackageForSession: (sessionId: string) => StoryPackage | undefined
   ) {}
 
   async sendMessage(sessionId: string, input: SendMessageRequest) {
     const { speakerId, state, storyPackage } = this.prepareTurn(sessionId, input);
+    const round = state.round;
+    const stageBefore = state.scenario.currentStage;
+    const speakerName = this.characters.get(speakerId).name;
     const prompt = this.prompts.buildPrompt(speakerId, state, this.memory.recent(sessionId), input.text, storyPackage);
     logger.debug({ sessionId, promptLength: prompt.length }, "prompt built");
 
-    const rawOutput = await this.llm.complete({ speakerId, prompt });
-    const result = this.applyOutput(sessionId, speakerId, rawOutput);
-    return result;
+    const startTime = Date.now();
+    const llmResult = await this.llm.complete({ speakerId, prompt });
+    const latency = Date.now() - startTime;
+
+    try {
+      const result = this.applyOutput(sessionId, speakerId, llmResult.output);
+      this.stats.recordCompleteTurn({
+        sessionId,
+        round,
+        speakerId,
+        speakerName,
+        prompt,
+        rawLlmResponse: llmResult.raw,
+        parsedOutput: llmResult.output,
+        validationResult: "passed",
+        validationErrors: [],
+        stateDelta: result.message.stateDelta,
+        stageBefore,
+        stageAfter: result.gameState.scenario.currentStage,
+        latencyMs: latency,
+        tokenUsage: llmResult.usage ?? null,
+        timestamp: new Date().toISOString(),
+      });
+      return result;
+    } catch (err) {
+      const validationErrors =
+        err && typeof err === "object" && "issues" in err
+          ? (err as { issues: unknown[] }).issues
+          : [String(err)];
+      this.stats.recordCompleteTurn({
+        sessionId,
+        round,
+        speakerId,
+        speakerName,
+        prompt,
+        rawLlmResponse: llmResult.raw,
+        parsedOutput: null,
+        validationResult: "failed",
+        validationErrors,
+        stateDelta: null,
+        stageBefore,
+        stageAfter: stageBefore,
+        latencyMs: latency,
+        tokenUsage: llmResult.usage ?? null,
+        timestamp: new Date().toISOString(),
+      });
+      throw err;
+    }
   }
 
   async *sendMessageStream(sessionId: string, input: SendMessageRequest) {
     const { speakerId, state, storyPackage } = this.prepareTurn(sessionId, input);
+    const round = state.round;
+    const stageBefore = state.scenario.currentStage;
+    const speakerName = this.characters.get(speakerId).name;
     const prompt = this.prompts.buildPrompt(speakerId, state, this.memory.recent(sessionId), input.text, storyPackage);
 
     logger.info({ sessionId, speakerId, round: state.round }, "stream message processing");
-    yield { type: "meta" as const, speakerId, speakerName: this.characters.get(speakerId).name };
+    yield { type: "meta" as const, speakerId, speakerName };
 
+    const streamStart = Date.now();
     let rawBuffer = "";
     for await (const token of this.llm.stream({ speakerId, prompt })) {
       rawBuffer += token;
       yield { type: "token" as const, token, speakerId };
     }
+    const latency = Date.now() - streamStart;
     logger.debug({ sessionId, speakerId }, "stream response received");
 
+    let parsedOutput: unknown;
     let rawOutput: unknown;
     try {
       rawOutput = JSON.parse(rawBuffer);
@@ -58,17 +114,60 @@ export class TurnProcessor {
       rawOutput = { speakerId, narration: rawBuffer, dialogue: "", action: { type: "command" as const, targetIds: [] } };
     }
 
-    yield { type: "done" as const, ...this.applyOutput(sessionId, speakerId, rawOutput) };
+    try {
+      const result = this.applyOutput(sessionId, speakerId, rawOutput);
+      this.stats.recordCompleteTurn({
+        sessionId,
+        round,
+        speakerId,
+        speakerName,
+        prompt,
+        rawLlmResponse: rawBuffer,
+        parsedOutput: rawOutput,
+        validationResult: "passed",
+        validationErrors: [],
+        stateDelta: result.message.stateDelta,
+        stageBefore,
+        stageAfter: result.gameState.scenario.currentStage,
+        latencyMs: latency,
+        tokenUsage: null,
+        timestamp: new Date().toISOString(),
+      });
+      yield { type: "done" as const, ...result };
+    } catch (err) {
+      const validationErrors =
+        err && typeof err === "object" && "issues" in err
+          ? (err as { issues: unknown[] }).issues
+          : [String(err)];
+      this.stats.recordCompleteTurn({
+        sessionId,
+        round,
+        speakerId,
+        speakerName,
+        prompt,
+        rawLlmResponse: rawBuffer,
+        parsedOutput: null,
+        validationResult: "failed",
+        validationErrors,
+        stateDelta: null,
+        stageBefore,
+        stageAfter: stageBefore,
+        latencyMs: latency,
+        tokenUsage: null,
+        timestamp: new Date().toISOString(),
+      });
+      throw err;
+    }
   }
 
   private prepareTurn(sessionId: string, input: SendMessageRequest) {
     const userMessage = this.createMessage(sessionId, "user", null, input.text, [], {});
     this.memory.append(userMessage);
 
-    const speakerId = this.speakerSelector.select(sessionId, input);
+    const storyPackage = this.getStoryPackageForSession(sessionId);
+    const speakerId = this.speakerSelector.select(sessionId, input, storyPackage?.scenario.defaultSpeakerId);
     const speaker = this.characters.get(speakerId);
     const state = this.states.get(sessionId);
-    const storyPackage = this.getStoryPackageForSession(sessionId);
 
     logger.info({
       sessionId,

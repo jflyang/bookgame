@@ -1,6 +1,6 @@
 import type { Character, GameState, KnowledgeDocument, Message, SendMessageRequest, Skill } from "@story-game/shared";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:4000";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 
 export interface SessionPayload {
   sessionId: string;

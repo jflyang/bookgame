@@ -9,6 +9,7 @@ const pkg: StoryPackage = {
   id: "task_test",
   title: "Task Test",
   description: "A self-contained task package",
+  hidden: false,
   storySettingPrompt: "# Setting",
   scenario: { id: "scenario_test", title: "S", premise: "P", currentStage: "start", stages: ["start"], stageDetails: [], currentGoal: "G", rules: [], initialStates: [] },
   characters: [],

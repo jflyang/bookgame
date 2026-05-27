@@ -12,7 +12,7 @@ export class SpeakerSelector {
     private readonly states: GameStateService
   ) {}
 
-  select(sessionId: string, input: SendMessageRequest): CharacterId {
+  select(sessionId: string, input: SendMessageRequest, defaultSpeakerId?: string): CharacterId {
     if (input.targetCharacterId) {
       logger.debug({ reason: "targetCharacterId", speakerId: input.targetCharacterId }, "speaker selected");
       return input.targetCharacterId;
@@ -30,7 +30,7 @@ export class SpeakerSelector {
       return chosen;
     }
 
-    const fallback = this.characters.list()[0]?.id ?? "qiaofeng";
+    const fallback = defaultSpeakerId ?? this.characters.list()[0]?.id ?? "qiaofeng";
     logger.debug({ reason: "default", speakerId: fallback }, "speaker selected");
     return fallback;
   }

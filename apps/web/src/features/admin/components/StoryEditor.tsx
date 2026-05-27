@@ -9,23 +9,23 @@ import {
   FileText,
   GitBranch,
   HelpCircle,
+  Music2,
   Palette,
   PlayCircle,
   Save,
-  ShieldCheck,
   Trash2,
   Users
 } from "lucide-react";
 import { CharacterConfigPanel } from "./CharacterConfigPanel.js";
-import { DebugPanel } from "./DebugPanel.js";
 import { PromptRulesPanel } from "./PromptRulesPanel.js";
+import { PerformanceConfigPanel } from "./PerformanceConfigPanel.js";
 import { StorySettingPanel } from "./StorySettingPanel.js";
 import { UiConfigPanel } from "./UiConfigPanel.js";
 import { useGameStore } from "../../../store/gameStore.js";
 import { deleteThumbnail, downloadStoryPackage, uploadThumbnail } from "../../../lib/adminApi.js";
 import type { StoryPackage } from "@story-game/shared";
 
-type WorkflowNodeId = "basic" | "scenario" | "characters" | "rules" | "ui" | "debug";
+type WorkflowNodeId = "basic" | "scenario" | "characters" | "performances" | "rules" | "ui";
 
 interface WorkflowNode {
   id: WorkflowNodeId;
@@ -39,9 +39,9 @@ const workflowNodes: WorkflowNode[] = [
   { id: "basic", group: "任务包入口", label: "封面与说明", icon: BookOpen, summary: "玩家在故事库里首先看到的信息。" },
   { id: "scenario", group: "世界设定", label: "剧情设定", icon: GitBranch, summary: "定义世界、冲突、阶段和初始状态。" },
   { id: "characters", group: "角色与知识", label: "角色配置", icon: Users, summary: "决定谁会登场、如何说话、拥有哪些能力。" },
+  { id: "performances", group: "角色与知识", label: "演出配置", icon: Music2, summary: "把知识库触发词绑定到音效或图片演出。" },
   { id: "rules", group: "LLM 发言流程", label: "提示词规则", icon: Bot, summary: "控制模型生成时必须遵守的工作流规则。" },
-  { id: "ui", group: "玩家界面", label: "UI 配置", icon: Palette, summary: "决定玩家端看到的主题、文案和布局。" },
-  { id: "debug", group: "运行校验", label: "调试配置", icon: ShieldCheck, summary: "帮助检查 Prompt、原始输出和校验结果。" }
+  { id: "ui", group: "玩家界面", label: "UI 配置", icon: Palette, summary: "决定玩家端看到的主题、文案和布局。" }
 ];
 
 const nodeGuides: Record<WorkflowNodeId, {
@@ -82,6 +82,16 @@ const nodeGuides: Record<WorkflowNodeId, {
     previewTitle: "角色进入 Prompt 的方式",
     preview: (pkg) => pkg.characters.map((c) => `${c.name}(${c.role})\n${c.personaPrompt.slice(0, 160)}`).join("\n\n")
   },
+  performances: {
+    title: "演出配置",
+    what: "把角色知识库中的粗体触发词绑定到音效或图片，LLM 回复命中时自动展示。",
+    impact: "写入故事包 manifest 的 performances；玩家端收到角色回复后根据知识库粗体命中触发。",
+    advice: "先在角色知识库里写清触发词和输出要求，再在这里填同样的触发词。音频文件建议 1~3 秒。",
+    previewTitle: "已配置演出",
+    preview: (pkg) => Object.entries(pkg.pluginManifest?.performances ?? {})
+      .map(([id, performance]) => `${performance.name} (${id})\n${performance.renderer} · ${performance.trigger.type}`)
+      .join("\n\n")
+  },
   rules: {
     title: "提示词规则",
     what: "这是 LLM 每次发言前必须阅读的规则树，决定它能说什么、不能说什么、输出什么格式。",
@@ -92,29 +102,21 @@ const nodeGuides: Record<WorkflowNodeId, {
   },
   ui: {
     title: "UI 配置",
-    what: "这里定义玩家端界面的布局、主题色、标签文案、场景空状态和头像风格。",
-    impact: "不会改变 LLM 的生成逻辑，但会改变玩家看到的体验、按钮文字和状态展示方式。",
-    advice: "文案要短且明确。颜色要保持对比度，按钮名称要和玩家动作一致。",
-    previewTitle: "玩家界面文案",
+    what: "这里只保留玩家端最常用的界面开关：模块显示、整体风格和头像呈现。",
+    impact: "不会改变 LLM 的生成逻辑，只改变玩家看到的界面结构和视觉氛围。",
+    advice: "先选择整体风格，再决定是否显示角色面板、快捷操作和自动继续。默认文案通常不需要改。",
+    previewTitle: "玩家界面预览",
     preview: (pkg) => [
-      `标题：${pkg.uiConfig?.labels?.interactiveStory ?? "互动故事"}`,
-      `继续按钮：${pkg.uiConfig?.labels?.continue ?? "继续"}`,
-      `场景：${pkg.uiConfig?.scene?.heading ?? pkg.scenario.currentStage}`
+      `角色面板：${pkg.uiConfig?.layout?.showCharacterPanel === false ? "隐藏" : "显示"}`,
+      `快捷操作：${pkg.uiConfig?.layout?.showQuickActions === false ? "隐藏" : "显示"}`,
+      `头像：${pkg.uiConfig?.avatar?.style ?? "gradient"}`
     ].join("\n")
-  },
-  debug: {
-    title: "调试配置",
-    what: "这里控制运行时是否展示 Prompt 分层、原始模型输出和校验结果。",
-    impact: "只影响后台或调试视图，适合作者检查任务包是否按预期运行。",
-    advice: "创作期建议打开 Prompt 分层和校验。正式给玩家使用时可以关闭原始输出。",
-    previewTitle: "当前调试开关",
-    preview: (pkg) => JSON.stringify(pkg.debugConfig, null, 2)
   }
 };
 
 export function StoryEditor() {
-  const { editingPackageId, storyPackages, saveStoryPackage, deleteStoryPackage, showLibrary } = useGameStore();
-  const [activeNodeId, setActiveNodeId] = useState<WorkflowNodeId>("basic");
+  const { editingPackageId, storyPackages, saveStoryPackage, deleteStoryPackage, showLibrary, error } = useGameStore();
+  const [activeNodeId, setActiveNodeId] = useState<WorkflowNodeId>(readActiveNodeFromUrl);
   const storyPackage = useMemo(
     () => storyPackages.find((item) => item.id === editingPackageId) ?? null,
     [editingPackageId, storyPackages]
@@ -155,12 +157,14 @@ export function StoryEditor() {
     setIsUploading(true);
     try {
       const result = await uploadThumbnail(editingPackageId, file);
-      // Reload packages to get the updated thumbnail URL
-      const { loadStoryPackages } = useGameStore.getState();
-      await loadStoryPackages();
+      const currentState = useGameStore.getState();
+      const currentPkg = currentState.storyPackages.find(p => p.id === editingPackageId);
+      if (currentPkg) {
+        await currentState.saveStoryPackage({ ...currentPkg, thumbnail: result.thumbnail });
+      }
       setThumbnailSizeWarning(false);
-    } catch {
-      // silently fail, user can retry
+    } catch (err) {
+      useGameStore.setState({ error: err instanceof Error ? err.message : "缩略图上传失败" });
     } finally {
       setIsUploading(false);
     }
@@ -171,10 +175,13 @@ export function StoryEditor() {
     setIsUploading(true);
     try {
       await deleteThumbnail(editingPackageId);
-      const { loadStoryPackages } = useGameStore.getState();
-      await loadStoryPackages();
-    } catch {
-      // silently fail
+      const currentState = useGameStore.getState();
+      const currentPkg = currentState.storyPackages.find(p => p.id === editingPackageId);
+      if (currentPkg) {
+        await currentState.saveStoryPackage({ ...currentPkg, thumbnail: "" });
+      }
+    } catch (err) {
+      useGameStore.setState({ error: err instanceof Error ? err.message : "缩略图删除失败" });
     } finally {
       setIsUploading(false);
     }
@@ -186,6 +193,12 @@ export function StoryEditor() {
     if (!confirm("确定要删除这个故事包吗？此操作不可撤销。")) return;
     void deleteStoryPackage(pkg.id).then(() => showLibrary());
   }
+  function handleNodeSelect(nodeId: WorkflowNodeId) {
+    setActiveNodeId(nodeId);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", nodeId);
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  }
 
   return (
     <section className="editor-page">
@@ -195,8 +208,9 @@ export function StoryEditor() {
           <p className="editor-eyebrow">TASK PACKAGE WORKFLOW</p>
           <h1 className="editor-title">{pkg.title}</h1>
         </div>
+        {error && <p className="error-banner" style={{ marginTop: 8 }}>{error}</p>}
         <div className="editor-header-actions">
-          <button className="btn-primary" onClick={handleSave}><Save size={16} /> 保存</button>
+          <button className="admin-save-button" onClick={handleSave}><Save size={16} /> 保存</button>
           <button className="btn-secondary" onClick={handleExport}><Download size={16} /> 导出</button>
           <button className="btn-danger" onClick={handleDelete}><Trash2 size={16} /> 删除</button>
         </div>
@@ -230,7 +244,7 @@ export function StoryEditor() {
                   <button
                     key={node.id}
                     className={`workflow-node ${activeNodeId === node.id ? "active" : ""}`}
-                    onClick={() => setActiveNodeId(node.id)}
+                    onClick={() => handleNodeSelect(node.id)}
                     aria-current={activeNodeId === node.id ? "page" : undefined}
                   >
                     <span className="workflow-node-line" aria-hidden="true" />
@@ -288,7 +302,7 @@ export function StoryEditor() {
                   <div className="thumbnail-preview-wrap">
                     <img
                       className="thumbnail-preview-img"
-                      src={pkg.thumbnail}
+                      src={`${pkg.thumbnail}?t=${pkg.updatedAt ?? Date.now()}`}
                       alt="缩略图"
                       onClick={() => fileInputRef.current?.click()}
                       title="点击更换缩略图"
@@ -320,10 +334,10 @@ export function StoryEditor() {
             </div>
           )}
           {activeNodeId === "characters" && <CharacterConfigPanel />}
+          {activeNodeId === "performances" && <PerformanceConfigPanel />}
           {activeNodeId === "scenario" && <StorySettingPanel />}
           {activeNodeId === "rules" && <PromptRulesPanel />}
           {activeNodeId === "ui" && <UiConfigPanel />}
-          {activeNodeId === "debug" && <DebugPanel />}
         </main>
 
         <aside className="workflow-inspector" aria-label="说明和预览">
@@ -386,9 +400,10 @@ function isNodeComplete(id: WorkflowNodeId, pkg: StoryPackage) {
   if (id === "basic") return Boolean(pkg.title && pkg.description);
   if (id === "scenario") return Boolean(pkg.scenario.title && pkg.scenario.currentGoal && pkg.storySettingPrompt);
   if (id === "characters") return pkg.characters.length > 0;
+  if (id === "performances") return Object.keys(pkg.pluginManifest?.performances ?? {}).length > 0;
   if (id === "rules") return pkg.promptRules.some((rule) => rule.enabled);
   if (id === "ui") return Boolean(pkg.uiConfig);
-  return Boolean(pkg.debugConfig);
+  return false;
 }
 
 function getCompletion(pkg: StoryPackage) {
@@ -396,9 +411,9 @@ function getCompletion(pkg: StoryPackage) {
     { label: "入口", done: isNodeComplete("basic", pkg) },
     { label: "世界", done: isNodeComplete("scenario", pkg) },
     { label: "角色", done: isNodeComplete("characters", pkg) },
+    { label: "演出", done: isNodeComplete("performances", pkg) },
     { label: "规则", done: isNodeComplete("rules", pkg) },
-    { label: "界面", done: isNodeComplete("ui", pkg) },
-    { label: "校验", done: isNodeComplete("debug", pkg) }
+    { label: "界面", done: isNodeComplete("ui", pkg) }
   ];
 }
 
@@ -408,9 +423,18 @@ function runtimeSteps(id: WorkflowNodeId) {
     basic: ["玩家选择任务包"],
     scenario: ["创建会话", "组装 Prompt", "状态结算"],
     characters: ["选择发言角色", "组装 Prompt", "状态结算"],
+    performances: ["玩家界面展示"],
     rules: ["组装 Prompt", "LLM 生成", "规则校验"],
-    ui: ["玩家界面展示"],
-    debug: ["LLM 生成", "规则校验"]
+    ui: ["玩家界面展示"]
   };
   return common.map((step) => focus[id].includes(step) ? `${step} · 当前节点影响` : step);
+}
+
+function readActiveNodeFromUrl(): WorkflowNodeId {
+  const tab = new URLSearchParams(window.location.search).get("tab");
+  return isWorkflowNodeId(tab) ? tab : "basic";
+}
+
+function isWorkflowNodeId(value: string | null): value is WorkflowNodeId {
+  return Boolean(value && workflowNodes.some((node) => node.id === value));
 }

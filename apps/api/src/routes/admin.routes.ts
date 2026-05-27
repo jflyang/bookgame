@@ -5,7 +5,10 @@ import {
   updateCharacterRequestSchema,
   updateStoryPackageRequestSchema
 } from "@story-game/shared";
-import { adminApplicationService } from "../modules/container.js";
+import { adminApplicationService, runtimeStatsCollector, sessionCollector, sessionRepository } from "../modules/container.js";
+import { registerRuntimeStatsRoutes } from "../modules/runtime-stats/runtimeStatsRoutes.js";
+import { registerSessionRoutes } from "../modules/sessions/sessionRoutes.js";
+import { gameStateService, memoryService } from "../modules/container.js";
 
 export async function adminRoutes(app: FastifyInstance) {
   app.get("/story-packages/:id/export", async (request, reply) => {
@@ -25,8 +28,9 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.send(adminApplicationService.updateCharacter(input));
   });
 
-  app.get("/story-packages", async (_request, reply) => {
-    return reply.send(adminApplicationService.listStoryPackages());
+  app.get("/story-packages", async (request, reply) => {
+    const { includeHidden } = request.query as { includeHidden?: string };
+    return reply.send(adminApplicationService.listStoryPackages(includeHidden === "true"));
   });
 
   app.post("/story-packages", async (request, reply) => {
@@ -61,6 +65,12 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.send(adminApplicationService.updateLlmConfig(input));
   });
 
+  app.post("/llm-config/test", async (request, reply) => {
+    const input = updateLlmConfigRequestSchema.parse(request.body);
+    const result = await adminApplicationService.testLlmConnection(input);
+    return reply.send(result);
+  });
+
   app.post("/story-packages/:id/thumbnail", async (request, reply) => {
     const { id } = request.params as { id: string };
     const data = await request.file();
@@ -74,13 +84,33 @@ export async function adminRoutes(app: FastifyInstance) {
     const media = adminApplicationService.getMedia(id);
     if (!media) return reply.code(404).send({ error: "Not found" });
     reply.header("Content-Type", media.mime);
-    reply.header("Cache-Control", "public, max-age=3600");
+    reply.header("Cache-Control", "no-cache");
     return reply.send(media.stream);
   });
 
   app.delete("/story-packages/:id/thumbnail", async (request, reply) => {
     const { id } = request.params as { id: string };
     return reply.send(adminApplicationService.deleteThumbnail(id));
+  });
+
+  app.post("/story-packages/:id/performance-audio", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const { performanceId } = request.query as { performanceId?: string };
+    if (!performanceId) return reply.code(400).send({ error: "performanceId is required" });
+    const data = await request.file();
+    if (!data) return reply.code(400).send({ error: "No file uploaded" });
+    const buffer = await data.toBuffer();
+    return reply.send(adminApplicationService.uploadPerformanceAudio(id, performanceId, buffer, data.filename));
+  });
+
+  app.post("/story-packages/:id/performance-image", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const { performanceId } = request.query as { performanceId?: string };
+    if (!performanceId) return reply.code(400).send({ error: "performanceId is required" });
+    const data = await request.file();
+    if (!data) return reply.code(400).send({ error: "No file uploaded" });
+    const buffer = await data.toBuffer();
+    return reply.send(adminApplicationService.uploadPerformanceImage(id, performanceId, buffer, data.filename));
   });
 
   // Session saves -- nested under story-packages
@@ -109,4 +139,7 @@ export async function adminRoutes(app: FastifyInstance) {
     const { type, sessionId } = request.query as { type?: string; sessionId?: string };
     return reply.send(adminApplicationService.listAuditLog(type, sessionId));
   });
+
+  registerRuntimeStatsRoutes(app, runtimeStatsCollector);
+  registerSessionRoutes(app, sessionRepository, gameStateService, memoryService);
 }

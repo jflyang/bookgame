@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
-import { Cpu, Save } from "lucide-react";
+import { Cpu, Check, Save, Zap } from "lucide-react";
 import type { LlmConfig } from "@story-game/shared";
 import { useGameStore } from "../../../store/gameStore.js";
+import { testLlmConnection } from "../../../lib/adminApi.js";
 
 export function LlmConfigPanel() {
   const { llmConfig, loadLlmConfig, saveLlmConfig } = useGameStore();
   const [apiKey, setApiKey] = useState("");
+  const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "fail">("idle");
+  const [testResult, setTestResult] = useState("");
+  const [saved, setSaved] = useState(false);
   const [draft, setDraft] = useState<LlmConfig>({
     provider: "mock",
     baseUrl: "https://api.deepseek.com",
@@ -30,6 +34,24 @@ export function LlmConfigPanel() {
   }, [llmConfig]);
 
   const nextConfig: LlmConfig = apiKey.trim() ? { ...draft, apiKey: apiKey.trim() } : draft;
+
+  async function handleTest() {
+    setTestStatus("testing");
+    setTestResult("");
+    try {
+      const result = await testLlmConnection(nextConfig);
+      if (result.ok) {
+        setTestStatus("success");
+        setTestResult(result.error ?? `连接成功，延迟 ${result.latency}ms`);
+      } else {
+        setTestStatus("fail");
+        setTestResult(result.error ?? "连接失败");
+      }
+    } catch (err) {
+      setTestStatus("fail");
+      setTestResult(err instanceof Error ? err.message : "连接失败");
+    }
+  }
 
   return (
     <section className="panel llm-config">
@@ -80,8 +102,19 @@ export function LlmConfigPanel() {
           placeholder={llmConfig?.hasApiKey ? "已配置，留空则不修改" : "sk-..."}
         />
       </label>
-      <p className="muted">当前密钥状态：{llmConfig?.hasApiKey ? "已配置" : "未配置"}。密钥只保存到后端内存，不会回显到浏览器。</p>
-      <button onClick={() => { void saveLlmConfig(nextConfig); setApiKey(""); }}><Save size={16} /> 保存大模型配置</button>
+      <p className="muted">当前密钥状态：{llmConfig?.hasApiKey ? "已配置" : "未配置"}。密钥持久化保存，不会回显到浏览器。</p>
+      <div className="inline-actions">
+        <button onClick={handleTest} disabled={testStatus === "testing"}>
+          <Zap size={16} /> {testStatus === "testing" ? "测试中..." : "测试连接"}
+        </button>
+        <button onClick={() => { void saveLlmConfig(nextConfig).then(() => { setSaved(true); setApiKey(""); setTimeout(() => setSaved(false), 2500); }); }}><Save size={16} /> 保存大模型配置</button>
+      </div>
+      {saved && (
+        <p className="feedback-toast"><Check size={16} /> 配置已保存</p>
+      )}
+      {testResult && (
+        <p className={`test-result ${testStatus === "success" ? "success" : "error"}`}>{testResult}</p>
+      )}
     </section>
   );
 }

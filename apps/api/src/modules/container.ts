@@ -28,6 +28,9 @@ import { SpeakerSelector } from "../services/speakerSelector.js";
 import { StoryPackageService } from "../services/storyPackageService.js";
 import { StoryPackageActivator } from "../services/storyPackageActivator.js";
 import { TurnProcessor } from "../services/turnProcessor.js";
+import { RuntimeStatsCollector } from "./runtime-stats/runtimeStatsCollector.js";
+import { SessionRepository } from "./sessions/sessionRepository.js";
+import { SessionCollector } from "./sessions/sessionCollector.js";
 
 const auditLogService = new AuditLogService();
 export { auditLogService };
@@ -42,11 +45,12 @@ const dataDir = process.env.GAME_DATA_DIR ? resolve(process.env.GAME_DATA_DIR) :
 const storageDir = join(dataDir, "task-packages");
 const legacyStoryPackagesDir = join(__dirname, "../../story-packages");
 const taskPackageRepository = new TaskPackageRepository(storageDir, { legacyDir: legacyStoryPackagesDir });
+export { taskPackageRepository };
 export const storyPackageService = new StoryPackageService(taskPackageRepository, { characters, skills, scenarios, knowledgeDocuments });
 export const sessionSaveService = new SessionSaveService(taskPackageRepository);
 export const mediaService = new MediaService(taskPackageRepository);
-const memoryService = new MemoryService();
-const gameStateService = new GameStateService(scenarioService);
+export const memoryService = new MemoryService();
+export const gameStateService = new GameStateService(scenarioService);
 const agentService = new AgentService(characterService, knowledgeBaseService);
 const promptService = new PromptService(characterService, agentService);
 const ruleChecker = new RuleChecker();
@@ -57,6 +61,9 @@ const llmProvider = new ConfigurableLlmProvider(llmConfigService, {
 });
 const sessionStoryPackageIds = new Map<string, string>();
 const storyPackageActivator = new StoryPackageActivator(storyPackageService, characterService, skillService, knowledgeBaseService, scenarioService);
+export const runtimeStatsCollector = new RuntimeStatsCollector();
+export const sessionRepository = new SessionRepository();
+export const sessionCollector = new SessionCollector(sessionRepository);
 const speakerSelector = new SpeakerSelector(characterService, gameStateService);
 const turnProcessor = new TurnProcessor(
   characterService,
@@ -68,6 +75,7 @@ const turnProcessor = new TurnProcessor(
   llmProvider,
   auditLogService,
   speakerSelector,
+  runtimeStatsCollector,
   (sessionId) => {
     const storyPackageId = sessionStoryPackageIds.get(sessionId);
     return storyPackageId ? storyPackageService.get(storyPackageId) : undefined;
@@ -85,7 +93,8 @@ export const dialogueEngine = new DialogueEngine(
   auditLogService,
   storyPackageActivator,
   turnProcessor,
-  sessionStoryPackageIds
+  sessionStoryPackageIds,
+  sessionCollector
 );
 
 export const adminApplicationService = new AdminApplicationService(

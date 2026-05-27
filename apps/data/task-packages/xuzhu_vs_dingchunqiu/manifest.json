@@ -1,0 +1,107 @@
+{
+  "id": "xuzhu_vs_dingchunqiu",
+  "type": "story-plugin",
+  "schemaVersion": "2",
+  "title": "虚竹除害星宿老怪",
+  "description": "少林小僧虚竹身负奇缘、慈悲出手，终以绝世武功铲除星宿老怪，为江湖除去一大祸患。",
+  "version": "1.0.0",
+  "author": "",
+  "capabilities": {
+    "audio": true,
+    "customFonts": false,
+    "customCss": false,
+    "characterPortraits": true,
+    "backgroundImages": true,
+    "performances": true
+  },
+  "audio": {
+    "bgm": {
+      "scenes": {}
+    },
+    "sfx": {}
+  },
+  "images": {
+    "portraits": {},
+    "backgrounds": {}
+  },
+  "fonts": {},
+  "performances": {
+    "123123": {
+      "name": "飞龙在天",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "qiaofeng",
+        "keywords": [],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/123123/audio/qiaofeng_heroic_entrance.mp3"
+      }
+    },
+    "qiaofeng_heroic_entrance": {
+      "name": "乔峰英雄登场",
+      "renderer": "video",
+      "durationMs": 4200,
+      "trigger": {
+        "type": "firstAppearance",
+        "characterId": "qiaofeng"
+      },
+      "playOnce": "session",
+      "video": {
+        "webm": "assets/performances/qiaofeng_heroic_entrance/video/qiaofeng_heroic_entrance.webm",
+        "mp4": "assets/performances/qiaofeng_heroic_entrance/video/qiaofeng_heroic_entrance.mp4",
+        "poster": "assets/performances/qiaofeng_heroic_entrance/images/qiaofeng_hero_frame.jpg",
+        "containsAudio": true
+      },
+      "layers": {},
+      "audio": {
+        "fallback": "assets/performances/qiaofeng_heroic_entrance/audio/qiaofeng_heroic_entrance.mp3"
+      }
+    },
+    "qiao_feng_kang_long_you_hui": {
+      "name": "亢龙有悔",
+      "renderer": "layeredCss",
+      "durationMs": 3800,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "qiaofeng",
+        "knowledgeTitle": "降龙十八掌·亢龙有悔",
+        "keywords": [
+          "亢龙有悔",
+          "降龙十八掌·亢龙有悔",
+          "降龙十八掌"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "bg": "assets/performances/qiao_feng_kang_long_you_hui/images/backgrounds/martial-dark-bg.jpg",
+        "characterIdle": "assets/performances/qiao_feng_kang_long_you_hui/images/characters/qiaofeng-idle.png",
+        "characterAttack": "assets/performances/qiao_feng_kang_long_you_hui/images/characters/qiaofeng-attack.png",
+        "title": "assets/performances/qiao_feng_kang_long_you_hui/images/skills/kanglong-title.png",
+        "dragon": "assets/performances/qiao_feng_kang_long_you_hui/images/skills/kanglong-dragon.png",
+        "shockwave": "assets/performances/qiao_feng_kang_long_you_hui/images/skills/kanglong-shockwave.png",
+        "burst": "assets/performances/qiao_feng_kang_long_you_hui/images/skills/kanglong-burst.png",
+        "lightStreak": "assets/performances/qiao_feng_kang_long_you_hui/images/skills/kanglong-light-streak.png",
+        "smoke": "assets/performances/qiao_feng_kang_long_you_hui/images/fx/smoke.png",
+        "flash": "assets/performances/qiao_feng_kang_long_you_hui/images/fx/screen-flash.png"
+      },
+      "audio": {
+        "main": "assets/performances/qiao_feng_kang_long_you_hui/audio/kanglong-full-sequence.mp3"
+      }
+    }
+  },
+  "entry": "story.json",
+  "createdAt": "2026-05-26T15:15:56.48Z",
+  "updatedAt": "2026-05-27T06:48:53.273Z"
+}

@@ -1,6 +1,6 @@
-import { llmStoryOutputSchema, type LlmStoryOutput } from "@story-game/shared";
+import { llmStoryOutputSchema } from "@story-game/shared";
 import type { LlmConfigService } from "./llmConfigService.js";
-import type { LlmProvider, LlmRequest } from "./llmProvider.js";
+import type { LlmCompletionResult, LlmProvider, LlmRequest } from "./llmProvider.js";
 import { createModuleLogger } from "../../utils/logger.js";
 
 const logger = createModuleLogger("llm:deepseek");
@@ -8,17 +8,26 @@ const logger = createModuleLogger("llm:deepseek");
 interface DeepSeekChoice {
   message?: {
     content?: string;
+    reasoning_content?: string;
   };
+  finish_reason?: string;
+}
+
+interface DeepSeekUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
 }
 
 interface DeepSeekResponse {
   choices?: DeepSeekChoice[];
+  usage?: DeepSeekUsage;
 }
 
 export class DeepSeekLlmProvider implements LlmProvider {
   constructor(private readonly configService: LlmConfigService) {}
 
-  async complete(input: LlmRequest): Promise<LlmStoryOutput> {
+  async complete(input: LlmRequest): Promise<LlmCompletionResult> {
     const config = this.configService.getConfig();
     if (!config.apiKey) {
       throw new Error("DeepSeek API key is not configured");
@@ -39,7 +48,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
         messages: [
           {
             role: "system",
-            content: "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。"
+            content: "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。输出格式：{\"speakerId\":\"角色id\",\"narration\":\"旁白叙述\",\"dialogue\":\"角色对话\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId\":\"技能id(可选)\",\"targetIds\":[]},\"stateDeltaSuggestion\":{},\"stageSuggestion\":\"阶段名(可选)\"}"
           },
           {
             role: "user",
@@ -54,11 +63,27 @@ export class DeepSeekLlmProvider implements LlmProvider {
     }
 
     const data = (await response.json()) as DeepSeekResponse;
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) throw new Error("DeepSeek response did not include message content");
+    const msg = data.choices?.[0]?.message;
+    const content = msg?.content || msg?.reasoning_content;
+    if (!content) {
+      const finishReason = data.choices?.[0]?.finish_reason;
+      const usage = data.usage;
+      throw new Error(
+        `DeepSeek 返回空内容（finish_reason: ${finishReason ?? "N/A"}, ` +
+        `prompt_tokens: ${usage?.prompt_tokens ?? "?"}, completion_tokens: ${usage?.completion_tokens ?? "?"}）。` +
+        `可能是 max_tokens 不够或模型不支持 response_format。`
+      );
+    }
 
-    logger.info({ model: config.model, latency: Date.now() - start }, "llm complete");
-    return llmStoryOutputSchema.parse(JSON.parse(content));
+    const latency = Date.now() - start;
+    logger.info({ model: config.model, latency }, "llm complete");
+
+    const output = llmStoryOutputSchema.parse(JSON.parse(content));
+    return {
+      output,
+      raw: content,
+      usage: data.usage ? { promptTokens: data.usage.prompt_tokens, completionTokens: data.usage.completion_tokens } : undefined
+    };
   }
 
   async *stream(input: LlmRequest): AsyncIterable<string> {
@@ -79,11 +104,11 @@ export class DeepSeekLlmProvider implements LlmProvider {
         temperature: config.temperature,
         max_tokens: config.maxTokens,
         stream: true,
-        response_format: { type: "json_object" },
+        thinking: { type: "disabled" },
         messages: [
           {
             role: "system",
-            content: "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。"
+            content: "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。输出格式：{\"speakerId\":\"角色id\",\"narration\":\"旁白叙述\",\"dialogue\":\"角色对话\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId\":\"技能id(可选)\",\"targetIds\":[]},\"stateDeltaSuggestion\":{},\"stageSuggestion\":\"阶段名(可选)\"}"
           },
           {
             role: "user",
@@ -121,7 +146,8 @@ export class DeepSeekLlmProvider implements LlmProvider {
 
           try {
             const parsed = JSON.parse(payload);
-            const content = parsed?.choices?.[0]?.delta?.content as string | undefined;
+            const delta = parsed?.choices?.[0]?.delta;
+            const content = (delta?.content || delta?.reasoning_content) as string | undefined;
             if (content) yield content;
           } catch {
             // skip unparseable lines

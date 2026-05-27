@@ -1,6 +1,7 @@
 import { Swords } from "lucide-react";
 import type { Character } from "@story-game/shared";
 import { useUiConfig } from "../UiConfigContext.js";
+import { useStoryAssets } from "../contexts/StoryAssetsContext.js";
 import { useGameStore } from "../../../store/gameStore.js";
 
 export function MessageList({ characters }: { characters: Character[] }) {
@@ -11,23 +12,37 @@ export function MessageList({ characters }: { characters: Character[] }) {
   const streamingSpeakerName = useGameStore((state) => state.streamingSpeakerName);
   const skills = useGameStore((state) => state.skills);
   const uiConfig = useUiConfig();
+  const { getPortraitUrl } = useStoryAssets();
   const scene = uiConfig?.scene;
   const avatarStyle = uiConfig?.avatar?.style ?? "gradient";
 
+  function isImageAvatar(avatar: string | undefined) {
+    return Boolean(avatar?.startsWith("data:image") || avatar?.startsWith("http"));
+  }
+
   function avatarElement(characterId: string | null | undefined, avatarText: string | undefined) {
-    if (avatarStyle === "emoji") {
+    const portraitUrl = characterId ? getPortraitUrl(characterId) : null;
+    if (portraitUrl) {
       return (
-        <span className="avatar portrait-avatar" style={{ fontSize: "1.4rem", lineHeight: "52px", textAlign: "center" }}>
-          {avatarText ?? "?"}
-        </span>
+        <span
+          className="avatar portrait-avatar image-avatar"
+          style={{ backgroundImage: `url(${portraitUrl})` }}
+        />
       );
     }
-    if (avatarStyle === "url" && avatarText?.startsWith("http")) {
+    if (isImageAvatar(avatarText)) {
       return (
-        <span className="avatar portrait-avatar" style={{
-          background: `url(${avatarText}) center/cover`,
-          border: "2px solid rgba(255,255,255,0.74)"
-        }} />
+        <span
+          className="avatar portrait-avatar image-avatar"
+          style={{ backgroundImage: `url(${avatarText})` }}
+        />
+      );
+    }
+    if (avatarStyle === "emoji") {
+      return (
+        <span className="avatar portrait-avatar text-avatar">
+          {avatarText ?? "?"}
+        </span>
       );
     }
     return (
@@ -91,7 +106,7 @@ export function MessageList({ characters }: { characters: Character[] }) {
                     {avatarElement(character?.id, character?.avatar)}
                     <div className="dialogue-body">
                       <div className="dialogue-name">{character?.name ?? "旁白"}</div>
-                      <p>{message.content}</p>
+                      <p>{renderInlineMarkdown(message.content)}</p>
                       {messageSkills.length > 0 && (
                         <div className="message-skills">
                           {messageSkills.map((skill) => skill && (
@@ -116,7 +131,7 @@ export function MessageList({ characters }: { characters: Character[] }) {
               {avatarElement(streamingSpeakerId, characters.find((c) => c.id === streamingSpeakerId)?.avatar)}
               <div className="dialogue-body">
                 <div className="dialogue-name">{streamingSpeakerName ?? "thinking..."}</div>
-                <p className="streaming-cursor">{streamingContent}</p>
+                <p className="streaming-cursor">{renderInlineMarkdown(streamingContent)}</p>
               </div>
             </div>
           </article>
@@ -124,4 +139,12 @@ export function MessageList({ characters }: { characters: Character[] }) {
       </div>
     </div>
   );
+}
+
+function renderInlineMarkdown(content: string) {
+  return content.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+    const bold = part.match(/^\*\*([^*]+)\*\*$/);
+    if (!bold) return part;
+    return <strong key={`${bold[1]}-${index}`}>{bold[1]}</strong>;
+  });
 }

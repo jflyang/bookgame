@@ -35,6 +35,8 @@ export class PromptService {
       "你正在驱动一个多人角色互动故事游戏。每次只有一个角色发言。",
       "当前发言者只能扮演自己，不能替其他角色说话、行动或描写心理。",
       "输出必须是符合约定 schema 的 JSON：speakerId,narration,dialogue,action,stateDeltaSuggestion,stageSuggestion。",
+      "当你使用当前角色知识库中的招式、设定、称号、道具或关键知识时，必须把对应的关键词或短句用 **粗体** 标出；未使用知识库内容时不要强行加粗。",
+      "如果知识库技能卡写有“表演”或“触发词”，你可以根据剧情自然决定是否发动；发动时必须加粗该招式名或触发词。",
       ...this.renderRules(enabledRules, {
         currentCharacterName: speaker.name,
         otherCharacterNames,

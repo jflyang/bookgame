@@ -1,6 +1,6 @@
 import type { Character, LlmConfig, LlmConfigView, StoryPackage } from "@story-game/shared";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:4000";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 
 export async function updateCharacter(character: Character) {
   const response = await fetch(`${API_BASE}/api/admin/characters/${character.id}`, {
@@ -11,8 +11,9 @@ export async function updateCharacter(character: Character) {
   return parseResponse<{ character: Character; characters: Character[] }>(response);
 }
 
-export async function listStoryPackages() {
-  const response = await fetch(`${API_BASE}/api/admin/story-packages`);
+export async function listStoryPackages(includeHidden?: boolean) {
+  const qs = includeHidden ? "?includeHidden=true" : "";
+  const response = await fetch(`${API_BASE}/api/admin/story-packages${qs}`);
   return parseResponse<{ storyPackages: StoryPackage[] }>(response);
 }
 
@@ -53,6 +54,15 @@ export async function updateLlmConfig(config: LlmConfig) {
   return parseResponse<{ llmConfig: LlmConfigView }>(response);
 }
 
+export async function testLlmConnection(config: LlmConfig) {
+  const response = await fetch(`${API_BASE}/api/admin/llm-config/test`, {
+    method: "POST",
+    headers: jsonHeaders(),
+    body: JSON.stringify(config)
+  });
+  return parseResponse<{ ok: boolean; latency?: number; error?: string }>(response);
+}
+
 export function downloadStoryPackage(id: string) {
   const url = `${API_BASE}/api/admin/story-packages/${id}/export`;
   const link = document.createElement("a");
@@ -89,6 +99,32 @@ export async function deleteThumbnail(id: string) {
     method: "DELETE",
   });
   return parseResponse<{ ok: boolean }>(response);
+}
+
+export async function uploadPerformanceAudio(id: string, performanceId: string, file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch(
+    `${API_BASE}/api/admin/story-packages/${id}/performance-audio?performanceId=${encodeURIComponent(performanceId)}`,
+    {
+      method: "POST",
+      body: form,
+    }
+  );
+  return parseResponse<{ path: string }>(response);
+}
+
+export async function uploadPerformanceImage(id: string, performanceId: string, file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch(
+    `${API_BASE}/api/admin/story-packages/${id}/performance-image?performanceId=${encodeURIComponent(performanceId)}`,
+    {
+      method: "POST",
+      body: form,
+    }
+  );
+  return parseResponse<{ path: string }>(response);
 }
 
 function jsonHeaders() {

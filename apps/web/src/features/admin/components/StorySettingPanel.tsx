@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Eraser, FileText, Plus, Save, Settings2, ShieldCheck, Trash2 } from "lucide-react";
-import type { Scenario, InitialCharacterState, ScenarioStageDetail } from "@story-game/shared";
+import { Eraser, FileText, Plus, Save, Settings2, Trash2 } from "lucide-react";
+import type { Scenario, ScenarioStageDetail } from "@story-game/shared";
 import { useGameStore } from "../../../store/gameStore.js";
 
 export function StorySettingPanel() {
-  const { editingPackageId, storyPackages, saveScenario, saveStoryPackage } = useGameStore();
+  const { editingPackageId, storyPackages, saveStoryPackage } = useGameStore();
   const storyPackage = storyPackages.find((item) => item.id === editingPackageId);
   const scenario = storyPackage?.scenario;
 
@@ -15,8 +15,8 @@ export function StorySettingPanel() {
   const [currentGoal, setCurrentGoal] = useState(scenario?.currentGoal ?? "");
   const [rulesText, setRulesText] = useState(scenario?.rules?.join("\n") ?? "");
   const [storySettingPrompt, setStorySettingPrompt] = useState(storyPackage?.storySettingPrompt ?? "");
-  const [initialStates, setInitialStates] = useState<InitialCharacterState[]>(scenario?.initialStates ?? []);
   const [stageDetails, setStageDetails] = useState<ScenarioStageDetail[]>(buildStageDetails(scenario?.stages ?? [], scenario?.stageDetails ?? []));
+  const [defaultSpeakerId, setDefaultSpeakerId] = useState(scenario?.defaultSpeakerId ?? "");
   const hasDuplicatedStateHints = /初始状态|状态格式|\[状态\]/.test(storySettingPrompt);
 
   useEffect(() => {
@@ -27,18 +27,18 @@ export function StorySettingPanel() {
     setCurrentGoal(scenario?.currentGoal ?? "");
     setRulesText(scenario?.rules?.join("\n") ?? "");
     setStorySettingPrompt(storyPackage?.storySettingPrompt ?? "");
-    setInitialStates(scenario?.initialStates ?? []);
     setStageDetails(buildStageDetails(scenario?.stages ?? [], scenario?.stageDetails ?? []));
+    setDefaultSpeakerId(scenario?.defaultSpeakerId ?? "");
   }, [storyPackage?.id, scenario?.title]);
 
   if (!storyPackage || !scenario) return null;
   const safeScenario = scenario;
   const safePackage = storyPackage;
 
-  function handleSaveScenario() {
+  function buildScenario(): Scenario {
     const stages = stagesText.split(",").map((s) => s.trim()).filter(Boolean);
     const rules = rulesText.split("\n").map((s) => s.trim()).filter(Boolean);
-    const next: Scenario = {
+    return {
       id: safeScenario.id,
       title,
       premise,
@@ -47,19 +47,19 @@ export function StorySettingPanel() {
       stageDetails: buildStageDetails(stages.length > 0 ? stages : [...safeScenario.stages], stageDetails),
       currentGoal,
       rules: rules.length > 0 ? rules : [...safeScenario.rules],
-      initialStates
+      initialStates: [...safeScenario.initialStates],
+      defaultSpeakerId: defaultSpeakerId || undefined
     };
-    void saveScenario(next);
   }
 
-  function handleSavePrompt() {
-    void saveStoryPackage({ ...safePackage, storySettingPrompt });
-  }
-
-  function updateInitialState(characterId: string, field: "hp" | "mp", value: number) {
-    setInitialStates((prev) =>
-      prev.map((s) => (s.characterId === characterId ? { ...s, [field]: value } : s))
-    );
+  function handleSaveStorySetting() {
+    const scenario = buildScenario();
+    void saveStoryPackage({
+      ...safePackage,
+      title: scenario.title,
+      scenario,
+      storySettingPrompt
+    });
   }
 
   function stageList() {
@@ -128,7 +128,7 @@ export function StorySettingPanel() {
           <h2>剧情设定</h2>
           <p className="muted">按顺序填写：主设定 Markdown、阶段卡片、系统读取配置。阶段卡片会注入给 LLM，用来判断 stageSuggestion。</p>
         </div>
-        <button type="button" className="primary-soft-button" onClick={handleSavePrompt}><Save size={16} /> 保存 Markdown</button>
+        <button type="button" className="admin-save-button" onClick={handleSaveStorySetting}><Save size={16} /> 保存剧情设定</button>
       </div>
 
       <div className="scenario-editor-grid">
@@ -170,6 +170,15 @@ export function StorySettingPanel() {
                 <option value={stage} key={stage}>{stage}</option>
               ))}
               {!stageList().includes(currentStage) && currentStage && <option value={currentStage}>{currentStage}</option>}
+            </select>
+          </label>
+          <label className="system-field">
+            <span>默认发言者</span>
+            <select value={defaultSpeakerId} onChange={(e) => setDefaultSpeakerId(e.target.value)}>
+              <option value="">（不指定，取列表第一个）</option>
+              {safePackage.characters.map((c) => (
+                <option value={c.id} key={c.id}>{c.name}</option>
+              ))}
             </select>
           </label>
           <div className="stage-card-list">
@@ -247,32 +256,7 @@ export function StorySettingPanel() {
             </label>
           </details>
 
-          <div className="initial-state-card">
-            <div className="initial-state-heading">
-              <ShieldCheck size={16} />
-              <div>
-                <strong>角色初始状态（唯一数据源）</strong>
-                <small>不要在 Markdown 里重复维护；服务端创建会话时读取这里，每轮结束后自动生成状态行。</small>
-              </div>
-            </div>
-            <div className="initial-state-list">
-              {initialStates.map((s) => (
-                <div className="initial-state-item" key={s.characterId}>
-                  <strong>{s.characterId}</strong>
-                  <label>
-                    <span>气血</span>
-                    <input type="number" value={s.hp} onChange={(e) => updateInitialState(s.characterId, "hp", Number(e.target.value))} />
-                  </label>
-                  <label>
-                    <span>内力</span>
-                    <input type="number" value={s.mp} onChange={(e) => updateInitialState(s.characterId, "mp", Number(e.target.value))} />
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button type="button" onClick={handleSaveScenario}><Save size={16} /> 保存系统配置</button>
+          <button type="button" className="admin-save-button" onClick={handleSaveStorySetting}><Save size={16} /> 保存剧情设定</button>
         </section>
       </div>
     </section>

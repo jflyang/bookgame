@@ -20,7 +20,7 @@ export default defineConfig({
       }
     },
     headers: {
-      "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:* ws://localhost:*; font-src 'self' data:; img-src 'self' data: http://localhost:*; media-src 'self' http://localhost:*;"
+      "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:* ws://localhost:*; font-src 'self' data: http://localhost:*; img-src 'self' data: http://localhost:*; media-src 'self' http://localhost:*;"
     }
   },
   worker: {
