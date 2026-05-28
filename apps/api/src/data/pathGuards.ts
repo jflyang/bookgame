@@ -1,7 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 
-export const safeIdPattern = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
+export const safeIdPattern = /^[\p{L}0-9][\p{L}0-9_\-]{0,63}$/u;
 
 export function assertSafeId(value: string, label = "id") {
   if (!safeIdPattern.test(value)) {

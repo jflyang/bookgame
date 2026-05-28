@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const characterIds = ["qiaofeng", "xuzhu", "duanyu", "dingchunqiu"] as const;
 export type CharacterId = string;
-export const safeIdSchema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/, "Invalid id");
+export const safeIdSchema = z.string().regex(/^[\p{L}0-9][\p{L}0-9_\-]{0,63}$/u, "Invalid id");
 
 export const messageRoleSchema = z.enum(["user", "assistant", "system"]);
 export type MessageRole = z.infer<typeof messageRoleSchema>;
@@ -38,8 +38,8 @@ export const knowledgeDocumentSchema = z.object({
   ownerId: safeIdSchema.nullable(),
   content: z.string(),
   sourceType: z.enum(["markdown", "manual"]).default("markdown"),
-  createdAt: z.string(),
-  updatedAt: z.string()
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional()
 });
 export type KnowledgeDocument = z.infer<typeof knowledgeDocumentSchema>;
 
@@ -53,12 +53,22 @@ export const initialCharacterStateSchema = z.object({
 });
 export type InitialCharacterState = z.infer<typeof initialCharacterStateSchema>;
 
+export const stageBranchSchema = z.object({
+  targetStage: z.string(),
+  choiceText: z.string().optional(),
+  condition: z.string().optional(),
+  description: z.string().optional()
+});
+export type StageBranch = z.infer<typeof stageBranchSchema>;
+
 export const scenarioStageDetailSchema = z.object({
   id: safeIdSchema,
   title: z.string().default(""),
   description: z.string().default(""),
   enterWhen: z.string().default(""),
-  guidance: z.string().default("")
+  guidance: z.string().default(""),
+  branches: z.array(stageBranchSchema).optional(),
+  isChoicePoint: z.boolean().optional()
 });
 export type ScenarioStageDetail = z.infer<typeof scenarioStageDetailSchema>;
 
@@ -76,6 +86,110 @@ export const scenarioSchema = z.object({
 });
 export type Scenario = z.infer<typeof scenarioSchema>;
 
+// ===== Module-Flow Architecture (v2) =====
+
+export const moduleTypeSchema = z.enum(["training", "serving", "punishment", "daily", "finale", "choice", "event", "combat"]);
+export type ModuleType = z.infer<typeof moduleTypeSchema>;
+
+export const storyModuleSchema = z.object({
+  id: safeIdSchema,
+  sourceStage: z.string().optional(),
+  title: z.string(),
+  type: moduleTypeSchema,
+  reusable: z.boolean().default(false),
+  description: z.string().default(""),
+  guidance: z.string().default(""),
+  enterWhen: z.string().default(""),
+  exitCondition: z.string().default(""),
+  requiredCharacters: z.array(z.string()).optional(),
+  consumesSkills: z.array(z.string()).optional(),
+});
+export type StoryModule = z.infer<typeof storyModuleSchema>;
+
+export const flowJudgmentRouteSchema = z.object({
+  condition: z.string(),
+  target: z.string(),
+  targetModule: z.string().optional(),
+});
+
+export const flowJudgmentNodeSchema = z.object({
+  id: z.string(),
+  type: z.literal("judgment"),
+  judge: z.string(),
+  description: z.string().default(""),
+  scoringMethods: z.record(z.string(), z.any()).default({}),
+  routes: z.record(z.string(), flowJudgmentRouteSchema).default({}),
+});
+
+export const flowLinearPhaseSchema = z.object({
+  title: z.string(),
+  sequence: z.array(z.string()),
+  afterAll: z.string().optional(),
+});
+
+export type FlowServingLoop = z.infer<typeof flowServingLoopSchema>;
+export const flowServingLoopSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().default(""),
+  initialCycle: z.number().int().positive().default(1),
+  maxCycles: z.number().int().positive().nullable().default(null),
+  serveModuleByCycle: z.record(z.string(), z.string()).default({}),
+  punishModuleByCycle: z.record(z.string(), z.string()).default({}),
+  judgmentNode: flowJudgmentNodeSchema,
+  punishThenReServe: z.object({
+    description: z.string(),
+    steps: z.array(z.object({
+      action: z.string(),
+      moduleRef: z.string().optional(),
+      target: z.string().optional(),
+      note: z.string().optional(),
+    })),
+  }).optional(),
+});
+
+export const flowPunishmentMenuSchema = z.object({
+  title: z.string(),
+  description: z.string().default(""),
+  allPunishmentModules: z.record(z.string(), z.object({
+    id: z.string(),
+    title: z.string(),
+    severity: z.number().int().positive(),
+    subOptions: z.array(z.object({
+      id: z.string(),
+      title: z.string(),
+      moduleRef: z.string(),
+      skillRef: z.string(),
+    })).optional(),
+  })).default({}),
+});
+
+export const flowDailySystemSchema = z.object({
+  title: z.string(),
+  description: z.string().default(""),
+  availableModules: z.array(z.string()).default([]),
+  triggerRules: z.array(z.object({
+    module: z.string(),
+    trigger: z.string(),
+  })).default([]),
+});
+
+export const flowDefinitionSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().default(""),
+  linearPhases: z.record(z.string(), flowLinearPhaseSchema).default({}),
+  servingLoop: flowServingLoopSchema.optional(),
+  finaleSequence: z.object({
+    title: z.string().default(""),
+    sequence: z.array(z.string()).default([]),
+    description: z.string().default(""),
+  }).optional(),
+  dailySystem: flowDailySystemSchema.optional(),
+  punishmentMenu: flowPunishmentMenuSchema.optional(),
+});
+export type FlowDefinition = z.infer<typeof flowDefinitionSchema>;
+
 export const storyPromptRuleSchema = z.object({
   id: safeIdSchema,
   title: z.string(),
@@ -86,6 +200,7 @@ export const storyPromptRuleSchema = z.object({
     "state_output",
     "history_state",
     "combat",
+    "skill_linkage",
     "custom"
   ]),
   content: z.string(),
@@ -258,6 +373,8 @@ export const storyPackageSchema = z.object({
   }),
   uiConfig: uiConfigSchema.optional(),
   pluginManifest: storyPluginManifestSchema.optional(),
+  modules: z.array(storyModuleSchema).optional(),
+  flow: flowDefinitionSchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string()
 });
@@ -282,6 +399,8 @@ export const gameStateSchema = z.object({
   status: z.enum(["active", "completed"]),
   characters: z.array(characterStateSchema),
   scenario: scenarioSchema,
+  currentCycle: z.number().int().positive().default(1),
+  usedModules: z.array(z.string()).default([]),
   createdAt: z.string(),
   updatedAt: z.string()
 });
@@ -320,7 +439,7 @@ export type LlmStoryOutput = z.infer<typeof llmStoryOutputSchema>;
 
 export const createSessionRequestSchema = z.object({
   storyPackageId: safeIdSchema.optional(),
-  scenarioId: safeIdSchema.default("xuzhu_vs_dingchunqiu"),
+  scenarioId: safeIdSchema.default("虚竹"),
   characterIds: z.array(safeIdSchema).default([...characterIds])
 });
 export type CreateSessionRequest = z.infer<typeof createSessionRequestSchema>;
@@ -330,6 +449,11 @@ export const sendMessageRequestSchema = z.object({
   targetCharacterId: safeIdSchema.nullable().optional()
 });
 export type SendMessageRequest = z.infer<typeof sendMessageRequestSchema>;
+
+export const choiceRequestSchema = z.object({
+  branchIndex: z.number().int().nonnegative()
+});
+export type ChoiceRequest = z.infer<typeof choiceRequestSchema>;
 
 export const updateCharacterRequestSchema = characterSchema;
 export type UpdateCharacterRequest = z.infer<typeof updateCharacterRequestSchema>;

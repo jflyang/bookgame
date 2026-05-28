@@ -2254,7 +2254,17 @@ textarea {
 }
 
 .play-shell .character-list {
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.play-shell .character-list > .character-card {
+  flex-shrink: 0;
 }
 
 .play-shell .character-card {
@@ -2449,6 +2459,9 @@ textarea {
 .play-shell .meters {
   color: var(--color-text-muted, #7a746b);
   font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .character-manage {
@@ -6567,5 +6580,92 @@ textarea {
 
   .save-slot-thumb-wrap {
     aspect-ratio: 16/8;
+  }
+}
+
+/* ── Choice Cards ── */
+.choice-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.choice-card {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  background: var(--surface, #fffaf2);
+  border: 2px solid var(--border, #d4c5b2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text, #2f3133);
+}
+
+.choice-card:hover:not(:disabled) {
+  border-color: var(--primary, #1a6b54);
+  background: color-mix(in srgb, var(--primary, #1a6b54) 5%, var(--surface, #fffaf2));
+  transform: translateX(4px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.choice-card:active:not(:disabled) {
+  transform: translateX(2px);
+}
+
+.choice-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.choice-index {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary, #1a6b54);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.choice-text {
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.choice-desc {
+  font-size: 0.82rem;
+  color: var(--muted, #888);
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  .choice-card {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .choice-index {
+    min-width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+  }
+  .choice-text {
+    font-size: 0.9rem;
   }
 }

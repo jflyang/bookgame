@@ -32,6 +32,10 @@ export class GameApplicationService {
     return this.dialogueEngine.sendMessageStream(sessionId, input);
   }
 
+  applyChoice(sessionId: string, branchIndex: number) {
+    return this.dialogueEngine.applyChoice(sessionId, branchIndex);
+  }
+
   restoreSession(storyPackageId: string, saveId?: string, slot?: number) {
     let save: ReturnType<typeof this.sessionSaves.getBySlot>;
     if (slot !== undefined) {

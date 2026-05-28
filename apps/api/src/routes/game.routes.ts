@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import {
+  choiceRequestSchema,
   createSessionRequestSchema,
   scenarioSchema,
   sendMessageRequestSchema
@@ -69,6 +70,20 @@ export async function gameRoutes(app: FastifyInstance) {
 
     raw.end();
     return reply.hijack();
+  });
+
+  app.post("/sessions/:id/choose", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    try {
+      const { branchIndex } = choiceRequestSchema.parse(request.body);
+      return reply.send(gameApplicationService.applyChoice(id, branchIndex));
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return reply.code(400).send({ error: "无效的选择请求" });
+      }
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return reply.code(400).send({ error: message });
+    }
   });
 
   app.post("/sessions/restore", async (request, reply) => {

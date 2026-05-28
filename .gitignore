@@ -4,19 +4,26 @@ dist
 .env.local
 .DS_Store
 *.log
-apps/api/story-packages/*.story-package.json
-!apps/api/story-packages/.gitkeep
+apps/api/story-packages/
+apps/api/data/runtime-stats.db
+apps/api/data/runtime-stats.db-shm
+apps/api/data/runtime-stats.db-wal
+apps/api/data/llm-config.json
 
-# Non-default story packages: track configs, exclude media
-apps/data/task-packages/story_*/assets/
-apps/data/task-packages/story_*/media/
-apps/data/task-packages/story_*/saves/
+# All story packages in data dir are local-only except xuzhu_vs_dingchunqiu
+apps/data/task-packages/*/saves/
+apps/data/task-packages/*/assets/
+apps/data/task-packages/story_*/
 apps/data/task-packages/media/
+apps/data/task-packages/冷霜风云/
+apps/data/task-packages/小薇日记/
+apps/data/task-packages/心有所想/
+apps/data/task-packages/深宫心结/
+apps/data/task-packages/虚竹/
+apps/data/task-packages/追女仔/
 
 # Runtime data
 apps/data/saves/
-apps/api/data/runtime-stats.db-shm
-apps/api/data/runtime-stats.db-wal
 
 # Local asset packs
 wuxia_sfx_pack*/

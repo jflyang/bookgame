@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Character, GameState, KnowledgeDocument, LlmConfig, LlmConfigView, Message, Scenario, Skill, StoryPackage } from "@story-game/shared";
+import type { Character, GameState, KnowledgeDocument, LlmConfig, LlmConfigView, Message, Scenario, Skill, StageBranch, StoryPackage } from "@story-game/shared";
 import * as adminApi from "../lib/adminApi.js";
 import * as gameApi from "../lib/gameApi.js";
 import type { SaveMeta, SaveSlot } from "../lib/gameApi.js";
@@ -26,6 +26,7 @@ interface GameStore {
   isStreaming: boolean;
   streamingSpeakerId: string | null;
   streamingSpeakerName: string | null;
+  pendingChoices: StageBranch[] | null;
   saveSlots: SaveSlot[];
   loadStoryPackages: (includeHidden?: boolean) => Promise<void>;
   loadLlmConfig: () => Promise<void>;
@@ -46,6 +47,7 @@ interface GameStore {
   send: (text: string) => Promise<void>;
   sendStream: (text: string) => Promise<void>;
   continueStory: () => Promise<void>;
+  chooseBranch: (branchIndex: number) => Promise<void>;
   setAutoPlay: (enabled: boolean) => void;
   saveScenario: (scenario: Scenario) => Promise<void>;
   saveCharacter: (character: Character) => Promise<void>;
@@ -77,6 +79,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   isStreaming: false,
   streamingSpeakerId: null,
   streamingSpeakerName: null,
+  pendingChoices: null,
   saveSlots: [],
   async loadStoryPackages(includeHidden?: boolean) {
     set({ error: null });
@@ -110,7 +113,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   editStoryPackage(id) {
     const storyPackage = get().storyPackages.find((item) => item.id === id);
     if (!storyPackage) return;
-    navigateTo("/admin/story-packages/" + id);
+    navigateTo("/admin/story-packages/" + encodeURIComponent(id));
     set({
       view: "editor",
       editingPackageId: id,
@@ -290,6 +293,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
         (doneEvent) => {
           set((state) => {
             if (state.sessionId !== capturedSessionId) return {};
+            const currentDetail = doneEvent.gameState.scenario.stageDetails?.find(
+              (s) => s.id === doneEvent.gameState.scenario.currentStage
+            );
+            const pendingChoices = (currentDetail?.isChoicePoint && currentDetail.branches?.length)
+              ? currentDetail.branches
+              : null;
             return {
               messages: [...state.messages, doneEvent.message],
               gameState: doneEvent.gameState,
@@ -298,7 +307,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
               isStreaming: false,
               streamingSpeakerId: null,
               streamingSpeakerName: null,
-              selectedCharacterId: null
+              selectedCharacterId: null,
+              pendingChoices
             };
           });
         }
@@ -320,6 +330,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   async continueStory() {
     await get().sendStream("继续");
+  },
+  async chooseBranch(branchIndex) {
+    const { sessionId, pendingChoices } = get();
+    if (!sessionId || !pendingChoices) return;
+    try {
+      const result = await gameApi.applyChoice(sessionId, branchIndex);
+      set((state) => ({
+        gameState: result.state,
+        pendingChoices: null
+      }));
+      // Auto-continue after choice
+      await get().continueStory();
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "选择失败" });
+    }
   },
   setAutoPlay(enabled) {
     set({ isAutoPlaying: enabled });

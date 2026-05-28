@@ -51,6 +51,8 @@ export class TaskPackageRepository {
       const v2Entry = resolveInside(dir, "story.json");
       const entryFile = existsSync(v2Entry) ? v2Entry : resolveInside(dir, "task-package.json");
       const pkg = storyPackageSchema.parse(JSON.parse(readFileSync(entryFile, "utf-8")));
+      // Override id with directory name — the directory IS the primary key
+      pkg.id = id;
       // Attach plugin manifest if v2
       const manifest = this.tryReadPluginManifest(id);
       if (manifest) {
@@ -218,6 +220,13 @@ export class TaskPackageRepository {
 
     const uiDir = ensureDir(resolveInside(packageDir, "ui"));
     writeFileSync(resolveInside(uiDir, "config.json"), JSON.stringify(pkg.uiConfig ?? {}, null, 2), "utf-8");
+
+    if (pkg.modules) {
+      writeFileSync(resolveInside(packageDir, "modules.json"), JSON.stringify(pkg.modules, null, 2), "utf-8");
+    }
+    if (pkg.flow) {
+      writeFileSync(resolveInside(packageDir, "flow.json"), JSON.stringify(pkg.flow, null, 2), "utf-8");
+    }
   }
 }
 

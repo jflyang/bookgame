@@ -111,6 +111,21 @@ export async function sendMessageStream(
   }
 }
 
+export interface ChoiceResult {
+  state: GameState;
+  previousStage: string;
+  chosenBranch: { targetStage: string; choiceText?: string; description?: string };
+}
+
+export async function applyChoice(sessionId: string, branchIndex: number): Promise<ChoiceResult> {
+  const response = await fetch(`${API_BASE}/api/game/sessions/${sessionId}/choose`, {
+    method: "POST",
+    headers: jsonHeaders(),
+    body: JSON.stringify({ branchIndex })
+  });
+  return parseResponse<ChoiceResult>(response);
+}
+
 function jsonHeaders() {
   return { "Content-Type": "application/json" };
 }

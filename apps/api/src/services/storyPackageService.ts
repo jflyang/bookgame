@@ -10,7 +10,7 @@ import { assertSafeId, resolveInside } from "../data/pathGuards.js";
 import { normalizeMediaExtension, TaskPackageRepository, type TaskPackageRepositoryOptions } from "../data/taskPackageRepository.js";
 
 const logger = createModuleLogger("storyPackage");
-export const DEFAULT_PACKAGE_ID = "xuzhu_vs_dingchunqiu";
+export const DEFAULT_PACKAGE_ID = "虚竹";
 const maxZipBytes = 50 * 1024 * 1024;
 const maxZipEntries = 256;
 const maxEntryBytes = 10 * 1024 * 1024;
@@ -371,7 +371,7 @@ export class StoryPackageService {
   private buildSeed(seed: SeedData): StoryPackage {
     const now = new Date().toISOString();
     return {
-      id: "xuzhu_vs_dingchunqiu",
+      id: "虚竹",
       title: "虚竹除害星宿老怪",
       description: "固定四角色的武侠回合制互动故事 MVP。",
       hidden: false,

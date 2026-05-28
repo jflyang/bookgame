@@ -18,7 +18,8 @@ export function Breadcrumb() {
   const storyPackage = editingPackageId
     ? storyPackages.find((p) => p.id === editingPackageId)
     : undefined;
-  const displaySegments = segments.map((seg, i) => {
+  const displaySegments = segments.map((rawSeg, i) => {
+    const seg = decodeURIComponent(rawSeg);
     const isLast = i === segments.length - 1;
     if (seg === editingPackageId && storyPackage) {
       return { label: storyPackage.title, href: null, isLast };

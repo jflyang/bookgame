@@ -142,7 +142,15 @@ export class DialogueEngine {
     };
   }
 
+  private ensureStoryPackageActivated(sessionId: string) {
+    const storyPackageId = this.sessionStoryPackageIds.get(sessionId);
+    if (storyPackageId) {
+      this.storyPackageActivator.activate(storyPackageId);
+    }
+  }
+
   async sendMessage(sessionId: string, input: SendMessageRequest) {
+    this.ensureStoryPackageActivated(sessionId);
     const result = await this.turnProcessor.sendMessage(sessionId, input);
     if (this.sessionCollector) {
       try {
@@ -154,6 +162,7 @@ export class DialogueEngine {
   }
 
   async *sendMessageStream(sessionId: string, input: SendMessageRequest) {
+    this.ensureStoryPackageActivated(sessionId);
     yield* this.turnProcessor.sendMessageStream(sessionId, input);
     if (this.sessionCollector) {
       try {
@@ -162,5 +171,10 @@ export class DialogueEngine {
         this.sessionCollector.markActive(sessionId, gameState, messages.length);
       } catch (err) { logger.warn({ err }, "failed to update session after stream"); }
     }
+  }
+
+  applyChoice(sessionId: string, branchIndex: number) {
+    this.ensureStoryPackageActivated(sessionId);
+    return this.states.applyChoice(sessionId, branchIndex);
   }
 }

@@ -49,7 +49,6 @@ export class DeepSeekLlmProvider implements LlmProvider {
           temperature: config.temperature,
           max_tokens: config.maxTokens,
           response_format: { type: "json_object" },
-          thinking: { type: "disabled" },
           messages: [
             {
               role: "system",
@@ -136,7 +135,6 @@ export class DeepSeekLlmProvider implements LlmProvider {
           temperature: config.temperature,
           max_tokens: config.maxTokens,
           stream: true,
-          thinking: { type: "disabled" },
           messages: [
             {
               role: "system",

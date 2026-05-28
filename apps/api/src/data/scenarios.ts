@@ -2,7 +2,7 @@ import type { Scenario } from "@story-game/shared";
 
 export const scenarios: Scenario[] = [
   {
-    id: "xuzhu_vs_dingchunqiu",
+    id: "虚竹",
     title: "虚竹除害星宿老怪",
     premise: "虚竹得知丁春秋欺师灭祖，决定为逍遥派清理门户。山道旁，乔峰、虚竹、段誉与丁春秋狭路相逢。",
     currentStage: "poison_fog",

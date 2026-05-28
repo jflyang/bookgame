@@ -251,14 +251,17 @@ export class TurnProcessor {
   }
 
   private applyOutput(sessionId: string, speakerId: CharacterId, rawOutput: unknown) {
-    const speaker = this.characters.get(speakerId);
-    const output = this.rules.validateOutput(speakerId, rawOutput);
-    const usedSkill = this.resolveSkillDamage(speakerId, output);
+    const rosterIds = this.characters.list().map((c) => c.id);
+    const output = this.rules.validateOutput(speakerId, rawOutput, rosterIds);
+    const effectiveSpeakerId = output.speakerId;
+    const speaker = this.characters.get(effectiveSpeakerId);
+    const usedSkill = this.resolveSkillDamage(effectiveSpeakerId, output);
 
     logger.info({
       sessionId,
-      speakerId,
+      speakerId: effectiveSpeakerId,
       speakerName: speaker.name,
+      selectedSpeakerId: speakerId !== effectiveSpeakerId ? speakerId : undefined,
       actionType: output.action.type,
       skillId: usedSkill?.id ?? null,
       deltaSuggestion: output.stateDeltaSuggestion,
@@ -267,7 +270,7 @@ export class TurnProcessor {
       stageSuggestion: output.stageSuggestion
     }, "llm response");
 
-    const { state: gameState, delta } = this.states.applyAssistantTurn(sessionId, speakerId, output);
+    const { state: gameState, delta } = this.states.applyAssistantTurn(sessionId, effectiveSpeakerId, output);
     logger.info({
       sessionId,
       round: gameState.round,
@@ -279,7 +282,7 @@ export class TurnProcessor {
     this.auditLog.append({
       type: "llm_response",
       sessionId,
-      speakerId,
+      speakerId: effectiveSpeakerId,
       summary: `${speaker.name} → ${output.narration.slice(0, 50)}`,
       details: { delta, narration: output.narration, dialogue: output.dialogue }
     });
@@ -291,7 +294,7 @@ export class TurnProcessor {
     const combatLine = this.formatCombatLine(speaker, usedSkill, output);
     const content = `${output.narration}\n\n${speaker.name}："${output.dialogue}"${combatLine}`;
     const usedSkillIds = usedSkill ? [usedSkill.id] : [];
-    const message = this.createMessage(sessionId, "assistant", speakerId, content, usedSkillIds, delta);
+    const message = this.createMessage(sessionId, "assistant", effectiveSpeakerId, content, usedSkillIds, delta);
     this.memory.append(message);
 
     return {
@@ -299,6 +302,8 @@ export class TurnProcessor {
       gameState,
       debug: {
         selectedSpeakerId: speakerId,
+        effectiveSpeakerId,
+        speakerOverridden: speakerId !== effectiveSpeakerId,
         usedSkill: usedSkill?.name ?? null,
         promptLayers: ["system", "groupRules", "persona", "scenario", "state", "history"],
         validation: "passed"
@@ -309,7 +314,10 @@ export class TurnProcessor {
   private resolveSkillDamage(speakerId: CharacterId, output: { action: { type: string; skillId?: string | null; targetIds: string[] }; stateDeltaSuggestion: Record<string, number> }) {
     if (output.action.type !== "skill" || !output.action.skillId) return undefined;
     const skill = this.skills.get(output.action.skillId);
-    if (!skill) return undefined;
+    if (!skill) {
+      logger.warn({ speakerId, unknownSkillId: output.action.skillId, availableIds: this.skills.list().map(s => s.id) }, "LLM used unknown skillId — no damage applied");
+      return undefined;
+    }
 
     const dmg = skill.damage
       ? Math.floor(Math.random() * (skill.damage.max - skill.damage.min + 1)) + skill.damage.min

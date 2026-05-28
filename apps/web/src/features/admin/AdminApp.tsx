@@ -23,7 +23,7 @@ export function AdminApp() {
 
   // Check if we're on a story package editor page
   const editorMatch = pathname.match(/^\/admin\/story-packages\/([^/]+)$/);
-  const editorPkgId = editorMatch?.[1];
+  const editorPkgId = editorMatch?.[1] ? decodeURIComponent(editorMatch[1]) : undefined;
   const isEditor = editorPkgId && storyPackages.some((p) => p.id === editorPkgId);
   const isImport = pathname === "/admin/story-packages/import";
   const isLibrary = pathname === "/admin/story-packages" || pathname === "/admin";

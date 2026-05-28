@@ -3,6 +3,7 @@ import type { Character } from "@story-game/shared";
 import { useUiConfig } from "../UiConfigContext.js";
 import { useStoryAssets } from "../contexts/StoryAssetsContext.js";
 import { useGameStore } from "../../../store/gameStore.js";
+import { ChoiceCards } from "./ChoiceCards.js";
 
 export function MessageList({ characters }: { characters: Character[] }) {
   const messages = useGameStore((state) => state.messages);
@@ -10,6 +11,9 @@ export function MessageList({ characters }: { characters: Character[] }) {
   const isStreaming = useGameStore((state) => state.isStreaming);
   const streamingSpeakerId = useGameStore((state) => state.streamingSpeakerId);
   const streamingSpeakerName = useGameStore((state) => state.streamingSpeakerName);
+  const pendingChoices = useGameStore((state) => state.pendingChoices);
+  const chooseBranch = useGameStore((state) => state.chooseBranch);
+  const isSending = useGameStore((state) => state.isSending);
   const uiConfig = useUiConfig();
   const { getPortraitUrl } = useStoryAssets();
   const scene = uiConfig?.scene;
@@ -142,6 +146,16 @@ export function MessageList({ characters }: { characters: Character[] }) {
                 <p className="streaming-cursor">{renderInlineMarkdown(streamingContent)}</p>
               </div>
             </div>
+          </article>
+        )}
+
+        {pendingChoices && !isStreaming && (
+          <article className="story-entry system">
+            <ChoiceCards
+              choices={pendingChoices}
+              disabled={isSending}
+              onChoose={(index) => chooseBranch(index)}
+            />
           </article>
         )}
       </div>

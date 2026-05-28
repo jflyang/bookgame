@@ -44,6 +44,8 @@ export class GameStateService {
       status: "active",
       scenario: this.scenarios.get(input.scenarioId),
       characters: [],
+      currentCycle: 1,
+      usedModules: [],
       createdAt: now,
       updatedAt: now
     };
@@ -88,7 +90,21 @@ export class GameStateService {
     const delta: StateDelta = {};
     this.applyStateDeltaSuggestion(state.characters, output.stateDeltaSuggestion, delta, state.scenario.initialStates);
     if (output.stageSuggestion && state.scenario.stages.includes(output.stageSuggestion)) {
+      const prevStage = state.scenario.currentStage;
       state.scenario.currentStage = output.stageSuggestion;
+
+      // Track module usage
+      const prevModuleId = `mod_${prevStage}`;
+      if (!state.usedModules.includes(prevModuleId)) {
+        state.usedModules.push(prevModuleId);
+      }
+
+      // Cycle increment: entering punishment from serving = emperor unsatisfied
+      const punishStages = new Set(["stage_22", "stage_24", "stage_27", "stage_28", "stage_30"]);
+      const serveStages = new Set(["stage_21", "stage_23", "stage_25", "stage_26", "stage_29"]);
+      if (serveStages.has(prevStage) && punishStages.has(output.stageSuggestion)) {
+        state.currentCycle = (state.currentCycle ?? 1) + 1;
+      }
     }
     state.round += 1;
     state.lastSpeakerId = speakerId;
@@ -98,6 +114,27 @@ export class GameStateService {
       : "active";
     logger.debug({ sessionId, speakerId, round: state.round, delta }, "turn applied");
     return { state, delta };
+  }
+
+  applyChoice(sessionId: string, branchIndex: number) {
+    const state = this.get(sessionId);
+    const currentDetail = state.scenario.stageDetails.find((s) => s.id === state.scenario.currentStage);
+    if (!currentDetail?.branches?.length) {
+      throw new Error(`Current stage ${state.scenario.currentStage} has no branches`);
+    }
+    if (branchIndex < 0 || branchIndex >= currentDetail.branches.length) {
+      throw new Error(`Invalid branch index ${branchIndex}, expected 0-${currentDetail.branches.length - 1}`);
+    }
+    const branch = currentDetail.branches[branchIndex];
+    if (!state.scenario.stages.includes(branch.targetStage)) {
+      throw new Error(`Branch target stage ${branch.targetStage} not found in scenario stages`);
+    }
+    const previousStage = state.scenario.currentStage;
+    state.scenario.currentStage = branch.targetStage;
+    state.round += 1;
+    state.updatedAt = new Date().toISOString();
+    logger.info({ sessionId, previousStage, newStage: branch.targetStage, branchIndex }, "branch choice applied");
+    return { state, previousStage, chosenBranch: branch };
   }
 
   private initialCharacterState(characterId: CharacterId, initialStates: GameState["scenario"]["initialStates"]): CharacterState {

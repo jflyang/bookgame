@@ -4,11 +4,15 @@ import { createModuleLogger } from "../utils/logger.js";
 const logger = createModuleLogger("ruleChecker");
 
 export class RuleChecker {
-  validateOutput(speakerId: CharacterId, value: unknown): LlmStoryOutput {
+  validateOutput(speakerId: CharacterId, value: unknown, rosterIds?: CharacterId[]): LlmStoryOutput {
     try {
       const output = llmStoryOutputSchema.parse(value);
       if (output.speakerId !== speakerId) {
-        throw new Error(`LLM speaker mismatch: expected ${speakerId}, got ${output.speakerId}`);
+        if (rosterIds && rosterIds.includes(output.speakerId)) {
+          logger.warn({ expected: speakerId, actual: output.speakerId }, "speaker mismatch but in roster — accepting LLM's choice");
+        } else {
+          throw new Error(`LLM speaker mismatch: expected ${speakerId}, got ${output.speakerId}`);
+        }
       }
       return output;
     } catch (error) {
