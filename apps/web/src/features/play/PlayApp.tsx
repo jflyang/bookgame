@@ -62,6 +62,7 @@ export function PlayApp() {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [navExpanded, setNavExpanded] = useState(false);
+  const [performanceEnabled, setPerformanceEnabled] = useState(true);
   const storyPackage = storyPackages.find((p) => p.id === editingPackageId);
   const labels = useLabels();
   const uiConfig = storyPackage?.uiConfig;
@@ -150,7 +151,7 @@ export function PlayApp() {
       manifest={pluginManifest}
       currentStage={gameState?.scenario?.currentStage}
     >
-    <StoryPerformanceRuntime />
+    <StoryPerformanceRuntime enabled={performanceEnabled} />
     <UiConfigContext.Provider value={uiConfig ?? {} as UiConfig}>
       <main className="play-shell" style={themeVars(uiConfig)} data-story-plugin={editingPackageId ?? ""}>
         <aside className={`play-nav ${navExpanded ? "expanded" : ""}`} aria-label="主导航">
@@ -210,6 +211,9 @@ export function PlayApp() {
                   <div className="more-menu" onClick={() => setShowMoreMenu(false)}>
                     <a href="/admin/story-packages">{labels.storyManagement}</a>
                     <button onClick={() => { setShowRules(true); setShowMoreMenu(false); }}>{labels.viewRules}</button>
+                    <button onClick={(e) => { e.stopPropagation(); setPerformanceEnabled(!performanceEnabled); }}>
+                      {performanceEnabled ? "🎬 关闭表演" : "🎬 开启表演"}
+                    </button>
                     {editingPackageId ? (
                       <button onClick={() => { void start(editingPackageId); setShowMoreMenu(false); }}>重置剧情</button>
                     ) : null}

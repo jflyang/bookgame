@@ -17,6 +17,11 @@ export function CharacterRail({ characters, states, lastSpeakerId, initialStates
   const { getPortraitUrl } = useStoryAssets();
   const avatarStyle = uiConfig?.avatar?.style ?? "gradient";
 
+  // Debug: log avatar data
+  if (characters.length > 0) {
+    console.log("[CharacterRail] avatarStyle:", avatarStyle, "chars:", characters.map(c => ({ id: c.id, avatarLen: c.avatar?.length, isImage: Boolean(c.avatar?.startsWith("data:image") || c.avatar?.startsWith("http")), starts: c.avatar?.substring(0, 30) })));
+  }
+
   const defaultSpeakerId = gameState?.scenario?.defaultSpeakerId;
   const sorted = defaultSpeakerId
     ? [...characters].sort((a, b) => (a.id === defaultSpeakerId ? -1 : b.id === defaultSpeakerId ? 1 : 0))

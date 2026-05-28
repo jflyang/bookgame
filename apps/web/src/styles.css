@@ -2302,6 +2302,7 @@ textarea {
   align-items: center;
   display: flex;
   gap: 12px;
+  overflow: hidden;
 }
 
 .character-card-header .portrait-avatar {
@@ -2310,6 +2311,7 @@ textarea {
   flex: 0 0 48px;
   height: 48px;
   width: 48px;
+  min-width: 48px;
 }
 
 .character-card-info {
@@ -2317,6 +2319,7 @@ textarea {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  overflow: hidden;
 }
 
 .character-card-stats {
@@ -2370,6 +2373,7 @@ textarea {
 
 .portrait-avatar {
   border: 2px solid rgba(255, 255, 255, 0.74);
+  border-radius: 50%;
   box-shadow: 0 3px 12px rgba(40, 31, 24, 0.22);
   color: rgba(255, 255, 255, 0);
   flex: 0 0 58px;
@@ -2380,9 +2384,13 @@ textarea {
 }
 
 .portrait-avatar.image-avatar {
-  background-position: center;
-  background-size: cover;
+  background: none;
   color: transparent;
+}
+
+.portrait-avatar.image-avatar::before {
+  content: none !important;
+  display: none !important;
 }
 
 .portrait-avatar.image-avatar .avatar-img {
@@ -2390,11 +2398,9 @@ textarea {
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: inherit;
-}
-
-.portrait-avatar.image-avatar::before {
-  content: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
 }
 
 .portrait-avatar.text-avatar {
@@ -2461,6 +2467,9 @@ textarea {
   font-family: var(--font-heading, "STKaiti", "KaiTi", serif);
   font-size: 1.16rem;
   font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .play-shell .character-role,

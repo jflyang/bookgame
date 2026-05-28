@@ -67,6 +67,7 @@ export const scenarioStageDetailSchema = z.object({
   description: z.string().default(""),
   enterWhen: z.string().default(""),
   guidance: z.string().default(""),
+  directive: z.string().default(""),
   branches: z.array(stageBranchSchema).optional(),
   isChoicePoint: z.boolean().optional()
 });
@@ -401,6 +402,7 @@ export const gameStateSchema = z.object({
   scenario: scenarioSchema,
   currentCycle: z.number().int().positive().default(1),
   usedModules: z.array(z.string()).default([]),
+  stageEnteredAtRound: z.number().int().nonnegative().default(0),
   createdAt: z.string(),
   updatedAt: z.string()
 });

@@ -73,14 +73,13 @@ export class DeepSeekLlmProvider implements LlmProvider {
     const data = (await response.json()) as DeepSeekResponse;
     const msg = data.choices?.[0]?.message;
     const content = msg?.content;
-    if (!content) {
+    const reasoningContent = msg?.reasoning_content;
+    if (!content && !reasoningContent) {
       const finishReason = data.choices?.[0]?.finish_reason;
       const usage = data.usage;
-      const hasReasoning = !!msg?.reasoning_content;
       throw new Error(
         `DeepSeek 返回空内容（finish_reason: ${finishReason ?? "N/A"}, ` +
-        `prompt_tokens: ${usage?.prompt_tokens ?? "?"}, completion_tokens: ${usage?.completion_tokens ?? "?"}` +
-        `${hasReasoning ? ", has reasoning_content but no content" : ""}）。` +
+        `prompt_tokens: ${usage?.prompt_tokens ?? "?"}, completion_tokens: ${usage?.completion_tokens ?? "?"}）。` +
         `可能是 max_tokens 不够或模型不支持 response_format。`
       );
     }
@@ -88,11 +87,46 @@ export class DeepSeekLlmProvider implements LlmProvider {
     const latency = Date.now() - start;
     logger.info({ model: config.model, latency }, "llm complete");
 
+    // Prefer content; if content is empty or has empty narration/dialogue, try extracting JSON from reasoning_content
     let parsed: unknown;
-    try {
-      parsed = JSON.parse(content);
-    } catch (err) {
-      throw new Error(`DeepSeek 返回了非 JSON 内容（前 200 字符）: ${content.slice(0, 200)}`, { cause: err });
+    const rawContent = content || "";
+    if (rawContent) {
+      try {
+        parsed = JSON.parse(rawContent);
+      } catch (err) {
+        // If content is not valid JSON, try to extract JSON from it
+        const jsonMatch = rawContent.match(/\{[\s\S]*"speakerId"[\s\S]*\}/);
+        if (jsonMatch) {
+          try { parsed = JSON.parse(jsonMatch[0]); } catch { /* fall through */ }
+        }
+        if (!parsed) {
+          throw new Error(`DeepSeek 返回了非 JSON 内容（前 200 字符）: ${rawContent.slice(0, 200)}`, { cause: err });
+        }
+      }
+    }
+
+    // If parsed JSON has empty narration/dialogue but reasoning_content has useful text, extract from reasoning
+    if (parsed && typeof parsed === "object" && reasoningContent) {
+      const obj = parsed as Record<string, unknown>;
+      if (!obj.narration || (typeof obj.narration === "string" && obj.narration.trim() === "")) {
+        const extracted = extractJsonFromText(reasoningContent);
+        if (extracted && extracted.narration && extracted.dialogue) {
+          parsed = extracted;
+          logger.info("extracted valid output from reasoning_content (empty narration fallback)");
+        }
+      }
+    }
+
+    // If still no parsed content and we only have reasoning, try to extract JSON from reasoning
+    if (!parsed && reasoningContent) {
+      const extracted = extractJsonFromText(reasoningContent);
+      if (extracted) {
+        parsed = extracted;
+        logger.info("extracted valid output from reasoning_content (no content fallback)");
+      }
+      if (!parsed) {
+        throw new Error(`DeepSeek content 为空，reasoning_content 中未找到有效 JSON`);
+      }
     }
 
     // Fallback: ensure action is a valid object with required type field
@@ -110,7 +144,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
     const output = llmStoryOutputSchema.parse(parsed);
     return {
       output,
-      raw: content,
+      raw: rawContent || reasoningContent || "",
       usage: data.usage ? { promptTokens: data.usage.prompt_tokens, completionTokens: data.usage.completion_tokens } : undefined
     };
   }
@@ -164,6 +198,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
 
     const decoder = new TextDecoder();
     let buffer = "";
+    let contentBuffer = "";
 
     try {
       while (true) {
@@ -179,22 +214,85 @@ export class DeepSeekLlmProvider implements LlmProvider {
           if (!trimmed || !trimmed.startsWith("data:")) continue;
 
           const payload = trimmed.slice(5).trim();
-          if (payload === "[DONE]") return;
+          if (payload === "[DONE]") {
+            // Yield whatever content we collected
+            if (contentBuffer) yield contentBuffer;
+            return;
+          }
 
           try {
             const parsed = JSON.parse(payload);
             const delta = parsed?.choices?.[0]?.delta;
-            // Only yield actual content, ignore reasoning_content (model's internal thinking)
             const content = delta?.content as string | undefined;
-            if (content) yield content;
+
+            // Only yield content (the actual JSON output), skip reasoning_content
+            if (content) {
+              contentBuffer += content;
+              yield content;
+            }
           } catch (err) {
             logger.warn({ err, payload: payload.slice(0, 120) }, "unparseable SSE data line");
           }
         }
       }
+      // Stream ended without [DONE]
+      if (contentBuffer) yield contentBuffer;
     } finally {
       reader.releaseLock();
     }
     logger.info({ model: config.model, latency: Date.now() - start }, "llm stream complete");
   }
+}
+
+/** Extract a valid JSON object containing speakerId/narration/dialogue from mixed text.
+ *  Handles reasoning_content that contains the model's thinking + a JSON block. */
+function extractJsonFromText(text: string): Record<string, unknown> | null {
+  // Strategy 1: Find JSON blocks delimited by ```json ... ``` or ``` ... ```
+  const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+  if (codeBlockMatch) {
+    try {
+      const parsed = JSON.parse(codeBlockMatch[1]);
+      if (parsed.speakerId && parsed.narration) return parsed;
+    } catch { /* continue */ }
+  }
+
+  // Strategy 2: Find balanced braces starting from each { that precedes "speakerId"
+  const indices: number[] = [];
+  let searchFrom = 0;
+  while (true) {
+    const idx = text.indexOf('"speakerId"', searchFrom);
+    if (idx === -1) break;
+    // Walk back to find the opening {
+    let braceStart = text.lastIndexOf("{", idx);
+    if (braceStart !== -1) indices.push(braceStart);
+    searchFrom = idx + 1;
+  }
+
+  for (const start of indices) {
+    // Find matching closing brace
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (escape) { escape = false; continue; }
+      if (ch === "\\") { escape = true; continue; }
+      if (ch === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          const candidate = text.slice(start, i + 1);
+          try {
+            const parsed = JSON.parse(candidate);
+            if (parsed.speakerId && parsed.narration) return parsed;
+          } catch { /* try next */ }
+          break;
+        }
+      }
+    }
+  }
+
+  return null;
 }

@@ -9,7 +9,7 @@ interface QueuedPerformance {
   performance: StoryPerformanceDefinition;
 }
 
-export function StoryPerformanceRuntime() {
+export function StoryPerformanceRuntime({ enabled = true }: { enabled?: boolean }) {
   const messages = useGameStore((state) => state.messages);
   const gameState = useGameStore((state) => state.gameState);
   const knowledgeDocuments = useGameStore((state) => state.knowledgeDocuments);
@@ -77,7 +77,7 @@ export function StoryPerformanceRuntime() {
     setActive(null);
   }, []);
 
-  if (!active) return null;
+  if (!enabled || !active) return null;
 
   return (
     <StoryPerformanceOverlay

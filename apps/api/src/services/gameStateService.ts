@@ -60,6 +60,7 @@ export class GameStateService {
       characters: [],
       currentCycle: 1,
       usedModules: [],
+      stageEnteredAtRound: 0,
       createdAt: now,
       updatedAt: now
     };
@@ -104,9 +105,12 @@ export class GameStateService {
     const state = this.get(sessionId);
     const delta: StateDelta = {};
     this.applyStateDeltaSuggestion(state.characters, output.stateDeltaSuggestion, delta, state.scenario.initialStates);
+
+    let stageChanged = false;
     if (output.stageSuggestion && state.scenario.stages.includes(output.stageSuggestion)) {
       const prevStage = state.scenario.currentStage;
       state.scenario.currentStage = output.stageSuggestion;
+      stageChanged = true;
 
       // Track module usage
       const prevModuleId = `mod_${prevStage}`;
@@ -121,7 +125,28 @@ export class GameStateService {
         state.currentCycle = (state.currentCycle ?? 1) + 1;
       }
     }
+
     state.round += 1;
+
+    // Auto-advance: if stuck in the same stage for 20+ rounds, force advance to next stage
+    const MAX_ROUNDS_PER_STAGE = 20;
+    if (!stageChanged && (state.round - (state.stageEnteredAtRound ?? 0)) >= MAX_ROUNDS_PER_STAGE) {
+      const currentIdx = state.scenario.stages.indexOf(state.scenario.currentStage);
+      if (currentIdx >= 0 && currentIdx < state.scenario.stages.length - 1) {
+        const nextStage = state.scenario.stages[currentIdx + 1];
+        const prevStage = state.scenario.currentStage;
+        state.scenario.currentStage = nextStage;
+        state.stageEnteredAtRound = state.round;
+        stageChanged = true;
+        logger.info({ sessionId, prevStage, nextStage, round: state.round }, "auto-advanced stage (20 rounds limit)");
+      }
+    }
+
+    // Update stageEnteredAtRound when stage changes
+    if (stageChanged) {
+      state.stageEnteredAtRound = state.round;
+    }
+
     state.lastSpeakerId = speakerId;
     state.updatedAt = new Date().toISOString();
     state.status = state.characters.some((item) => item.isDefeated)

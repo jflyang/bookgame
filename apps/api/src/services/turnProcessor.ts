@@ -20,14 +20,22 @@ class StreamContentExtractor {
   private emitted = 0;
   private buf = "";
   private detectedJson = false;
+  private charCount = 0;
 
   feed(chunk: string): string {
     this.buf += chunk;
+    this.charCount += chunk.length;
     // Detect JSON early
     if (!this.detectedJson && /\{"speakerId"\s*:/.test(this.buf)) {
       this.detectedJson = true;
     }
-    if (!this.detectedJson) return chunk; // pass-through until JSON confirmed
+    // If we haven't detected JSON yet, don't output anything —
+    // wait until we can confirm it's JSON and extract narration/dialogue.
+    // Only pass-through if we've seen 2000+ chars without JSON (unlikely to be JSON at all).
+    if (!this.detectedJson) {
+      if (this.charCount > 2000) return chunk; // give up waiting, pass-through
+      return "";
+    }
 
     const full = extractNarrationDialogue(this.buf);
     if (full.length <= this.emitted) return "";
@@ -58,6 +66,9 @@ function unescapeJsonString(s: string): string {
     return char; // \" \\ \/ etc
   });
 }
+
+// Alias for use in the class method context
+const unescapeJsonStr = unescapeJsonString;
 
 export class TurnProcessor {
   constructor(
@@ -180,8 +191,36 @@ export class TurnProcessor {
       try {
         rawOutput = JSON.parse(rawBuffer);
       } catch (parseErr) {
-        logger.warn({ parseErr, rawBufferPreview: rawBuffer.slice(0, 200) }, "LLM returned non-JSON output, using fallback");
-        rawOutput = { speakerId, narration: rawBuffer, dialogue: rawBuffer.slice(0, 50), action: { type: "observe" as const, targetIds: [] } };
+        // Try to extract JSON from mixed content (e.g., reasoning + JSON)
+        const jsonMatch = rawBuffer.match(/\{[\s\S]*"speakerId"[\s\S]*"narration"[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            rawOutput = JSON.parse(jsonMatch[0]);
+            logger.info("extracted JSON from mixed stream content");
+          } catch {
+            rawOutput = null;
+          }
+        }
+        // If full JSON parse failed, try to extract fields with regex
+        if (!rawOutput) {
+          const narrationMatch = rawBuffer.match(/"narration"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+          const dialogueMatch = rawBuffer.match(/"dialogue"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+          if (narrationMatch && dialogueMatch) {
+            const speakerMatch = rawBuffer.match(/"speakerId"\s*:\s*"([^"]+)"/);
+            rawOutput = {
+              speakerId: speakerMatch?.[1] || speakerId,
+              narration: unescapeJsonStr(narrationMatch[1]),
+              dialogue: unescapeJsonStr(dialogueMatch[1]),
+              action: { type: "observe", targetIds: [] },
+              stateDeltaSuggestion: {}
+            };
+            logger.info("extracted fields via regex from incomplete JSON");
+          } else {
+            logger.warn({ parseErr, rawBufferPreview: rawBuffer.slice(0, 200) }, "LLM returned non-JSON output, using fallback");
+            const text = rawBuffer.trim() || "（模型未返回有效内容）";
+            rawOutput = { speakerId, narration: text, dialogue: text.slice(0, 100), action: { type: "observe" as const, targetIds: [] }, stateDeltaSuggestion: {} };
+          }
+        }
       }
 
       try {

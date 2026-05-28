@@ -15,13 +15,15 @@ export class PromptService {
     const roster = this.characters.list();
     const otherCharacterNames = roster.filter((item) => item.id !== speakerId).map((item) => item.name).join("、");
     const enabledRules = storyPackage?.promptRules.filter((rule) => rule.enabled) ?? [];
-    const scenarioSetting = storyPackage?.storySettingPrompt || JSON.stringify(state.scenario);
     const introNarration = storyPackage?.uiConfig?.scene?.introNarration;
     const stageGuide = this.buildStageGuide(state, storyPackage);
 
-    const availableSkills = this.skills.list();
-    const skillListText = availableSkills.length > 0
-      ? `可用技能列表（使用 type=skill 时 skillId 必须填以下技能名）：\n${availableSkills.map((s) => `- ${s.id} (内力:${s.cost.mp}${s.damage ? `, 伤害:${s.damage.min}~${s.damage.max}` : ""})${s.effect ? `: ${s.effect}` : ""}`).join("\n")}`
+    // --- Optimized: only current speaker's skills ---
+    const allSkills = this.skills.list();
+    const speakerSkills = allSkills.filter((s) => s.ownerId === speakerId);
+    const skillsToShow = speakerSkills.length > 0 ? speakerSkills : allSkills;
+    const skillListText = skillsToShow.length > 0
+      ? `当前角色可用技能：\n${skillsToShow.map((s) => `- ${s.id} (内力:${s.cost.mp}${s.damage ? `, 伤害:${s.damage.min}~${s.damage.max}` : ""})${s.effect ? `: ${s.effect}` : ""}`).join("\n")}`
       : "";
 
     const attackableIds = speaker.attackableTargetIds ?? [];
@@ -29,41 +31,61 @@ export class PromptService {
       .map((tid) => roster.find((c) => c.id === tid)?.name)
       .filter((n): n is string => !!n);
     const attackTargetsText = attackableNames.length > 0
-      ? `当前角色可攻击的目标：${attackableNames.join("、")}。使用 type=skill 时 targetIds 必须从这些目标中选择。`
+      ? `可攻击目标：${attackableNames.join("、")}。`
+      : "";
+
+    // --- Optimized: compact state (only HP/MP per character) ---
+    const compactState = state.characters.map((c) => {
+      const name = roster.find((r) => r.id === c.characterId)?.name ?? c.characterId;
+      return `${name}(${c.characterId}): HP${c.hp} MP${c.mp}${c.isDefeated ? " [败]" : ""}`;
+    }).join("、");
+
+    // --- Optimized: only current stage from story setting ---
+    const currentStageDetail = state.scenario.stageDetails.find((s) => s.id === state.scenario.currentStage);
+    const stageContext = currentStageDetail
+      ? `当前阶段「${currentStageDetail.title || state.scenario.currentStage}」：${currentStageDetail.description}${currentStageDetail.guidance ? `\n推进建议：${currentStageDetail.guidance}` : ""}`
+      : `当前阶段：${state.scenario.currentStage}`;
+
+    // --- Recent history (last 10 messages, with full context) ---
+    const recentHistory = history.slice(-10).map((m) => {
+      const name = m.speakerId ? (roster.find((r) => r.id === m.speakerId)?.name ?? m.speakerId) : "玩家";
+      const text = m.content.length > 1000 ? m.content.slice(0, 1000) + "…" : m.content;
+      return `[${name}] ${text}`;
+    }).join("\n");
+
+    // --- Knowledge hits: full content but only for current speaker ---
+    const compactKnowledge = knowledgeHits.length > 0
+      ? knowledgeHits.map((hit: { title?: string; content: string }) => {
+          const title = hit.title ? `【${hit.title}】` : "";
+          return `${title}${hit.content}`;
+        }).join("\n")
       : "";
 
     return [
       "你正在驱动一个多人角色互动故事游戏。每次只有一个角色发言。",
       "当前发言者只能扮演自己，不能替其他角色说话、行动或描写心理。",
-      "输出必须是严格 JSON，不要包 Markdown 代码块。字段说明：",
-      "  speakerId: 当前发言角色 ID",
-      "  narration: 场景叙述（纯文本，必须非空）",
-      "  dialogue: 角色对话（纯文本，必须非空）",
-      "  action: { type: \"skill\"|\"observe\"|\"command\"|\"defend\"|\"escape\", skillId?: 必须从上面「可用技能列表」中选一个技能ID(如skill_resist), targetIds: 目标角色ID数组 }。注意：skillId 填的是技能ID(英文)，不是技能中文名。不确定时用 type=\"observe\" 或不填 skillId。",
-      "  stateDeltaSuggestion: { 角色ID_hp: 整数变化值, 角色ID_mp: 整数变化值 } 实际的状态变更(例如 {\"dingchunqiu_hp\": -35, \"xuzhu_mp\": -20})。若你在叙事/对话中宣告了攻击和伤害，此处必须包含目标HP减少条目，不能为空。",
-      "  stageSuggestion: 可选，建议推进到的阶段ID",
-      "当你使用当前角色知识库中的招式、设定、称号、道具或关键知识时，必须把对应的关键词或短句用 **粗体** 标出；未使用知识库内容时不要强行加粗。",
-      "如果知识库技能卡写有「表演」或「触发词」，你可以根据剧情自然决定是否发动；发动时必须加粗该招式名或触发词。",
+      "输出严格 JSON（不要 Markdown 代码块）：{\"speakerId\":\"角色ID\",\"narration\":\"场景叙述(非空)\",\"dialogue\":\"角色对话(非空)\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId?\":\"技能ID\",\"targetIds\":[\"目标ID\"]},\"stateDeltaSuggestion\":{\"角色ID_hp\":-数值,\"角色ID_mp\":-数值},\"stageSuggestion?\":\"阶段ID\"}",
+      "若叙事中宣告攻击伤害，stateDeltaSuggestion 必须包含目标 HP 减少条目。使用知识库招式时用 **粗体** 标出。",
       skillListText,
       attackTargetsText,
       ...this.renderRules(enabledRules, {
         currentCharacterName: speaker.name,
         otherCharacterNames,
-        scenarioSetting,
-        retrievedKnowledge: JSON.stringify(knowledgeHits),
-        currentGameState: JSON.stringify(state.characters),
-        recentHistory: JSON.stringify(history)
+        scenarioSetting: stageContext,
+        retrievedKnowledge: compactKnowledge,
+        currentGameState: compactState,
+        recentHistory
       }),
-      `群聊成员：${roster.map((item) => `${item.name}(${item.role})`).join("、")}`,
-      `当前角色：${speaker.name}`,
-      `角色主提示词：${speaker.personaPrompt}`,
-      `检索到的角色知识库片段：${JSON.stringify(knowledgeHits)}`,
-      `故事包主设定提示词：${scenarioSetting}`,
-      ...(introNarration ? [`开场旁白（场景叙述，供你参考剧情起点）：${introNarration}`] : []),
+      `群聊成员：${roster.map((item) => `${item.name}(${item.id},${item.role})`).join("、")}`,
+      `当前角色：${speaker.name}(${speakerId})`,
+      `人设：${speaker.personaPrompt}`,
+      compactKnowledge ? `知识库：\n${compactKnowledge}` : "",
+      `${stageContext}`,
+      ...(introNarration ? [`开场旁白：${introNarration}`] : []),
       `剧情阶段信息：\n${stageGuide}`,
-      `游戏状态：${JSON.stringify(state.characters)}`,
-      `最近历史：${JSON.stringify(history)}`
-    ].join("\n\n");
+      `当前状态：${compactState}`,
+      `最近对话：\n${recentHistory}`
+    ].filter(Boolean).join("\n\n");
   }
 
   private renderRules(rules: StoryPromptRule[], variables: Record<string, string>) {
@@ -101,12 +123,16 @@ export class PromptService {
     }).join("\n");
 
     const branchGuide = this.buildBranchGuide(currentDetail);
+    const directiveText = currentDetail?.directive
+      ? `【阶段指令·必须推动】${currentDetail.directive}\n你必须在本阶段的叙述中自然地引导到这个方向发生，可以用1-2回合铺垫过渡，不要生硬插入。`
+      : "";
 
     return [
       `当前剧情阶段：${state.scenario.currentStage}`,
       `可用剧情阶段：${state.scenario.stages.join(" -> ")}`,
       `阶段卡片说明：\n${stageDetails || "未配置阶段说明，只能参考阶段 ID。"}`,
       branchGuide,
+      directiveText,
       `当前剧情目标：${state.scenario.currentGoal}`,
       currentDetail?.isChoicePoint
         ? "当前阶段是抉择点——不要填写 stageSuggestion，让叙述自然引出玩家选择。"
@@ -161,6 +187,11 @@ export class PromptService {
     }
 
     if (branchGuide) lines.push(branchGuide);
+
+    const directiveText = currentDetail?.directive
+      ? `【阶段指令·必须推动】${currentDetail.directive}\n你必须在本阶段的叙述中自然地引导到这个方向发生，可以用1-2回合铺垫过渡，不要生硬插入。`
+      : "";
+    if (directiveText) lines.push(directiveText);
 
     lines.push(
       currentDetail?.isChoicePoint
