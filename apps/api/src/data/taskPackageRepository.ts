@@ -55,6 +55,16 @@ export class TaskPackageRepository {
       const pkg = storyPackageSchema.parse(JSON.parse(readFileSync(entryFile, "utf-8")));
       // Override id with directory name — the directory IS the primary key
       pkg.id = id;
+      // Prefer split scenario.json (may have newer fields like directive)
+      const scenarioFile = resolveInside(dir, "scenario.json");
+      if (existsSync(scenarioFile)) {
+        try {
+          const scenarioRaw = JSON.parse(readFileSync(scenarioFile, "utf-8"));
+          if (scenarioRaw.id && scenarioRaw.stages) {
+            pkg.scenario = scenarioRaw;
+          }
+        } catch { /* ignore, use embedded */ }
+      }
       // Fix thumbnail URL to match directory-based id
       if (pkg.thumbnail && pkg.thumbnail.startsWith("/api/admin/media/")) {
         pkg.thumbnail = `/api/admin/media/${id}`;
