@@ -1,0 +1,37 @@
+{
+  "nodes": [
+    { "id": "node_start", "type": "start", "position": { "x": 400, "y": -80 }, "data": { "label": "开始：心有所想" } },
+    { "id": "node_1", "type": "module", "position": { "x": 400, "y": 40 }, "data": { "label": "① 冠军之路", "moduleRef": "mod_1", "colorKey": "training" } },
+    { "id": "node_2", "type": "module", "position": { "x": 400, "y": 160 }, "data": { "label": "② 粉丝包围", "moduleRef": "mod_2", "colorKey": "daily" } },
+    { "id": "node_3", "type": "module", "position": { "x": 400, "y": 280 }, "data": { "label": "③ 美云的烦恼", "moduleRef": "mod_3", "colorKey": "punishment" } },
+    { "id": "node_choice_1", "type": "choice", "position": { "x": 400, "y": 400 }, "data": { "label": "⚡ 心动抉择", "branches": [
+      { "targetStage": "mod_4a", "choiceText": "守护婚姻", "description": "安抚美云、拒绝丽云的诱惑，守护与妻子的承诺。" },
+      { "targetStage": "mod_4b", "choiceText": "暧昧摇摆", "description": "在两个女人之间摇摆不定，享受被争夺的快感。" },
+      { "targetStage": "mod_4c", "choiceText": "放纵激情", "description": "接受丽云的大胆追求，在夏日海滩上释放压抑的欲望。" }
+    ] } },
+    { "id": "node_4a", "type": "module", "position": { "x": 50, "y": 520 }, "data": { "label": "④A 贤妻守护", "moduleRef": "mod_4a", "colorKey": "serving" } },
+    { "id": "node_5a", "type": "module", "position": { "x": 50, "y": 640 }, "data": { "label": "⑤A 深情告白", "moduleRef": "mod_5a", "colorKey": "daily" } },
+    { "id": "node_4b", "type": "module", "position": { "x": 400, "y": 520 }, "data": { "label": "④B 黑玫瑰护驾", "moduleRef": "mod_4b", "colorKey": "daily" } },
+    { "id": "node_5b", "type": "module", "position": { "x": 400, "y": 640 }, "data": { "label": "⑤B 西沙湾之约", "moduleRef": "mod_5b", "colorKey": "event" } },
+    { "id": "node_4c", "type": "module", "position": { "x": 750, "y": 520 }, "data": { "label": "④C 大胆挑逗", "moduleRef": "mod_4c", "colorKey": "punishment" } },
+    { "id": "node_5c", "type": "module", "position": { "x": 750, "y": 640 }, "data": { "label": "⑤C 沙滩激情", "moduleRef": "mod_5c", "colorKey": "event" } },
+    { "id": "node_6", "type": "module", "position": { "x": 400, "y": 780 }, "data": { "label": "⑥ 余韵与归途", "moduleRef": "mod_6", "colorKey": "serving" } },
+    { "id": "node_end", "type": "end", "position": { "x": 400, "y": 900 }, "data": { "label": "夏日故事结束" } }
+  ],
+  "edges": [
+    { "id": "e_start_1", "source": "node_start", "target": "node_1" },
+    { "id": "e_1_2", "source": "node_1", "target": "node_2" },
+    { "id": "e_2_3", "source": "node_2", "target": "node_3" },
+    { "id": "e_3_choice1", "source": "node_3", "target": "node_choice_1" },
+    { "id": "e_choice1_4a", "source": "node_choice_1", "target": "node_4a", "sourceHandle": "branch_0" },
+    { "id": "e_4a_5a", "source": "node_4a", "target": "node_5a" },
+    { "id": "e_5a_6", "source": "node_5a", "target": "node_6" },
+    { "id": "e_choice1_4b", "source": "node_choice_1", "target": "node_4b", "sourceHandle": "branch_1" },
+    { "id": "e_4b_5b", "source": "node_4b", "target": "node_5b" },
+    { "id": "e_5b_6", "source": "node_5b", "target": "node_6" },
+    { "id": "e_choice1_4c", "source": "node_choice_1", "target": "node_4c", "sourceHandle": "branch_2" },
+    { "id": "e_4c_5c", "source": "node_4c", "target": "node_5c" },
+    { "id": "e_5c_6", "source": "node_5c", "target": "node_6" },
+    { "id": "e_6_end", "source": "node_6", "target": "node_end" }
+  ]
+}

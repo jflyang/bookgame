@@ -1,0 +1,297 @@
+{
+  "id": "深宫心结",
+  "type": "story-plugin",
+  "schemaVersion": "2",
+  "title": "深宫心结",
+  "description": "一入宫门深似海。令妃魏婉清在暗中调查后宫连环流产真相时，发现所有线索都指向那位母仪天下的皇后。纯妃怀孕了——她会是下一个受害者，还是令妃翻盘的突破口？扣人心弦的清宫宫斗阴谋故事。",
+  "version": "1.0.0",
+  "author": "",
+  "capabilities": {
+    "audio": true,
+    "customFonts": false,
+    "customCss": false,
+    "characterPortraits": true,
+    "backgroundImages": true,
+    "performances": true
+  },
+  "audio": {
+    "bgm": {
+      "scenes": {}
+    },
+    "sfx": {}
+  },
+  "images": {
+    "portraits": {},
+    "backgrounds": {}
+  },
+  "fonts": {},
+  "performances": {
+    "sfx_lingfei_miansheng_chenqing": {
+      "name": "面圣陈情",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "lingfei",
+        "knowledgeTitle": "面圣陈情",
+        "keywords": [
+          "面圣陈情",
+          "当面对质",
+          "摊牌"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_lingfei_anzhong_chatan": {
+      "name": "暗中查探",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "lingfei",
+        "knowledgeTitle": "暗中查探",
+        "keywords": [
+          "暗中查探",
+          "秘密调查",
+          "收集线索"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_lingfei_rouyu_shitan": {
+      "name": "柔语试探",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "lingfei",
+        "knowledgeTitle": "柔语试探",
+        "keywords": [
+          "柔语试探",
+          "旁敲侧击",
+          "试探"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_lingfei_qiaoyan_zibao": {
+      "name": "巧言自保",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "lingfei",
+        "knowledgeTitle": "巧言自保",
+        "keywords": [
+          "巧言自保",
+          "化解危机",
+          "自证清白"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_lingfei_zhengju_shouji": {
+      "name": "证据收集",
+      "renderer": "audio",
+      "durationMs": 1800,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "lingfei",
+        "knowledgeTitle": "证据收集",
+        "keywords": [
+          "证据收集",
+          "找到线索",
+          "关键发现"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_huanghou_xianhou_mianju": {
+      "name": "贤后面具",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "huanghou",
+        "knowledgeTitle": "贤后面具",
+        "keywords": [
+          "贤后面具",
+          "完美皇后",
+          "母仪天下"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_huanghou_wuxing_toudu": {
+      "name": "无形投毒",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "huanghou",
+        "knowledgeTitle": "无形投毒",
+        "keywords": [
+          "无形投毒",
+          "下药",
+          "安胎药"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_huanghou_jiahuo_zaizang": {
+      "name": "嫁祸栽赃",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "huanghou",
+        "knowledgeTitle": "嫁祸栽赃",
+        "keywords": [
+          "嫁祸栽赃",
+          "设计陷害",
+          "栽赃"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_huanghou_hougong_zhangkong": {
+      "name": "后宫掌控",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "huanghou",
+        "knowledgeTitle": "后宫掌控",
+        "keywords": [
+          "后宫掌控",
+          "封锁宫禁",
+          "调离人手"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_duanpin_sheming_zuozheng": {
+      "name": "舍命作证",
+      "renderer": "audio",
+      "durationMs": 2500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "duanpin",
+        "knowledgeTitle": "舍命作证",
+        "keywords": [
+          "舍命作证",
+          "站出来",
+          "说出真相"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_huangdi_shengcai_caijue": {
+      "name": "圣裁裁决",
+      "renderer": "audio",
+      "durationMs": 2500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "huangdi",
+        "knowledgeTitle": "圣裁裁决",
+        "keywords": [
+          "圣裁裁决",
+          "皇上裁决",
+          "最终决定"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    }
+  },
+  "entry": "task-package.json",
+  "createdAt": "2026-05-28T00:00:00.000Z",
+  "updatedAt": "2026-05-28T16:10:31.478Z"
+}

@@ -1,0 +1,201 @@
+{
+  "id": "flow_lengshuang_main",
+  "title": "冷霜风云主线流程",
+  "description": "",
+  "linearPhases": {
+    "act1_capture": {
+      "title": "第一幕：落网废武",
+      "sequence": [
+        "mod_stage_1",
+        "mod_stage_2",
+        "mod_stage_3",
+        "mod_stage_4"
+      ],
+      "afterAll": "act2_initiation"
+    },
+    "act2_initiation": {
+      "title": "第二幕：侍女初训",
+      "sequence": [
+        "mod_stage_5",
+        "mod_stage_6",
+        "mod_stage_7",
+        "mod_stage_8",
+        "mod_stage_9",
+        "mod_stage_10"
+      ],
+      "afterAll": "act3_punishment"
+    },
+    "act3_punishment": {
+      "title": "第三幕：惩罚与感官",
+      "sequence": [
+        "mod_stage_11",
+        "mod_stage_12",
+        "mod_stage_13",
+        "mod_stage_14",
+        "mod_stage_15"
+      ],
+      "afterAll": "act4_willbreak"
+    },
+    "act4_willbreak": {
+      "title": "第四幕：意志崩坏",
+      "sequence": [
+        "mod_stage_16",
+        "mod_stage_17",
+        "mod_stage_18",
+        "mod_stage_19",
+        "mod_stage_20"
+      ],
+      "afterAll": "serving_loop"
+    }
+  },
+  "servingLoop": {
+    "id": "serving_loop",
+    "title": "侍寝循环（核心机制）",
+    "description": "侍寝→判断→不满意→惩戒→换方式再侍寝→直到帝王满意。循环可多次反复。",
+    "initialCycle": 1,
+    "maxCycles": null,
+    "serveModuleByCycle": {
+      "1": "mod_stage_21",
+      "2": "mod_stage_23",
+      "3": "mod_stage_25",
+      "4": "mod_stage_26",
+      "default": "mod_stage_29"
+    },
+    "punishModuleByCycle": {},
+    "judgmentNode": {
+      "id": "node_judge_cycle_1",
+      "type": "judgment",
+      "judge": "emperor",
+      "description": "帝王对本次侍寝做出满意/不满意判断",
+      "scoringMethods": {
+        "score_3d": {
+          "dimensions": {
+            "bodyCoordination": {
+              "name": "身体配合度",
+              "min": 1,
+              "max": 5,
+              "description": "是否主动迎合节奏、身体律动是否自然"
+            },
+            "voiceExpression": {
+              "name": "声音表达度",
+              "min": 1,
+              "max": 5,
+              "description": "呻吟是否发自内心、臣服话语是否真诚"
+            },
+            "eyeSubmission": {
+              "name": "眼神臣服度",
+              "min": 1,
+              "max": 5,
+              "description": "眼神是否表达真正的归属与敬畏"
+            }
+          },
+          "thresholdsByCycle": {
+            "1": {
+              "total": 7,
+              "perDimension": 2
+            },
+            "2": {
+              "total": 8,
+              "perDimension": 2
+            },
+            "3": {
+              "total": 10,
+              "perDimension": 3
+            },
+            "default": {
+              "total": 12,
+              "perDimension": 4
+            }
+          }
+        },
+        "score_4trials_random": {
+          "trials": [
+            {
+              "id": "oral",
+              "name": "口交",
+              "description": "用嘴唇和舌头真诚侍奉帝王"
+            },
+            {
+              "id": "moan",
+              "name": "呻吟",
+              "description": "声音自然真诚，不能刻意表演"
+            },
+            {
+              "id": "kiss",
+              "name": "亲吻",
+              "description": "主动寻求帝王的唇，表达渴望"
+            },
+            {
+              "id": "no_climax",
+              "name": "禁止高潮",
+              "description": "媚药作用下克制原始冲动"
+            }
+          ],
+          "allTrialsMustPass": true,
+          "randomFailChance": 0.5,
+          "randomFailMessage": "帝王心意不可预测——四重考验全部通过，但帝王随机判定为失败。"
+        }
+      },
+      "routes": {
+        "satisfied": {
+          "condition": "score >= threshold (score_3d) OR all trials pass + random pass (score_4trials_random)",
+          "target": "finale_sequence",
+          "targetModule": "mod_stage_31"
+        },
+        "unsatisfied": {
+          "condition": "score < threshold (score_3d) OR any trial fail OR random fail (score_4trials_random)",
+          "target": "serving_loop.punishThenReServe"
+        }
+      }
+    }
+  },
+  "finaleSequence": {
+    "title": "第六幕：新生侍女",
+    "sequence": [
+      "mod_stage_31",
+      "mod_stage_32",
+      "mod_stage_33",
+      "mod_stage_34",
+      "mod_stage_35"
+    ],
+    "description": ""
+  },
+  "dailySystem": {
+    "title": "日常惩罚体系",
+    "description": "",
+    "availableModules": [
+      "mod_daily_wearables",
+      "mod_daily_morning_inspection",
+      "mod_daily_kneel_day",
+      "mod_daily_silence_day",
+      "mod_daily_dog_bowl",
+      "mod_daily_sleep_punish"
+    ],
+    "triggerRules": [
+      {
+        "module": "mod_daily_wearables",
+        "trigger": "每日清晨（⑤阶段起每日触发）"
+      },
+      {
+        "module": "mod_daily_morning_inspection",
+        "trigger": "每日晨间器具检查后（⑦阶段起每日触发）"
+      },
+      {
+        "module": "mod_daily_kneel_day",
+        "trigger": "火娘可指定每周任意一天为跪行日"
+      },
+      {
+        "module": "mod_daily_silence_day",
+        "trigger": "火娘可指定任意一天为禁言日"
+      },
+      {
+        "module": "mod_daily_dog_bowl",
+        "trigger": "每次惩戒次日自动触发"
+      },
+      {
+        "module": "mod_daily_sleep_punish",
+        "trigger": "每次惩戒当晚自动触发"
+      }
+    ]
+  }
+}

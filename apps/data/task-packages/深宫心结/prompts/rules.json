@@ -1,0 +1,44 @@
+[
+  {
+    "id": "rule_knowledge_forcing",
+    "title": "知识库强制查阅",
+    "category": "knowledge_forcing",
+    "content": "你必须查阅知识库，使用角色知识库中的技能名称和描述来生成回复。所有技能名称和关键动作必须用 **粗体** 标出。",
+    "enabled": true
+  },
+  {
+    "id": "rule_group_chat_boundary",
+    "title": "群聊发言规则",
+    "category": "group_chat_boundary",
+    "content": "当前发言人：{currentCharacterName}。其他角色 {otherCharacterNames} 只能在被点名或剧情需要时发言。每人每次只说一段。",
+    "enabled": true
+  },
+  {
+    "id": "rule_scenario_injection",
+    "title": "场景注入",
+    "category": "scenario_injection",
+    "content": "{scenarioSetting}",
+    "enabled": true
+  },
+  {
+    "id": "rule_state_output",
+    "title": "状态输出格式",
+    "category": "state_output",
+    "content": "每轮输出后必须包含所有角色的当前状态。",
+    "enabled": true
+  },
+  {
+    "id": "rule_history_state",
+    "title": "历史状态",
+    "category": "history_state",
+    "content": "最近对话历史：\n{recentHistory}\n\n当前游戏状态：\n{currentGameState}",
+    "enabled": true
+  },
+  {
+    "id": "rule_stage_progression",
+    "title": "宫斗推进铁律",
+    "category": "custom",
+    "content": "【宫斗推进铁律】\n\n本故事共7个阶段。每个阶段的氛围、技能分配、推进条件详见\"剧情阶段信息\"中的阶段卡片。必须严格按照①→⑦顺序推进。\n\n═══════════════════════════════════════\n核心铁律\n═══════════════════════════════════════\n\n❌ 禁止在①②阶段暴露皇后的真面目（必须在众人面前维持贤后形象）\n❌ 禁止令妃在没有证据的情况下公开指控任何人（她太聪明了不会犯这种错）\n❌ 禁止皇上过早介入（皇上只在④⑥⑧阶段出现作为裁决者）\n❌ 禁止跳过'嫁祸陷害'阶段——这是宫斗剧的低谷高潮\n\n✅ 令妃的每一步都必须建立在观察和逻辑推理上，不能靠运气\n✅ 皇后的阴谋必须环环相扣滴水不漏，直到⑥才被揭穿\n✅ 端嫔的沉默和最终开口是整个剧情转折的关键\n✅ 每轮都要有阴谋推进——要么是令妃的新发现，要么是皇后的新布局\n✅ 人物对话要符合清宫礼仪规范但暗含机锋",
+    "enabled": true
+  }
+]

@@ -1,0 +1,92 @@
+{
+  "id": "flow_default",
+  "title": "小薇日记",
+  "description": "体育系大二学生小薇被少爷带入调教室，经历从囚鸟入笼到蜕变新生的完整调教之旅。柔驯与强驯两条路线，最终汇合于初次征服。",
+  "linearPhases": {
+    "act1_capture": {
+      "title": "第一幕：囚鸟入笼",
+      "sequence": [
+        "mod_stage_1",
+        "mod_stage_2",
+        "mod_stage_3",
+        "mod_stage_4",
+        "mod_stage_5",
+        "mod_stage_6",
+        "mod_stage_7",
+        "mod_stage_8"
+      ],
+      "description": "少爷将小薇带入调教室，从初吻到束缚、从乳环到暴露、从按摩到抉择——完成初步调教与命运分叉。",
+      "afterAll": "act2_initiation"
+    },
+    "act2_initiation": {
+      "title": "第二幕：柔情开发（服从路线）",
+      "sequence": [
+        "mod_stage_9a",
+        "mod_stage_10a",
+        "mod_stage_11a",
+        "mod_stage_12a",
+        "mod_stage_13a",
+        "mod_stage_14a"
+      ],
+      "description": "小薇选择服从。大姐以温柔方式逐步引导——蜜穴初尝、眼罩深吻、口舌教学，最终在边缘交付中完成侍奉初体验。",
+      "afterAll": "act4_willbreak"
+    },
+    "act3_punishment": {
+      "title": "第三幕：强制驯服（抵抗路线）",
+      "sequence": [
+        "mod_stage_9b",
+        "mod_stage_10b",
+        "mod_stage_11b",
+        "mod_stage_12b",
+        "mod_stage_13b",
+        "mod_stage_14b",
+        "mod_stage_15b",
+        "mod_stage_16b",
+        "mod_stage_17b",
+        "mod_stage_18b",
+        "mod_stage_19b",
+        "mod_stage_20b",
+        "mod_stage_21b",
+        "mod_stage_22b",
+        "mod_stage_23b",
+        "mod_stage_24b"
+      ],
+      "description": "小薇选择抵抗。大姐施以强制驯服——极限紧缚、春药涂乳、悬吊惩戒、边缘地狱，直至小薇崩溃臣服、幸福哭泣。",
+      "afterAll": "act4_willbreak"
+    },
+    "act4_willbreak": {
+      "title": "第四幕：初次征服",
+      "sequence": [
+        "mod_stage_21",
+        "mod_stage_22"
+      ],
+      "description": "两条路线在此汇合。少爷亲自完成对小薇的初次征服，事后温柔清理——从抗拒到接纳的转折点。"
+    }
+  },
+  "finaleSequence": {
+    "title": "终幕：蜕变新生",
+    "sequence": [
+      "mod_stage_25",
+      "mod_stage_26"
+    ],
+    "description": "小薇完成蜕变，从警惕抗拒的女大学生成为少爷的女人，在余韵中迎接新生。"
+  },
+  "dailySystem": {
+    "title": "日常体系",
+    "description": "每日例行触发的晨起梳妆与日常事件，维持侍奉生活的节奏感。",
+    "availableModules": [
+      "mod_stage_23",
+      "mod_stage_24"
+    ],
+    "triggerRules": [
+      {
+        "module": "mod_stage_23",
+        "trigger": "晨起梳妆"
+      },
+      {
+        "module": "mod_stage_24",
+        "trigger": "日常之始"
+      }
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "layout": {
+    "showCharacterPanel": true,
+    "showQuickActions": true,
+    "showDiceButton": true,
+    "showAutoPlay": true
+  },
+  "theme": {
+    "primaryColor": "#1a6b54",
+    "accentColor": "#14b8a6",
+    "backgroundColor": "#f7f1e7",
+    "surfaceColor": "#fffaf2",
+    "textColor": "#2f3133",
+    "headingFont": "STKaiti",
+    "bodyFont": "Inter",
+    "navBackground": "#0a1728"
+  },
+  "scene": {
+    "heading": "卧室.调教",
+    "introNarration": "夜色如墨，幽暗的秘殿内烛火摇曳，空气中弥漫着浓郁而甜腻的药香。仲平坐在宽大的黑檀主座上，嘴角带着一抹掌控一切的淡笑。他面前的巨大玉石平台上，三位姿容绝丽的姐妹被并排跪缚着。她们身上仅剩单薄的纱衣，双手反绑在身后，脚踝也被精致的金链相连，无法逃脱。大姐柳烟柔，端庄温婉；二姐柳烟柔，娇媚动人；三妹柳烟然，清纯如露。三人皆是世家千金，平日里高傲不可侵犯，如今却因家族败落而沦为仲平手中的禁脔。“今夜开始，你们将彻底明白——属于我的征服游戏，已经拉开序幕。”仲平缓缓起身，手中托着一只晶莹的玉瓶。瓶中是特制的极品媚药，名为「蚀骨清洗液」。它不仅能焚烧她们的身体，更会一点点瓦解她们的意志，让最骄傲的女人也化作只会娇喘求欢的奴隶。三位姐妹的眼中皆有惊恐与屈辱，身体却已因空气中淡淡的药香而微微发热。“不要……仲平，你这个魔鬼……”大姐柳烟柔咬着下唇，声音颤抖。仲平低笑一声，俯身捏住她的下巴：“很快，你们就会主动张开双腿，恳求我用这媚药为你们‘清洗’。身体、尊严、意志……我会一件一件，彻底驯服。”他打开玉瓶，浓烈的甜香瞬间充盈整个秘殿。禁忌的征服游戏，正式开始。三位姐妹的身体与灵魂，将在这场漫长的媚药仪式中，被彻底征服、调教、占有。",
+    "emptyTitle": "",
+    "emptyHint": ""
+  },
+  "labels": {
+    "hp": "气血",
+    "mp": "内力",
+    "characters": "登场角色",
+    "lastSpeaker": "上轮发言",
+    "continue": "继续",
+    "autoPlay": "自动继续",
+    "send": "发送",
+    "manageCharacters": "角色管理",
+    "rules": "故事规则",
+    "scenarioRules": "剧情规则",
+    "promptRules": "提示词规则",
+    "currentStatus": "当前状态",
+    "round": "回合",
+    "currentStage": "当前阶段",
+    "statusActive": "进行中",
+    "statusCompleted": "已结束",
+    "interactiveStory": "互动故事",
+    "storyManagement": "故事管理",
+    "viewRules": "查看规则"
+  },
+  "avatar": {
+    "style": "gradient"
+  }
+}

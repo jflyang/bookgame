@@ -1,0 +1,171 @@
+{
+  "nodes": [
+    { "id": "node_start", "type": "start", "position": { "x": 400, "y": -80 }, "data": { "label": "开始：深宫心结" } },
+
+    { "id": "node_1", "type": "module", "position": { "x": 400, "y": 40 }, "data": { "label": "① 暗潮初涌", "moduleRef": "mod_1", "colorKey": "training" } },
+    { "id": "node_2", "type": "module", "position": { "x": 400, "y": 150 }, "data": { "label": "② 蛛丝马迹", "moduleRef": "mod_2", "colorKey": "training" } },
+
+    { "id": "node_3", "type": "module", "position": { "x": 400, "y": 260 }, "data": { "label": "③ 皇后警觉", "moduleRef": "mod_3", "colorKey": "punishment" } },
+
+    { "id": "node_choice_1", "type": "choice", "position": { "x": 400, "y": 370 }, "data": { "label": "⚡ 第一步抉择", "branches": [
+      { "targetStage": "mod_4a", "choiceText": "暗中查探", "description": "暗中收集证据，以智取胜。高风险但一击致命的路线。" },
+      { "targetStage": "mod_4b", "choiceText": "正面交锋", "description": "联合纯妃正面应对，以情动人。更安全但可能暴露的路线。" }
+    ] } },
+
+    { "id": "node_4a", "type": "module", "position": { "x": 150, "y": 480 }, "data": { "label": "④A 暗中查探", "moduleRef": "mod_4a", "colorKey": "serving" } },
+    { "id": "node_5a", "type": "module", "position": { "x": 150, "y": 590 }, "data": { "label": "⑤A 药渣线索", "moduleRef": "mod_5a", "colorKey": "daily" } },
+    { "id": "node_6a", "type": "module", "position": { "x": 150, "y": 700 }, "data": { "label": "⑥A 策反宫女", "moduleRef": "mod_6a", "colorKey": "event" } },
+
+    { "id": "node_4b", "type": "module", "position": { "x": 650, "y": 480 }, "data": { "label": "④B 正面交锋", "moduleRef": "mod_4b", "colorKey": "punishment" } },
+    { "id": "node_5b", "type": "module", "position": { "x": 650, "y": 590 }, "data": { "label": "⑤B 纯妃觉醒", "moduleRef": "mod_5b", "colorKey": "daily" } },
+    { "id": "node_6b", "type": "module", "position": { "x": 650, "y": 700 }, "data": { "label": "⑥B 联合纯妃", "moduleRef": "mod_6b", "colorKey": "event" } },
+
+    { "id": "node_7", "type": "module", "position": { "x": 400, "y": 820 }, "data": { "label": "⑦ 皇后反击", "moduleRef": "mod_7", "colorKey": "punishment" } },
+
+    { "id": "node_choice_2", "type": "choice", "position": { "x": 400, "y": 930 }, "data": { "label": "⚡ 第二步抉择", "branches": [
+      { "targetStage": "mod_8a", "choiceText": "以退为进", "description": "示弱保身，让皇后放松警惕，待其露出致命破绽。" },
+      { "targetStage": "mod_8b", "choiceText": "借力打力", "description": "暗中笼络端嫔、联合纯妃，组建秘密联盟对抗皇后。" },
+      { "targetStage": "mod_8c", "choiceText": "正面破局", "description": "向皇上巧妙进言，逼皇后仓促行动反而留下破绽。" }
+    ] } },
+
+    { "id": "node_8a", "type": "module", "position": { "x": 50, "y": 1040 }, "data": { "label": "⑧A 以退为进", "moduleRef": "mod_8a", "colorKey": "serving" } },
+    { "id": "node_9a", "type": "module", "position": { "x": 50, "y": 1150 }, "data": { "label": "⑨A 皇后松懈", "moduleRef": "mod_9a", "colorKey": "daily" } },
+
+    { "id": "node_8b", "type": "module", "position": { "x": 400, "y": 1040 }, "data": { "label": "⑧B 借力打力", "moduleRef": "mod_8b", "colorKey": "daily" } },
+    { "id": "node_9b", "type": "module", "position": { "x": 400, "y": 1150 }, "data": { "label": "⑨B 联盟成形", "moduleRef": "mod_9b", "colorKey": "event" } },
+
+    { "id": "node_8c", "type": "module", "position": { "x": 750, "y": 1040 }, "data": { "label": "⑧C 正面破局", "moduleRef": "mod_8c", "colorKey": "punishment" } },
+    { "id": "node_9c", "type": "module", "position": { "x": 750, "y": 1150 }, "data": { "label": "⑨C 皇后反扑", "moduleRef": "mod_9c", "colorKey": "punishment" } },
+
+    { "id": "node_10", "type": "module", "position": { "x": 400, "y": 1280 }, "data": { "label": "⑩ 证据浮现", "moduleRef": "mod_10", "colorKey": "event" } },
+
+    { "id": "node_choice_3", "type": "choice", "position": { "x": 400, "y": 1390 }, "data": { "label": "⚡ 第三步抉择", "branches": [
+      { "targetStage": "mod_11a", "choiceText": "端嫔路线", "description": "说服端嫔站出来作证，用五年前的人证压垮皇后。" },
+      { "targetStage": "mod_11b", "choiceText": "纯妃路线", "description": "让纯妃以受害者的身份站出来，用活体证据指控皇后。" }
+    ] } },
+
+    { "id": "node_11a", "type": "module", "position": { "x": 200, "y": 1500 }, "data": { "label": "⑪A 端嫔路线", "moduleRef": "mod_11a", "colorKey": "daily" } },
+    { "id": "node_12a", "type": "module", "position": { "x": 200, "y": 1610 }, "data": { "label": "⑫A 舍命作证", "moduleRef": "mod_12a", "colorKey": "event" } },
+
+    { "id": "node_11b", "type": "module", "position": { "x": 600, "y": 1500 }, "data": { "label": "⑪B 纯妃路线", "moduleRef": "mod_11b", "colorKey": "daily" } },
+    { "id": "node_12b", "type": "module", "position": { "x": 600, "y": 1610 }, "data": { "label": "⑫B 当场指控", "moduleRef": "mod_12b", "colorKey": "event" } },
+
+    { "id": "node_13", "type": "module", "position": { "x": 400, "y": 1740 }, "data": { "label": "⑬ 养心殿对决", "moduleRef": "mod_13", "colorKey": "event" } },
+
+    { "id": "node_choice_4", "type": "choice", "position": { "x": 400, "y": 1850 }, "data": { "label": "⚡ 最终抉择", "branches": [
+      { "targetStage": "mod_14a", "choiceText": "理性陈述", "description": "用完整的证据链和严密的逻辑压倒皇后——证据就是最强的武器。" },
+      { "targetStage": "mod_14b", "choiceText": "情感打动", "description": "以纯妃的眼泪和端嫔的恐惧打动皇上——人心比证据更有力。" },
+      { "targetStage": "mod_14c", "choiceText": "冒险激将", "description": "主动激怒皇后，让她在盛怒之下自曝罪行——但风险极大。" }
+    ] } },
+
+    { "id": "node_14a", "type": "module", "position": { "x": 50, "y": 1960 }, "data": { "label": "⑭A 理性陈述", "moduleRef": "mod_14a", "colorKey": "training" } },
+    { "id": "node_15a", "type": "module", "position": { "x": 50, "y": 2070 }, "data": { "label": "⑮A 铁证如山", "moduleRef": "mod_15a", "colorKey": "event" } },
+
+    { "id": "node_14b", "type": "module", "position": { "x": 400, "y": 1960 }, "data": { "label": "⑭B 情感打动", "moduleRef": "mod_14b", "colorKey": "training" } },
+    { "id": "node_15b", "type": "module", "position": { "x": 400, "y": 2070 }, "data": { "label": "⑮B 以情动人", "moduleRef": "mod_15b", "colorKey": "event" } },
+
+    { "id": "node_14c", "type": "module", "position": { "x": 750, "y": 1960 }, "data": { "label": "⑭C 冒险激将", "moduleRef": "mod_14c", "colorKey": "punishment" } },
+    { "id": "node_15c", "type": "module", "position": { "x": 750, "y": 2070 }, "data": { "label": "⑮C 引蛇出洞", "moduleRef": "mod_15c", "colorKey": "event" } },
+
+    { "id": "node_16", "type": "module", "position": { "x": 400, "y": 2200 }, "data": { "label": "⑯ 皇后崩溃", "moduleRef": "mod_16", "colorKey": "event" } },
+
+    { "id": "node_choice_final", "type": "choice", "position": { "x": 400, "y": 2310 }, "data": { "label": "⚖ 裁决（自动判定）", "branches": [
+      { "targetStage": "mod_17a", "choiceText": "→ 好结局", "description": "证据链完整 + 证人坚定 + 皇上信任 → 皇后伏法，令妃封贵妃" },
+      { "targetStage": "mod_17b", "choiceText": "→ 中结局", "description": "证据部分成立 + 证人动摇 + 皇上权衡 → 皇后降位，令妃自保" },
+      { "targetStage": "mod_17c", "choiceText": "→ 坏结局", "description": "证据不足 + 证人退缩 + 皇上怀疑 → 皇后反咬，令妃入冷宫" }
+    ] } },
+
+    { "id": "node_17a", "type": "module", "position": { "x": 50, "y": 2420 }, "data": { "label": "⑰A 皇上震怒", "moduleRef": "mod_17a", "colorKey": "event" } },
+    { "id": "node_18a", "type": "module", "position": { "x": 50, "y": 2530 }, "data": { "label": "⑱A 皇后废黜", "moduleRef": "mod_18a", "colorKey": "serving" } },
+    { "id": "node_19a", "type": "module", "position": { "x": 50, "y": 2640 }, "data": { "label": "⑲A 令妃封贵妃", "moduleRef": "mod_19a", "colorKey": "serving" } },
+    { "id": "node_20a", "type": "module", "position": { "x": 50, "y": 2750 }, "data": { "label": "⑳A 深宫新序", "moduleRef": "mod_20a", "colorKey": "serving" } },
+
+    { "id": "node_17b", "type": "module", "position": { "x": 400, "y": 2420 }, "data": { "label": "⑰B 皇上权衡", "moduleRef": "mod_17b", "colorKey": "daily" } },
+    { "id": "node_18b", "type": "module", "position": { "x": 400, "y": 2530 }, "data": { "label": "⑱B 皇后降位", "moduleRef": "mod_18b", "colorKey": "serving" } },
+    { "id": "node_19b", "type": "module", "position": { "x": 400, "y": 2640 }, "data": { "label": "⑲B 令妃保全", "moduleRef": "mod_19b", "colorKey": "daily" } },
+    { "id": "node_20b", "type": "module", "position": { "x": 400, "y": 2750 }, "data": { "label": "⑳B 深宫依旧", "moduleRef": "mod_20b", "colorKey": "serving" } },
+
+    { "id": "node_17c", "type": "module", "position": { "x": 750, "y": 2420 }, "data": { "label": "⑰C 皇上怀疑", "moduleRef": "mod_17c", "colorKey": "punishment" } },
+    { "id": "node_18c", "type": "module", "position": { "x": 750, "y": 2530 }, "data": { "label": "⑱C 皇后反咬", "moduleRef": "mod_18c", "colorKey": "punishment" } },
+    { "id": "node_19c", "type": "module", "position": { "x": 750, "y": 2640 }, "data": { "label": "⑲C 令妃入冷宫", "moduleRef": "mod_19c", "colorKey": "punishment" } },
+    { "id": "node_20c", "type": "module", "position": { "x": 750, "y": 2750 }, "data": { "label": "⑳C 深宫更暗", "moduleRef": "mod_20c", "colorKey": "punishment" } },
+
+    { "id": "node_end_good", "type": "end", "position": { "x": 50, "y": 2880 }, "data": { "label": "好结局：善恶有报" } },
+    { "id": "node_end_neutral", "type": "end", "position": { "x": 400, "y": 2880 }, "data": { "label": "中结局：深宫心结" } },
+    { "id": "node_end_bad", "type": "end", "position": { "x": 750, "y": 2880 }, "data": { "label": "坏结局：万劫不复" } }
+  ],
+  "edges": [
+    { "id": "e_start_1", "source": "node_start", "target": "node_1" },
+    { "id": "e_1_2", "source": "node_1", "target": "node_2" },
+    { "id": "e_2_3", "source": "node_2", "target": "node_3" },
+    { "id": "e_3_choice1", "source": "node_3", "target": "node_choice_1" },
+
+    { "id": "e_choice1_4a", "source": "node_choice_1", "target": "node_4a", "sourceHandle": "branch_0" },
+    { "id": "e_4a_5a", "source": "node_4a", "target": "node_5a" },
+    { "id": "e_5a_6a", "source": "node_5a", "target": "node_6a" },
+    { "id": "e_6a_7", "source": "node_6a", "target": "node_7" },
+
+    { "id": "e_choice1_4b", "source": "node_choice_1", "target": "node_4b", "sourceHandle": "branch_1" },
+    { "id": "e_4b_5b", "source": "node_4b", "target": "node_5b" },
+    { "id": "e_5b_6b", "source": "node_5b", "target": "node_6b" },
+    { "id": "e_6b_7", "source": "node_6b", "target": "node_7" },
+
+    { "id": "e_7_choice2", "source": "node_7", "target": "node_choice_2" },
+
+    { "id": "e_choice2_8a", "source": "node_choice_2", "target": "node_8a", "sourceHandle": "branch_0" },
+    { "id": "e_8a_9a", "source": "node_8a", "target": "node_9a" },
+    { "id": "e_9a_10", "source": "node_9a", "target": "node_10" },
+
+    { "id": "e_choice2_8b", "source": "node_choice_2", "target": "node_8b", "sourceHandle": "branch_1" },
+    { "id": "e_8b_9b", "source": "node_8b", "target": "node_9b" },
+    { "id": "e_9b_10", "source": "node_9b", "target": "node_10" },
+
+    { "id": "e_choice2_8c", "source": "node_choice_2", "target": "node_8c", "sourceHandle": "branch_2" },
+    { "id": "e_8c_9c", "source": "node_8c", "target": "node_9c" },
+    { "id": "e_9c_10", "source": "node_9c", "target": "node_10" },
+
+    { "id": "e_10_choice3", "source": "node_10", "target": "node_choice_3" },
+
+    { "id": "e_choice3_11a", "source": "node_choice_3", "target": "node_11a", "sourceHandle": "branch_0" },
+    { "id": "e_11a_12a", "source": "node_11a", "target": "node_12a" },
+    { "id": "e_12a_13", "source": "node_12a", "target": "node_13" },
+
+    { "id": "e_choice3_11b", "source": "node_choice_3", "target": "node_11b", "sourceHandle": "branch_1" },
+    { "id": "e_11b_12b", "source": "node_11b", "target": "node_12b" },
+    { "id": "e_12b_13", "source": "node_12b", "target": "node_13" },
+
+    { "id": "e_13_choice4", "source": "node_13", "target": "node_choice_4" },
+
+    { "id": "e_choice4_14a", "source": "node_choice_4", "target": "node_14a", "sourceHandle": "branch_0" },
+    { "id": "e_14a_15a", "source": "node_14a", "target": "node_15a" },
+    { "id": "e_15a_16", "source": "node_15a", "target": "node_16" },
+
+    { "id": "e_choice4_14b", "source": "node_choice_4", "target": "node_14b", "sourceHandle": "branch_1" },
+    { "id": "e_14b_15b", "source": "node_14b", "target": "node_15b" },
+    { "id": "e_15b_16", "source": "node_15b", "target": "node_16" },
+
+    { "id": "e_choice4_14c", "source": "node_choice_4", "target": "node_14c", "sourceHandle": "branch_2" },
+    { "id": "e_14c_15c", "source": "node_14c", "target": "node_15c" },
+    { "id": "e_15c_16", "source": "node_15c", "target": "node_16" },
+
+    { "id": "e_16_choice_final", "source": "node_16", "target": "node_choice_final" },
+
+    { "id": "e_final_17a", "source": "node_choice_final", "target": "node_17a", "sourceHandle": "branch_0" },
+    { "id": "e_17a_18a", "source": "node_17a", "target": "node_18a" },
+    { "id": "e_18a_19a", "source": "node_18a", "target": "node_19a" },
+    { "id": "e_19a_20a", "source": "node_19a", "target": "node_20a" },
+    { "id": "e_20a_end_good", "source": "node_20a", "target": "node_end_good" },
+
+    { "id": "e_final_17b", "source": "node_choice_final", "target": "node_17b", "sourceHandle": "branch_1" },
+    { "id": "e_17b_18b", "source": "node_17b", "target": "node_18b" },
+    { "id": "e_18b_19b", "source": "node_18b", "target": "node_19b" },
+    { "id": "e_19b_20b", "source": "node_19b", "target": "node_20b" },
+    { "id": "e_20b_end_neutral", "source": "node_20b", "target": "node_end_neutral" },
+
+    { "id": "e_final_17c", "source": "node_choice_final", "target": "node_17c", "sourceHandle": "branch_2" },
+    { "id": "e_17c_18c", "source": "node_17c", "target": "node_18c" },
+    { "id": "e_18c_19c", "source": "node_18c", "target": "node_19c" },
+    { "id": "e_19c_20c", "source": "node_19c", "target": "node_20c" },
+    { "id": "e_20c_end_bad", "source": "node_20c", "target": "node_end_bad" }
+  ]
+}

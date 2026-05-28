@@ -1,0 +1,48 @@
+{
+  "layout": {
+    "showCharacterPanel": true,
+    "showQuickActions": true,
+    "showDiceButton": false,
+    "showAutoPlay": true
+  },
+  "theme": {
+    "primaryColor": "#1a6b54",
+    "accentColor": "#14b8a6",
+    "backgroundColor": "#f7f1e7",
+    "surfaceColor": "#fffaf2",
+    "textColor": "#2f3133",
+    "headingFont": "STKaiti",
+    "bodyFont": "Inter",
+    "navBackground": "#0a1728"
+  },
+  "scene": {
+    "heading": "紫禁城",
+    "introNarration": "一入宫门深似海。深秋的紫禁城，银杏叶如金雨般铺满御花园，寒风已带上刺骨的凉意。令妃魏婉清独自站在偏殿的回廊下，一袭月白宫装被风吹得微微颤动。她素手轻握着一枚刚刚从暗线手中得来的玉佩，目光冷冽如刀。后宫又发生了一起流产。\n这是半年内的第五起。每一桩都来得悄无声息，却又带着相同的痕迹——无一例外指向那位高高在上、母仪天下的皇后娘娘。魏婉清唇角勾起一丝冷笑。\n她已暗中追查数月，所有线索如蛛丝般缠绕，最终都汇聚到那座凤藻宫。可证据太少，皇后太稳，而她自己……也早已被卷入这场看不见的暗战。就在此时，消息传来——\n纯妃有喜了。那个向来温顺低调、怀孕三次皆未能保住的纯妃，居然在这个最凶险的节骨眼上再次有了身孕。她会成为皇后下一个清除的目标？\n还是令妃魏婉清用来翻盘、撕开皇后面纱的唯一突破口？从这金黄的秋叶，到即将到来的大雪封宫，紫禁城最聪明也最狠辣的两个女人之间，一场步步惊心、环环相扣的生死暗战，就此拉开序幕。二十个阶段的宫斗大戏，\n每一步，都可能是深渊。",
+    "emptyTitle": "",
+    "emptyHint": ""
+  },
+  "labels": {
+    "hp": "气血",
+    "mp": "内力",
+    "characters": "登场角色",
+    "lastSpeaker": "上轮发言",
+    "continue": "继续",
+    "autoPlay": "自动继续",
+    "send": "发送",
+    "manageCharacters": "角色管理",
+    "rules": "故事规则",
+    "scenarioRules": "剧情规则",
+    "promptRules": "提示词规则",
+    "currentStatus": "当前状态",
+    "round": "回合",
+    "currentStage": "当前阶段",
+    "statusActive": "进行中",
+    "statusCompleted": "已结束",
+    "interactiveStory": "互动故事",
+    "storyManagement": "故事管理",
+    "viewRules": "查看规则"
+  },
+  "avatar": {
+    "style": "gradient"
+  }
+}

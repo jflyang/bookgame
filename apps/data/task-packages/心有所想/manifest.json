@@ -1,0 +1,123 @@
+{
+  "id": "心有所想",
+  "type": "story-plugin",
+  "schemaVersion": "2",
+  "title": "心有所想",
+  "description": "篮球英雄周仲平在县长杯赛场上大放异彩，面对狂热女粉丝的包围，在妻子美云的担忧与泼辣三表妹丽云的介入下，展开一段充满暧昧、嫉妒与激情的夏日故事。",
+  "version": "1.0.0",
+  "author": "",
+  "capabilities": {
+    "audio": true,
+    "customFonts": false,
+    "customCss": false,
+    "characterPortraits": true,
+    "backgroundImages": true,
+    "performances": true
+  },
+  "audio": {
+    "bgm": {
+      "scenes": {}
+    },
+    "sfx": {}
+  },
+  "images": {
+    "portraits": {},
+    "backgrounds": {}
+  },
+  "fonts": {},
+  "performances": {
+    "sfx_zhongping_guanlan": {
+      "name": "飞人灌篮",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "zhongping",
+        "knowledgeTitle": "仲平背景",
+        "keywords": [
+          "飞人灌篮"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_liyun_heimeigui": {
+      "name": "黑玫瑰霸气",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "liyun",
+        "knowledgeTitle": "丽云背景",
+        "keywords": [
+          "黑玫瑰霸气",
+          "泼辣护驾"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_liyun_tiaodou": {
+      "name": "大胆挑逗",
+      "renderer": "audio",
+      "durationMs": 1800,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "liyun",
+        "knowledgeTitle": "丽云背景",
+        "keywords": [
+          "大胆挑逗"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_meiyun_cuyi": {
+      "name": "醋意暗涌",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "meiyun",
+        "knowledgeTitle": "美云背景",
+        "keywords": [
+          "醋意暗涌",
+          "暗中观察"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    }
+  },
+  "entry": "task-package.json",
+  "createdAt": "2026-05-27T14:53:28.659Z",
+  "updatedAt": "2026-05-28T16:15:41.139Z"
+}

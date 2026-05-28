@@ -1,0 +1,197 @@
+[
+  {
+    "id": "skill_dunk",
+    "name": "飞人灌篮",
+    "ownerId": "zhongping",
+    "cost": {
+      "mp": 20
+    },
+    "damage": {
+      "min": 30,
+      "max": 45
+    },
+    "effect": "赛场上的绝对统治力，大幅提升观众狂热度和丽云好感",
+    "description": "周仲平腾空而起，如飞人般单手劈扣，全场沸腾",
+    "sampleLine": "还有谁！"
+  },
+  {
+    "id": "skill_leadership",
+    "name": "领袖气质",
+    "ownerId": "zhongping",
+    "cost": {
+      "mp": 15
+    },
+    "damage": {
+      "min": 15,
+      "max": 25
+    },
+    "effect": "稳定军心，提升全队士气，同时吸引更多女粉丝关注",
+    "description": "周仲平站在场中央，一个眼神就让全队安定下来",
+    "sampleLine": "把球给我，我来。"
+  },
+  {
+    "id": "skill_gentle_comfort",
+    "name": "温柔安抚",
+    "ownerId": "zhongping",
+    "cost": {
+      "mp": 10
+    },
+    "damage": {
+      "min": 5,
+      "max": 15
+    },
+    "effect": "安抚美云的不安情绪，维持家庭和谐但可能降低暧昧值",
+    "description": "周仲平轻轻搂住美云的肩膀，在她耳边低声细语",
+    "sampleLine": "傻瓜，我心里只有你。"
+  },
+  {
+    "id": "skill_passion_burst",
+    "name": "激情爆发",
+    "ownerId": "zhongping",
+    "cost": {
+      "mp": 30
+    },
+    "damage": {
+      "min": 40,
+      "max": 60
+    },
+    "effect": "在关键时刻情感决堤，做出不可挽回的亲密举动",
+    "description": "周仲平再也控制不住内心的冲动，猛地将对方拉入怀中",
+    "sampleLine": "我不管了……"
+  },
+  {
+    "id": "skill_gentle_watch",
+    "name": "温柔守望",
+    "ownerId": "meiyun",
+    "cost": {
+      "mp": 5
+    },
+    "damage": {
+      "min": 0,
+      "max": 5
+    },
+    "effect": "默默观察丈夫的一举一动，积累不安与醋意",
+    "description": "美云坐在观众席角落，目光始终追随着丈夫的身影",
+    "sampleLine": "（默默攥紧了手帕）"
+  },
+  {
+    "id": "skill_jealousy_surge",
+    "name": "醋意暗涌",
+    "ownerId": "meiyun",
+    "cost": {
+      "mp": 15
+    },
+    "damage": {
+      "min": 10,
+      "max": 20
+    },
+    "effect": "向丈夫表达不满，引发情感冲突，可能触发丽云的反击",
+    "description": "美云终于忍不住质问丈夫，眼眶泛红声音颤抖",
+    "sampleLine": "那个丽云……她为什么总是缠着你？"
+  },
+  {
+    "id": "skill_wife_guardian",
+    "name": "贤妻守护",
+    "ownerId": "meiyun",
+    "cost": {
+      "mp": 20
+    },
+    "damage": {
+      "min": 15,
+      "max": 25
+    },
+    "effect": "主动出面维护丈夫，在公开场合宣示主权",
+    "description": "美云端出亲手做的点心和煲好的老火汤，用温柔的方式宣告正牌地位",
+    "sampleLine": "仲平打完球一定累了，我煲了汤。"
+  },
+  {
+    "id": "skill_secret_observer",
+    "name": "暗中观察",
+    "ownerId": "meiyun",
+    "cost": {
+      "mp": 10
+    },
+    "damage": {
+      "min": 5,
+      "max": 10
+    },
+    "effect": "发现丈夫和丽云之间不对劲的蛛丝马迹，推动剧情转折",
+    "description": "美云提前回家，在窗外看到不该看到的一幕",
+    "sampleLine": "（站在窗外，手里的饭盒掉在地上）"
+  },
+  {
+    "id": "skill_black_rose_dom",
+    "name": "黑玫瑰霸气",
+    "ownerId": "liyun",
+    "cost": {
+      "mp": 25
+    },
+    "damage": {
+      "min": 25,
+      "max": 40
+    },
+    "effect": "用泼辣气场震慑其他女粉丝，宣示自己对仲平的专属保护权",
+    "description": "丽云双手叉腰挡在仲平面前，眼神凌厉地扫视周围女生",
+    "sampleLine": "谁敢再靠近他一步试试看！"
+  },
+  {
+    "id": "skill_fierce_escort",
+    "name": "泼辣护驾",
+    "ownerId": "liyun",
+    "cost": {
+      "mp": 20
+    },
+    "damage": {
+      "min": 20,
+      "max": 35
+    },
+    "effect": "强势陪同仲平出入公共场合，制造二人独处机会",
+    "description": "丽云挽着仲平的胳膊大摇大摆穿过人群，谁敢拦就怼谁",
+    "sampleLine": "今天你归我管，谁也不许抢。"
+  },
+  {
+    "id": "skill_bold_tease",
+    "name": "大胆挑逗",
+    "ownerId": "liyun",
+    "cost": {
+      "mp": 25
+    },
+    "damage": {
+      "min": 30,
+      "max": 50
+    },
+    "effect": "在私密场合主动进攻，大幅推进暧昧关系和身体接触",
+    "description": "丽云穿着紧身泳衣在仲平面前展示健美身材，眼神大胆直视",
+    "sampleLine": "表哥……你觉得我身材怎么样？"
+  },
+  {
+    "id": "skill_swim_champion",
+    "name": "游泳健将",
+    "ownerId": "liyun",
+    "cost": {
+      "mp": 15
+    },
+    "damage": {
+      "min": 10,
+      "max": 20
+    },
+    "effect": "展现健美身材和运动能力，为水中亲密接触创造条件",
+    "description": "丽云如美人鱼般在水中翻腾，湿透的身体在阳光下闪闪发光",
+    "sampleLine": "来啊，追得上我今晚就归你！"
+  },
+  {
+    "id": "skill_river_rescue",
+    "name": "水中救援",
+    "ownerId": "liyun",
+    "cost": {
+      "mp": 30
+    },
+    "damage": {
+      "min": 35,
+      "max": 55
+    },
+    "effect": "假装抽筋让仲平下水救她，制造不可抗拒的身体接触",
+    "description": "丽云在水中突然大叫，身体下沉，仲平冲过去一把抱住她",
+    "sampleLine": "表哥！我腿抽筋了……抱紧我！"
+  }
+]

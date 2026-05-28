@@ -1,0 +1,102 @@
+{
+  "id": "追女仔",
+  "type": "story-plugin",
+  "schemaVersion": "2",
+  "title": "追女仔",
+  "description": "仲平与三位姐妹的禁忌征服游戏，通过媚药清洗仪式彻底驯服她们的身体与意志。",
+  "version": "1.0.0",
+  "author": "",
+  "capabilities": {
+    "audio": true,
+    "customFonts": false,
+    "customCss": false,
+    "characterPortraits": true,
+    "backgroundImages": true,
+    "performances": true
+  },
+  "audio": {
+    "bgm": {
+      "scenes": {}
+    },
+    "sfx": {}
+  },
+  "images": {
+    "portraits": {},
+    "backgrounds": {}
+  },
+  "fonts": {},
+  "performances": {
+    "sfx_dajie_meiyao_xixue": {
+      "name": "媚药洗穴术",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "dajie",
+        "knowledgeTitle": "媚药洗穴规则",
+        "keywords": [
+          "媚药洗穴术",
+          "媚药清洗",
+          "洗穴"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_zhongping_zhipei": {
+      "name": "支配命令",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "zhongping",
+        "knowledgeTitle": "仲平背景",
+        "keywords": [
+          "支配命令",
+          "心理征服"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    },
+    "sfx_liyun_benti_beipan": {
+      "name": "身体背叛",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "liyun",
+        "knowledgeTitle": "丽云设定",
+        "keywords": [
+          "身体背叛"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": ""
+      }
+    }
+  },
+  "entry": "task-package.json",
+  "createdAt": "2026-05-27T15:11:09.906Z",
+  "updatedAt": "2026-05-28T16:13:59.306Z"
+}
