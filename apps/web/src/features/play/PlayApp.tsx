@@ -211,7 +211,7 @@ export function PlayApp() {
                   <div className="more-menu" onClick={() => setShowMoreMenu(false)}>
                     <a href="/admin/story-packages">{labels.storyManagement}</a>
                     <button onClick={() => { setShowRules(true); setShowMoreMenu(false); }}>{labels.viewRules}</button>
-                    <button onClick={(e) => { e.stopPropagation(); setPerformanceEnabled(!performanceEnabled); }}>
+                    <button onClick={(e) => { setPerformanceEnabled(!performanceEnabled); setShowMoreMenu(false); }}>
                       {performanceEnabled ? "🎬 关闭表演" : "🎬 开启表演"}
                     </button>
                     {editingPackageId ? (

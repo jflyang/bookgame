@@ -4,7 +4,7 @@ import type { Scenario, ScenarioStageDetail } from "@story-game/shared";
 
 /* ===== Act definition ===== */
 interface ActDef { key: string; label: string; color: string; range: [number, number] }
-const ACTS: ActDef[] = [
+const DEFAULT_ACTS: ActDef[] = [
   { key: "capture", label: "落网废武", color: "var(--cat-blue)", range: [1, 4] },
   { key: "initiation", label: "侍女初训", color: "var(--cat-purple)", range: [5, 10] },
   { key: "punishment", label: "惩罚感官", color: "var(--cat-red)", range: [11, 15] },
@@ -13,10 +13,17 @@ const ACTS: ActDef[] = [
   { key: "finale", label: "新生侍女", color: "var(--cat-green)", range: [31, 35] },
 ];
 
+const GENERIC_COLORS = [
+  "var(--cat-blue)", "var(--cat-purple)", "var(--cat-red)",
+  "var(--cat-orange)", "var(--cat-pink)", "var(--cat-green)",
+];
+
 function stageNum(id: string) { return parseInt(id.replace("stage_", ""), 10); }
-function actFor(id: string): ActDef {
+function isNumericStageId(id: string) { return /^stage_\d+/.test(id); }
+
+function actFor(id: string, acts: ActDef[]): ActDef {
   const n = stageNum(id);
-  return ACTS.find((a) => n >= a.range[0] && n <= a.range[1]) || ACTS[5];
+  return acts.find((a) => n >= a.range[0] && n <= a.range[1]) || acts[acts.length - 1];
 }
 
 /* ===== Sub-components ===== */
@@ -26,7 +33,7 @@ function StageDot({ stageId, detail, isCurrent, isChoice, color, onClick, onMove
   color: string; onClick: () => void; onMoveLeft: () => void; onMoveRight: () => void;
   canMoveLeft: boolean; canMoveRight: boolean;
 }) {
-  const n = stageId.replace("stage_", "");
+  const n = isNumericStageId(stageId) ? stageId.replace("stage_", "") : (stageId.length > 4 ? stageId.slice(0, 3) : stageId);
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
       <button
@@ -61,7 +68,7 @@ function StageDot({ stageId, detail, isCurrent, isChoice, color, onClick, onMove
 /* ===== Main ===== */
 
 export function ScenarioTimeline() {
-  const { storyPackage, updateScenario, updateStageDetail } = useEditorStore();
+  const { storyPackage, updateScenario, updateStageDetail, save } = useEditorStore();
   const s = storyPackage?.scenario;
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
@@ -109,14 +116,23 @@ export function ScenarioTimeline() {
   const stages = s.stages || [];
   const selected = selectedId ? detailMap.get(selectedId) : null;
 
-  // Group stages by act
+  // Group stages by act — use numeric acts for stage_N format, otherwise single generic group
+  const useNumericActs = stages.length > 0 && stages.every(isNumericStageId);
   const actGroups = useMemo(() => {
-    const groups = ACTS.map((act) => ({
-      act,
-      stages: stages.filter((sid) => actFor(sid).key === act.key),
-    })).filter((g) => g.stages.length > 0);
-    return groups;
-  }, [stages]);
+    if (useNumericActs) {
+      const groups = DEFAULT_ACTS.map((act) => ({
+        act,
+        stages: stages.filter((sid) => actFor(sid, DEFAULT_ACTS).key === act.key),
+      })).filter((g) => g.stages.length > 0);
+      return groups;
+    }
+    // Generic: group all stages into one "timeline" group
+    const color = GENERIC_COLORS[0];
+    return [{
+      act: { key: "all", label: "剧情阶段", color, range: [0, 999] as [number, number] },
+      stages,
+    }];
+  }, [stages, useNumericActs]);
 
   function moveStage(fromIdx: number, direction: -1 | 1) {
     const toIdx = fromIdx + direction;
@@ -235,6 +251,7 @@ export function ScenarioTimeline() {
                 <span className="faint mono">{selected.id}</span>
               </div>
               <div className="flex-center gap3">
+                <button className="btn btn-primary btn-xs" onClick={(e) => { e.stopPropagation(); save(); }}>保存</button>
                 <label className="field field-row">
                   <input type="checkbox" checked={selected.isChoicePoint === true}
                     onChange={(e) => updateStageDetail({
