@@ -34,18 +34,16 @@ export function MessageList({ characters }: { characters: Character[] }) {
     const portraitUrl = characterId ? getPortraitUrl(characterId) : null;
     if (portraitUrl) {
       return (
-        <span
-          className="avatar portrait-avatar image-avatar"
-          style={{ backgroundImage: `url(${portraitUrl})` }}
-        />
+        <span className="avatar portrait-avatar image-avatar">
+          <img src={portraitUrl} alt="" className="avatar-img" />
+        </span>
       );
     }
     if (isImageAvatar(avatarText)) {
       return (
-        <span
-          className="avatar portrait-avatar image-avatar"
-          style={{ backgroundImage: `url(${avatarText})` }}
-        />
+        <span className="avatar portrait-avatar image-avatar">
+          <img src={avatarText} alt="" className="avatar-img" />
+        </span>
       );
     }
     if (avatarStyle === "emoji") {

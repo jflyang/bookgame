@@ -34,6 +34,7 @@ export interface TaskPackageRepositoryOptions {
 
 export class TaskPackageRepository {
   private pluginIndexCache: Map<string, PluginAssetIndex | null> = new Map();
+  private listCache: StoryPackage[] | null = null;
 
   constructor(
     private readonly rootDir: string,
@@ -45,7 +46,8 @@ export class TaskPackageRepository {
   }
 
   list(): StoryPackage[] {
-    return this.packageDirs().map((dir) => {
+    if (this.listCache) return this.listCache;
+    this.listCache = this.packageDirs().map((dir) => {
       const id = basename(dir);
       // Try v2 entry first, fall back to v1
       const v2Entry = resolveInside(dir, "story.json");
@@ -53,6 +55,10 @@ export class TaskPackageRepository {
       const pkg = storyPackageSchema.parse(JSON.parse(readFileSync(entryFile, "utf-8")));
       // Override id with directory name — the directory IS the primary key
       pkg.id = id;
+      // Fix thumbnail URL to match directory-based id
+      if (pkg.thumbnail && pkg.thumbnail.startsWith("/api/admin/media/")) {
+        pkg.thumbnail = `/api/admin/media/${id}`;
+      }
       // Attach plugin manifest if v2
       const manifest = this.tryReadPluginManifest(id);
       if (manifest) {
@@ -60,6 +66,12 @@ export class TaskPackageRepository {
       }
       return pkg;
     });
+    return this.listCache;
+  }
+
+  /** Invalidate the list cache. Call after save/remove operations. */
+  invalidateCache() {
+    this.listCache = null;
   }
 
   save(pkg: StoryPackage) {
@@ -72,12 +84,15 @@ export class TaskPackageRepository {
     // Rebuild plugin index
     this.pluginIndexCache.delete(parsed.id);
     this.getPluginIndex(parsed.id);
+    this.invalidateCache();
     return parsed;
   }
 
   remove(id: string) {
     const dir = this.packageDir(id);
     if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
+    this.pluginIndexCache.delete(id);
+    this.invalidateCache();
   }
 
   taskFile(id: string) {

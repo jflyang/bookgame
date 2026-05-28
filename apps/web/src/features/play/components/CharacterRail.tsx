@@ -30,18 +30,16 @@ export function CharacterRail({ characters, states, lastSpeakerId, initialStates
     const portraitUrl = getPortraitUrl(character.id);
     if (portraitUrl) {
       return (
-        <span
-          className="avatar portrait-avatar image-avatar"
-          style={{ backgroundImage: `url(${portraitUrl})` }}
-        />
+        <span className="avatar portrait-avatar image-avatar">
+          <img src={portraitUrl} alt={character.name} className="avatar-img" />
+        </span>
       );
     }
     if (isImageAvatar(character.avatar)) {
       return (
-        <span
-          className="avatar portrait-avatar image-avatar"
-          style={{ backgroundImage: `url(${character.avatar})` }}
-        />
+        <span className="avatar portrait-avatar image-avatar">
+          <img src={character.avatar} alt={character.name} className="avatar-img" />
+        </span>
       );
     }
     if (avatarStyle === "emoji") {

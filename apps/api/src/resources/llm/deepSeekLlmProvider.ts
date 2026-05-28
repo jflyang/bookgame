@@ -72,13 +72,15 @@ export class DeepSeekLlmProvider implements LlmProvider {
 
     const data = (await response.json()) as DeepSeekResponse;
     const msg = data.choices?.[0]?.message;
-    const content = msg?.content || msg?.reasoning_content;
+    const content = msg?.content;
     if (!content) {
       const finishReason = data.choices?.[0]?.finish_reason;
       const usage = data.usage;
+      const hasReasoning = !!msg?.reasoning_content;
       throw new Error(
         `DeepSeek 返回空内容（finish_reason: ${finishReason ?? "N/A"}, ` +
-        `prompt_tokens: ${usage?.prompt_tokens ?? "?"}, completion_tokens: ${usage?.completion_tokens ?? "?"}）。` +
+        `prompt_tokens: ${usage?.prompt_tokens ?? "?"}, completion_tokens: ${usage?.completion_tokens ?? "?"}` +
+        `${hasReasoning ? ", has reasoning_content but no content" : ""}）。` +
         `可能是 max_tokens 不够或模型不支持 response_format。`
       );
     }
@@ -135,6 +137,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
           temperature: config.temperature,
           max_tokens: config.maxTokens,
           stream: true,
+          response_format: { type: "json_object" },
           messages: [
             {
               role: "system",
@@ -181,7 +184,8 @@ export class DeepSeekLlmProvider implements LlmProvider {
           try {
             const parsed = JSON.parse(payload);
             const delta = parsed?.choices?.[0]?.delta;
-            const content = (delta?.content || delta?.reasoning_content) as string | undefined;
+            // Only yield actual content, ignore reasoning_content (model's internal thinking)
+            const content = delta?.content as string | undefined;
             if (content) yield content;
           } catch (err) {
             logger.warn({ err, payload: payload.slice(0, 120) }, "unparseable SSE data line");

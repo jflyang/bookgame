@@ -74,6 +74,13 @@ export const sessionSaveService = new SessionSaveService(savesRootDir);
 export const mediaService = new MediaService(taskPackageRepository);
 export const memoryService = new MemoryService();
 export const gameStateService = new GameStateService(scenarioService);
+const sessionStoryPackageIds = new Map<string, string>();
+
+// Coordinated session cleanup: when GameStateService evicts a session, also clean MemoryService and sessionStoryPackageIds
+gameStateService.onSessionCleanup((sessionId) => {
+  memoryService.cleanupSession(sessionId);
+  sessionStoryPackageIds.delete(sessionId);
+});
 const agentService = new AgentService(characterService, knowledgeBaseService);
 const promptService = new PromptService(characterService, agentService, skillIndex);
 const ruleChecker = new RuleChecker();
@@ -82,7 +89,6 @@ const llmProvider = new ConfigurableLlmProvider(llmConfigService, {
   mock: new MockLlmProvider(),
   deepseek: new DeepSeekLlmProvider(llmConfigService)
 });
-const sessionStoryPackageIds = new Map<string, string>();
 export const runtimeStatsCollector = new RuntimeStatsCollector();
 export const sessionRepository = new SessionRepository();
 export const sessionCollector = new SessionCollector(sessionRepository);

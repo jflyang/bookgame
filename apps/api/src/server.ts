@@ -31,7 +31,47 @@ await app.register(cors, {
 
 await app.register(multipart, { limits: { fileSize: 20 * 1024 * 1024 } });
 
+// Global error handler — catch unhandled route errors
+app.setErrorHandler((error, request, reply) => {
+  const statusCode = (error as { statusCode?: number }).statusCode ?? 500;
+  app.log.error({ err: error, url: request.url, method: request.method }, "unhandled route error");
+  const message = error instanceof Error ? error.message : "Internal Server Error";
+  reply.code(statusCode).send({
+    error: statusCode >= 500 ? "Internal Server Error" : message,
+    statusCode
+  });
+});
+
 app.get("/health", async () => ({ ok: true }));
 await registerRoutes(app);
 
-await app.listen({ port, host: "0.0.0.0" });
+// Retry listen with backoff — handles port still held by previous process during hot-reload
+async function listenWithRetry(maxRetries = 8, delayMs = 1000) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await app.listen({ port, host: "0.0.0.0" });
+      return;
+    } catch (err: unknown) {
+      const isAddrInUse = err instanceof Error && "code" in err && (err as { code: string }).code === "EADDRINUSE";
+      if (!isAddrInUse || attempt === maxRetries) throw err;
+      app.log.warn({ port, attempt, maxRetries }, "port in use, retrying...");
+      await new Promise((resolve) => setTimeout(resolve, delayMs * attempt));
+    }
+  }
+}
+
+await listenWithRetry();
+
+// Graceful shutdown
+async function shutdown(signal: string) {
+  app.log.info({ signal }, "shutting down gracefully");
+  try {
+    await app.close();
+  } catch (err) {
+    app.log.error({ err }, "error during shutdown");
+  }
+  process.exit(0);
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

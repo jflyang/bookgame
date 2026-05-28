@@ -2385,6 +2385,14 @@ textarea {
   color: transparent;
 }
 
+.portrait-avatar.image-avatar .avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: inherit;
+}
+
 .portrait-avatar.image-avatar::before {
   content: none;
 }

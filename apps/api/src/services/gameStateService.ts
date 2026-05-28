@@ -14,16 +14,30 @@ import { createModuleLogger } from "../utils/logger.js";
 
 const logger = createModuleLogger("gameState");
 
+export type SessionCleanupCallback = (sessionId: string) => void;
+
 export class GameStateService {
   private readonly states = new Map<string, GameState>();
   private readonly locks = new Map<string, Promise<void>>();
   private readonly maxSessions: number;
+  private readonly cleanupCallbacks: SessionCleanupCallback[] = [];
 
   constructor(
     private readonly scenarios: ScenarioService,
     maxSessions = 1000
   ) {
     this.maxSessions = maxSessions;
+  }
+
+  /** Register a callback to be invoked when a session is cleaned up (evicted or explicitly removed). */
+  onSessionCleanup(cb: SessionCleanupCallback) {
+    this.cleanupCallbacks.push(cb);
+  }
+
+  private notifyCleanup(sessionId: string) {
+    for (const cb of this.cleanupCallbacks) {
+      try { cb(sessionId); } catch { /* ignore */ }
+    }
   }
 
   createSession(input: CreateSessionRequest) {
@@ -76,6 +90,7 @@ export class GameStateService {
   cleanupSession(sessionId: string) {
     this.states.delete(sessionId);
     this.locks.delete(sessionId);
+    this.notifyCleanup(sessionId);
   }
 
   async withLock<T>(sessionId: string, fn: () => Promise<T>): Promise<T> {

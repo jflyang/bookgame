@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 import {
   createStoryPackageRequestSchema,
   updateLlmConfigRequestSchema,
@@ -148,7 +149,13 @@ export async function adminRoutes(app: FastifyInstance) {
 
   app.post("/story-packages/:pkgId/saves", async (request, reply) => {
     const { pkgId } = request.params as { pkgId: string };
-    const { sessionId, label, slot } = request.body as { sessionId: string; label?: string; slot?: number };
+    const parsed = z.object({
+      sessionId: z.string().min(1),
+      label: z.string().optional(),
+      slot: z.number().int().min(1).max(3).optional()
+    }).safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: "请求参数无效" });
+    const { sessionId, label, slot } = parsed.data;
     return reply.code(201).send(adminApplicationService.saveCurrentSession(pkgId, sessionId, label, slot));
   });
 

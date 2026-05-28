@@ -146,85 +146,78 @@ export class TurnProcessor {
     logger.info({ sessionId, speakerId, round: state.round }, "stream message processing");
     yield { type: "meta" as const, speakerId, speakerName };
 
-    const streamStart = Date.now();
-    let rawBuffer = "";
-    const extractor = new StreamContentExtractor();
-    try {
-      for await (const token of this.llm.stream({ speakerId, prompt })) {
-        rawBuffer += token;
-        const displayText = extractor.feed(token);
-        if (displayText) {
-          yield { type: "token" as const, token: displayText, speakerId };
+    // Acquire lock to prevent concurrent state mutations
+    const streamResult = await this.states.withLock(sessionId, async () => {
+      const streamStart = Date.now();
+      let rawBuffer = "";
+      const extractor = new StreamContentExtractor();
+      const tokens: Array<{ type: "token"; token: string; speakerId: string }> = [];
+      try {
+        for await (const token of this.llm.stream({ speakerId, prompt })) {
+          rawBuffer += token;
+          const displayText = extractor.feed(token);
+          if (displayText) {
+            tokens.push({ type: "token", token: displayText, speakerId });
+          }
         }
+      } catch (streamErr) {
+        const latency = Date.now() - streamStart;
+        this.stats.recordCompleteTurn({
+          sessionId, round, speakerId, speakerName, prompt,
+          rawLlmResponse: rawBuffer, parsedOutput: null,
+          validationResult: "failed",
+          validationErrors: [String(streamErr)],
+          stateDelta: null, stageBefore, stageAfter: stageBefore,
+          latencyMs: latency, tokenUsage: null,
+          timestamp: new Date().toISOString(),
+        });
+        throw streamErr;
       }
-    } catch (streamErr) {
       const latency = Date.now() - streamStart;
-      this.stats.recordCompleteTurn({
-        sessionId, round, speakerId, speakerName, prompt,
-        rawLlmResponse: rawBuffer, parsedOutput: null,
-        validationResult: "failed",
-        validationErrors: [String(streamErr)],
-        stateDelta: null, stageBefore, stageAfter: stageBefore,
-        latencyMs: latency, tokenUsage: null,
-        timestamp: new Date().toISOString(),
-      });
-      throw streamErr;
-    }
-    const latency = Date.now() - streamStart;
-    logger.debug({ sessionId, speakerId }, "stream response received");
+      logger.debug({ sessionId, speakerId }, "stream response received");
 
-    let rawOutput: unknown;
-    try {
-      rawOutput = JSON.parse(rawBuffer);
-    } catch (parseErr) {
-      logger.warn({ parseErr, rawBufferPreview: rawBuffer.slice(0, 200) }, "LLM returned non-JSON output, using fallback");
-      rawOutput = { speakerId, narration: rawBuffer, dialogue: rawBuffer.slice(0, 50), action: { type: "observe" as const, targetIds: [] } };
-    }
+      let rawOutput: unknown;
+      try {
+        rawOutput = JSON.parse(rawBuffer);
+      } catch (parseErr) {
+        logger.warn({ parseErr, rawBufferPreview: rawBuffer.slice(0, 200) }, "LLM returned non-JSON output, using fallback");
+        rawOutput = { speakerId, narration: rawBuffer, dialogue: rawBuffer.slice(0, 50), action: { type: "observe" as const, targetIds: [] } };
+      }
 
-    try {
-      const result = this.applyOutput(sessionId, speakerId, rawOutput);
-      this.stats.recordCompleteTurn({
-        sessionId,
-        round,
-        speakerId,
-        speakerName,
-        prompt,
-        rawLlmResponse: rawBuffer,
-        parsedOutput: rawOutput,
-        validationResult: "passed",
-        validationErrors: [],
-        stateDelta: result.message.stateDelta,
-        stageBefore,
-        stageAfter: result.gameState.scenario.currentStage,
-        latencyMs: latency,
-        tokenUsage: null,
-        timestamp: new Date().toISOString(),
-      });
-      yield { type: "done" as const, ...result };
-    } catch (err) {
-      const validationErrors =
-        err && typeof err === "object" && "issues" in err
-          ? (err as { issues: unknown[] }).issues
-          : [String(err)];
-      this.stats.recordCompleteTurn({
-        sessionId,
-        round,
-        speakerId,
-        speakerName,
-        prompt,
-        rawLlmResponse: rawBuffer,
-        parsedOutput: null,
-        validationResult: "failed",
-        validationErrors,
-        stateDelta: null,
-        stageBefore,
-        stageAfter: stageBefore,
-        latencyMs: latency,
-        tokenUsage: null,
-        timestamp: new Date().toISOString(),
-      });
-      throw err;
+      try {
+        const result = this.applyOutput(sessionId, speakerId, rawOutput);
+        this.stats.recordCompleteTurn({
+          sessionId, round, speakerId, speakerName, prompt,
+          rawLlmResponse: rawBuffer, parsedOutput: rawOutput,
+          validationResult: "passed", validationErrors: [],
+          stateDelta: result.message.stateDelta, stageBefore,
+          stageAfter: result.gameState.scenario.currentStage,
+          latencyMs: latency, tokenUsage: null,
+          timestamp: new Date().toISOString(),
+        });
+        return { tokens, done: { type: "done" as const, ...result } };
+      } catch (err) {
+        const validationErrors =
+          err && typeof err === "object" && "issues" in err
+            ? (err as { issues: unknown[] }).issues
+            : [String(err)];
+        this.stats.recordCompleteTurn({
+          sessionId, round, speakerId, speakerName, prompt,
+          rawLlmResponse: rawBuffer, parsedOutput: null,
+          validationResult: "failed", validationErrors,
+          stateDelta: null, stageBefore, stageAfter: stageBefore,
+          latencyMs: latency, tokenUsage: null,
+          timestamp: new Date().toISOString(),
+        });
+        throw err;
+      }
+    });
+
+    // Yield tokens and final result outside the lock
+    for (const token of streamResult.tokens) {
+      yield token;
     }
+    yield streamResult.done;
   }
 
   private prepareTurn(sessionId: string, input: SendMessageRequest) {
