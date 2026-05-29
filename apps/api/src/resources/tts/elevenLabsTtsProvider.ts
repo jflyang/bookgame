@@ -288,8 +288,8 @@ export class ElevenLabsTtsProvider implements TtsProvider {
   private mapOutputFormat(format: string): string {
     switch (format) {
       case "mp3": return "mp3_44100_128";
-      case "ogg": return "mp3_44100_128"; // ElevenLabs doesn't support ogg, fallback to mp3
-      case "wav": return "pcm_44100";
+      case "ogg": return "mp3_44100_128";
+      case "wav": return "mp3_44100_128";
       default: return "mp3_44100_128";
     }
   }

@@ -59,6 +59,7 @@ export function useAutoReadMessage(messages: Message[], characters: Character[],
 
     // Play first item
     const first = queueRef.current.shift()!;
+    console.log(`[TTS-AutoRead] starting queue (${queue.length + 1} items), first: ${first.id}`);
     playMessage(first.id, first.text, first.characterId);
   }, [messages.length, isStreaming]); // eslint-disable-line
 
@@ -70,13 +71,13 @@ export function useAutoReadMessage(messages: Message[], characters: Character[],
     // Audio finished — play next in queue or mark done
     if (queueRef.current.length > 0) {
       const next = queueRef.current.shift()!;
-      // Small delay between items
+      console.log(`[TTS-AutoRead] playing next: ${next.id}, remaining: ${queueRef.current.length}`);
       const timer = setTimeout(() => {
         playMessage(next.id, next.text, next.characterId);
       }, 300);
       return () => clearTimeout(timer);
     } else {
-      // All done — release auto-continue
+      console.log(`[TTS-AutoRead] queue empty, releasing autoReadDone`);
       activeRef.current = false;
       setAutoReadDone(true);
     }

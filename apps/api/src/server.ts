@@ -1,4 +1,7 @@
 import { createRequire } from "node:module";
+import { existsSync } from "node:fs";
+import { join, resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 import dotenv from "dotenv";
@@ -8,6 +11,8 @@ import { registerRoutes } from "./routes/index.js";
 dotenv.config();
 
 const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const pinoPrettyPath = require.resolve("pino-pretty");
 
 const level = process.env.LOG_LEVEL ?? "debug";
@@ -44,6 +49,33 @@ app.setErrorHandler((error, request, reply) => {
 
 app.get("/health", async () => ({ ok: true }));
 await registerRoutes(app);
+
+// Serve frontend static files in production (Electron desktop mode)
+if (process.env.NODE_ENV === "production") {
+  const fastifyStatic = await import("@fastify/static");
+  // Try multiple possible locations for the web dist
+  const webDistCandidates = [
+    join(__dirname, "../../web/dist"),       // monorepo layout
+    join(__dirname, "../web"),               // electron resources layout
+    resolve(process.cwd(), "../web/dist"),   // relative to cwd
+  ];
+  const webDist = webDistCandidates.find((p) => existsSync(p));
+  if (webDist) {
+    await app.register(fastifyStatic.default, {
+      root: webDist,
+      prefix: "/",
+      wildcard: false,
+    });
+    // SPA fallback: serve index.html for non-API routes
+    app.setNotFoundHandler(async (request, reply) => {
+      if (request.url.startsWith("/api/")) {
+        return reply.code(404).send({ error: "Not Found" });
+      }
+      return reply.sendFile("index.html");
+    });
+    app.log.info({ webDist }, "serving frontend static files");
+  }
+}
 
 // Retry listen with backoff — handles port still held by previous process during hot-reload
 async function listenWithRetry(maxRetries = 8, delayMs = 1000) {

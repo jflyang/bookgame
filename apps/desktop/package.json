@@ -1,0 +1,78 @@
+{
+  "name": "interactive-story-game-desktop",
+  "version": "0.1.0",
+  "description": "互动故事游戏 - 桌面版",
+  "main": "dist/main/index.js",
+  "author": "jflyang",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "package": "electron-builder --win",
+    "package:mac": "electron-builder --mac",
+    "package:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "get-port": "^7.1.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.4.0",
+    "typescript": "^5.8.3"
+  },
+  "build": {
+    "appId": "com.jflyang.interactive-story-game",
+    "productName": "互动故事游戏",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "resources/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../api/dist",
+        "to": "api",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../web/dist",
+        "to": "web",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../data/task-packages",
+        "to": "data/task-packages",
+        "filter": ["**/*", "!**/saves/**"]
+      },
+      {
+        "from": "../../packages/shared/dist",
+        "to": "shared",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "resources/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "uninstallDisplayName": "互动故事游戏"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "icon": "resources/icon.icns"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "resources/icon.png"
+    }
+  }
+}
