@@ -1,225 +1,107 @@
-# 📖 互动故事游戏 (Interactive Story Game)
+# 📖 互动故事游戏
 
-基于大语言模型（LLM）的互动叙事 Web 游戏引擎。玩家通过对话驱动剧情发展，AI 角色根据人设、技能和剧情规则自主回应，实现沉浸式的文字冒险体验。
+基于大语言模型的互动叙事游戏引擎。玩家通过对话驱动剧情，AI 角色根据人设与技能自主回应，配合语音合成与演出系统，实现沉浸式文字冒险体验。
 
-## ✨ 核心特性
+![Tech](https://img.shields.io/badge/React_19-blue) ![Tech](https://img.shields.io/badge/Fastify_5-green) ![Tech](https://img.shields.io/badge/DeepSeek-purple) ![Tech](https://img.shields.io/badge/CosyVoice_TTS-orange) ![Tech](https://img.shields.io/badge/Electron-gray)
 
-- **LLM 驱动叙事** — 接入 DeepSeek 等大模型，AI 角色根据人设 Prompt 自主生成对话与行动
-- **多角色群聊** — 支持多个 NPC 角色同时参与对话，各有独立人设、知识库和技能
-- **战斗系统** — 内置 HP/MP 状态管理、技能释放、伤害计算、克制关系
-- **剧情阶段推进** — 场景自动根据条件推进，支持多阶段故事线
-- **故事包系统** — 完整的故事打包/导入/导出机制，一键加载不同故事
-- **演出系统 (Performances)** — 支持音效、图片、视频等多媒体演出效果
-- **存档/读档** — 多槽位会话存档，随时保存和恢复游戏进度
-- **管理后台** — 可视化编辑角色、规则、剧情、UI 主题等所有配置
-- **运行时统计** — 记录每轮 LLM 调用延迟、Token 用量、验证结果等
+## 默认故事：虚竹除害星宿老怪
 
-## 🏗️ 技术架构
+取材自金庸《天龙八部》。少林小僧虚竹身负逍遥派奇缘，得知丁春秋欺师灭祖、以毒功残害江湖，决意下山清理门户。乔峰与段誉同行，三人在星宿海山道与丁春秋正面交锋。
 
-```
-interactive-story-game/
-├── apps/
-│   ├── api/          # 后端 API (Fastify + TypeScript)
-│   ├── web/          # 前端 (React 19 + Vite + Zustand)
-│   └── data/         # 故事包数据目录
-├── packages/
-│   └── shared/       # 共享类型与 Schema (Zod)
-└── package.json      # Monorepo 根配置 (npm workspaces)
-```
+**角色**
 
-### 后端 (apps/api)
+| 角色 | 定位 | 代表技能 |
+|------|------|---------|
+| 虚竹 | 主角·逍遥派传人 | 天山折梅手、天山六阳掌、北冥神功 |
+| 乔峰 | 盟友·压阵 | 降龙十八掌、擒龙功 |
+| 段誉 | 盟友·观察 | 六脉神剑、凌波微步 |
+| 丁春秋 | 反派·星宿老怪 | 化功大法、星宿毒雾 |
 
-| 技术 | 用途 |
-|------|------|
-| Fastify 5 | HTTP 框架 |
-| TypeScript | 类型安全 |
-| better-sqlite3 | 运行时统计持久化 |
-| Zod | 请求/响应校验 |
-| Pino | 结构化日志 |
-| tsx | 开发热重载 |
+**剧情结构**
 
-### 前端 (apps/web)
+18 个阶段，含 3 条分支路线（仁道 / 智道 / 勇道），从师门血债到最终对决，玩家选择决定结局走向。
 
-| 技术 | 用途 |
-|------|------|
-| React 19 | UI 框架 |
-| Vite 6 | 构建工具 |
-| Zustand | 状态管理 |
-| Lucide React | 图标库 |
-| TypeScript | 类型安全 |
+## 核心特性
 
-## 🚀 快速开始
+- **LLM 驱动叙事** — DeepSeek 大模型实时生成角色对话与行动，流式输出
+- **语音合成** — CosyVoice TTS 为每个角色生成独立语音，GPU 加速推理
+- **战斗系统** — HP/MP 状态、技能伤害计算、克制关系、回合制对抗
+- **演出系统** — 技能释放时触发音效、图片、视频等多媒体效果
+- **故事包** — 模块化内容打包，支持导入/导出/自定义创作
+- **多端运行** — Web 浏览器 + Electron 桌面应用
+- **存档系统** — 多槽位存档，随时保存和恢复进度
+- **管理后台** — 可视化编辑角色、规则、剧情、LLM/TTS 配置
+
+## 快速开始
 
 ### 环境要求
 
 - Node.js >= 20
-- npm >= 9
+- DeepSeek API Key（[申请地址](https://platform.deepseek.com)）
+- Python 3.10+（可选，用于 CosyVoice TTS）
 
-### 安装
+### 安装与启动
 
 ```bash
 git clone https://github.com/jflyang/bookgame.git
 cd bookgame
 npm install
-```
 
-### 配置
-
-复制环境变量文件并填入你的 API Key：
-
-```bash
+# 配置 API Key
 cp apps/api/.env.example apps/api/.env
-```
+# 编辑 .env 填入 DEEPSEEK_API_KEY
 
-编辑 `apps/api/.env`：
-
-```env
-PORT=4000
-WEB_ORIGIN=http://localhost:5173
-LLM_PROVIDER=deepseek          # 可选: mock (测试用) | deepseek
-DEEPSEEK_API_KEY=your-api-key  # 使用 deepseek 时必填
-```
-
-### 启动开发服务器
-
-```bash
-# 同时启动前后端
+# 启动（前后端同时）
 npm run dev
-
-# 或分别启动
-npm run dev:api   # 后端 http://localhost:4000
-npm run dev:web   # 前端 http://localhost:5173
 ```
 
-### 构建生产版本
+打开 http://localhost:5173 即可开始游戏。
+
+### 桌面版
 
 ```bash
-npm run build
+cd apps/desktop
+npm run package        # Windows
+npm run package:mac    # macOS
 ```
 
-## 📦 故事包系统
-
-游戏内容通过「故事包」(Story Package) 组织，每个故事包包含：
+## 技术架构
 
 ```
-apps/data/task-packages/<story-id>/
-├── task-package.json      # 主配置（标题、描述、调试选项）
-├── manifest.json          # 插件清单（多媒体能力声明）
-├── story.json             # 故事设定 Prompt
-├── characters.json        # 角色定义
-├── scenario.json          # 剧情场景与阶段
-├── skills.json            # 技能定义
-├── knowledge/             # 知识库文档
-├── prompts/               # 提示词规则
-├── ui/                    # UI 主题配置
-├── media/                 # 缩略图等媒体资源
-├── assets/performances/   # 演出资源（音效、图片）
-└── saves/                 # 会话存档
+├── apps/api          Fastify 后端 (TypeScript, SQLite, Zod)
+├── apps/web          React 前端 (Vite, Zustand)
+├── apps/desktop      Electron 桌面壳
+├── apps/data         故事包数据
+├── packages/shared   共享类型与 Schema
+└── services/tts      CosyVoice Python 服务
 ```
 
-### 默认故事包
+### LLM 集成
 
-项目自带一个示例故事包 **「虚竹除害星宿老怪」**，取材自《天龙八部》：
+- 支持 DeepSeek（deepseek-chat / deepseek-v4-flash / deepseek-v4-pro）
+- Prompt 分层：system（稳定前缀，利用 prefix caching）+ user（动态状态）
+- 流式 SSE 输出，实时显示角色回复
+- 自动 JSON 解析与容错（reasoning_content 回退提取）
 
-- 多阶段剧情（起因 → 相遇 → 冲突升级 → 交手 → 结局）
-- 4 个角色：虚竹、乔峰、段誉、丁春秋
-- 完整技能系统（天山折梅手、降龙十八掌、六脉神剑、化功大法等）
-- 战斗机制（HP/MP、伤害范围、克制关系）
+### TTS 集成
 
-### 创建自定义故事包
+- CosyVoice：本地 GPU 推理，角色音色克隆
+- ElevenLabs：云端备选方案
+- API 启动时自动拉起 TTS 服务（可配置）
+- 音频缓存，避免重复合成
 
-通过管理后台可视化创建，或通过 API 导入 `.story-package.json` 文件。
-
-## 🎮 游戏玩法
-
-1. 打开前端页面，选择故事包
-2. 创建新会话或加载存档
-3. 在输入框中输入你的行动或对话
-4. AI 角色会根据剧情和人设自主回应
-5. 观察角色状态变化（HP/MP）和剧情阶段推进
-6. 随时存档保存进度
-
-## 🔧 管理后台
-
-访问前端的管理页面可以：
-
-- **故事管理** — 创建、编辑、导入/导出故事包
-- **角色配置** — 编辑角色人设、头像、知识库绑定
-- **规则编辑** — 配置提示词规则（知识强制、群聊边界、战斗规则等）
-- **UI 主题** — 自定义颜色、字体、布局
-- **LLM 配置** — 切换模型提供商、调整温度和 Token 限制
-- **运行时面板** — 查看每轮调用详情、延迟统计、Token 用量
-- **审计日志** — 追踪所有管理操作记录
-- **会话管理** — 查看和管理所有游戏会话
-
-## 🧪 测试
+## 开发命令
 
 ```bash
-# 运行所有测试
-npm run test -w @story-game/api
-npm run test -w @story-game/web
-
-# 类型检查
-npm run typecheck
+npm run dev           # 前后端同时启动
+npm run dev:api       # 仅后端 (localhost:4000)
+npm run dev:web       # 仅前端 (localhost:5173)
+npm run build         # 生产构建
+npm run typecheck     # 全量类型检查
+npm run test -w @story-game/api   # 后端测试
+npm run test -w @story-game/web   # 前端测试
 ```
 
-## 📁 项目结构详解
-
-```
-apps/api/src/
-├── application/       # 应用层服务（编排业务流程）
-├── data/              # 数据层（角色、场景、故事包仓库）
-├── modules/
-│   ├── container.ts   # 依赖注入容器
-│   ├── database/      # SQLite 数据库管理
-│   ├── runtime-stats/ # 运行时统计收集
-│   └── sessions/      # 会话管理
-├── resources/llm/     # LLM 提供商抽象层
-├── routes/            # HTTP 路由定义
-├── services/          # 核心业务服务
-│   ├── dialogueEngine.ts       # 对话引擎
-│   ├── turnProcessor.ts        # 回合处理器
-│   ├── speakerSelector.ts      # 发言者选择
-│   ├── promptService.ts        # Prompt 构建
-│   ├── gameStateService.ts     # 游戏状态管理
-│   ├── memoryService.ts        # 对话记忆
-│   ├── ruleChecker.ts          # 规则校验
-│   ├── skillParser.ts          # 技能解析
-│   ├── storyPackageService.ts  # 故事包管理
-│   ├── storyPackageActivator.ts # 故事包激活
-│   ├── sessionSaveService.ts   # 存档服务
-│   └── mediaService.ts         # 媒体资源服务
-└── utils/             # 工具函数
-```
-
-## 🔌 API 端点
-
-### 游戏 API
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/api/game/sessions` | 创建新会话 |
-| POST | `/api/game/sessions/:id/messages` | 发送消息 |
-| POST | `/api/game/sessions/:id/continue` | 继续（AI 自动推进） |
-| GET | `/api/game/sessions/:id/state` | 获取游戏状态 |
-| GET | `/api/game/sessions/:id/messages` | 获取消息历史 |
-
-### 管理 API
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/admin/stories` | 获取所有故事包 |
-| POST | `/api/admin/stories` | 创建故事包 |
-| PUT | `/api/admin/stories/:id` | 更新故事包 |
-| GET | `/api/admin/llm-config` | 获取 LLM 配置 |
-| PUT | `/api/admin/llm-config` | 更新 LLM 配置 |
-| POST | `/api/admin/import` | 导入故事包 |
-| GET | `/api/admin/export/:id` | 导出故事包 |
-
-## 📄 License
+## License
 
 MIT
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request。

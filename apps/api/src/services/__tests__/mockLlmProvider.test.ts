@@ -59,10 +59,8 @@ describe("MockLlmProvider", () => {
 
   it("stream() yields concatenated narration and dialogue", async () => {
     const tokens: string[] = [];
-    for await (const token of provider.stream({
-      speakerId: "qiaofeng",
-      prompt: "Hi",
-    })) {
+    const llmStream = provider.stream({ speakerId: "qiaofeng", prompt: "Hi" });
+    for await (const token of llmStream.tokens) {
       tokens.push(token);
     }
 
@@ -74,10 +72,8 @@ describe("MockLlmProvider", () => {
 
   it("stream() for different speaker returns different content", async () => {
     const tokens: string[] = [];
-    for await (const token of provider.stream({
-      speakerId: "xuzhu",
-      prompt: "Hi",
-    })) {
+    const llmStream = provider.stream({ speakerId: "xuzhu", prompt: "Hi" });
+    for await (const token of llmStream.tokens) {
       tokens.push(token);
     }
 

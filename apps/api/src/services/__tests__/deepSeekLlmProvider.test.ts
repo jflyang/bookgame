@@ -185,7 +185,8 @@ describe("DeepSeekLlmProvider", () => {
       makeConfig({ apiKey: undefined })
     );
 
-    const iter = provider.stream({ speakerId: "qiaofeng", prompt: "Hi" });
+    const result = provider.stream({ speakerId: "qiaofeng", prompt: "Hi" });
+    const iter = result.tokens[Symbol.asyncIterator]();
     await expect(iter.next()).rejects.toThrow("DeepSeek API key is not configured");
   });
 
@@ -221,10 +222,8 @@ describe("DeepSeekLlmProvider", () => {
     });
 
     const tokens: string[] = [];
-    for await (const token of provider.stream({
-      speakerId: "qiaofeng",
-      prompt: "Hi",
-    })) {
+    const llmStream = provider.stream({ speakerId: "qiaofeng", prompt: "Hi" });
+    for await (const token of llmStream.tokens) {
       tokens.push(token);
     }
 
@@ -264,10 +263,8 @@ describe("DeepSeekLlmProvider", () => {
     });
 
     const tokens: string[] = [];
-    for await (const token of provider.stream({
-      speakerId: "qiaofeng",
-      prompt: "Think",
-    })) {
+    const llmStream = provider.stream({ speakerId: "qiaofeng", prompt: "Think" });
+    for await (const token of llmStream.tokens) {
       tokens.push(token);
     }
 
@@ -281,7 +278,8 @@ describe("DeepSeekLlmProvider", () => {
       text: () => Promise.resolve("Rate limited"),
     });
 
-    const iter = provider.stream({ speakerId: "qiaofeng", prompt: "Hi" });
+    const result = provider.stream({ speakerId: "qiaofeng", prompt: "Hi" });
+    const iter = result.tokens[Symbol.asyncIterator]();
     await expect(iter.next()).rejects.toThrow(
       "DeepSeek stream request failed: 429 Rate limited"
     );
@@ -297,7 +295,8 @@ describe("DeepSeekLlmProvider", () => {
       body: { getReader: () => mockReader },
     });
 
-    const iter = provider.stream({ speakerId: "qiaofeng", prompt: "Hi" });
+    const result = provider.stream({ speakerId: "qiaofeng", prompt: "Hi" });
+    const iter = result.tokens[Symbol.asyncIterator]();
     await iter.next();
 
     const [, options] = fetchSpy.mock.calls[0];
@@ -335,10 +334,8 @@ describe("DeepSeekLlmProvider", () => {
     });
 
     const tokens: string[] = [];
-    for await (const token of provider.stream({
-      speakerId: "qiaofeng",
-      prompt: "Hi",
-    })) {
+    const llmStream = provider.stream({ speakerId: "qiaofeng", prompt: "Hi" });
+    for await (const token of llmStream.tokens) {
       tokens.push(token);
     }
 

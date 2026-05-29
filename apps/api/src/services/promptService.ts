@@ -10,15 +10,19 @@ export class PromptService {
     private readonly skills: SkillIndex
   ) {}
 
-  buildPrompt(speakerId: CharacterId, state: GameState, history: Message[], query: string, storyPackage?: StoryPackage) {
-    const { character: speaker, knowledgeHits } = this.agents.buildAgentContext(speakerId, query);
+  /**
+   * Build the stable system prompt (persona, rules, skills, stage structure).
+   * This part rarely changes within a session, enabling DeepSeek prefix caching.
+   */
+  buildSystemPrompt(speakerId: CharacterId, state: GameState, storyPackage?: StoryPackage): string {
+    const { character: speaker, knowledgeHits } = this.agents.buildAgentContext(speakerId, "");
     const roster = this.characters.list();
     const otherCharacterNames = roster.filter((item) => item.id !== speakerId).map((item) => item.name).join("、");
     const enabledRules = storyPackage?.promptRules.filter((rule) => rule.enabled) ?? [];
     const introNarration = storyPackage?.uiConfig?.scene?.introNarration;
     const stageGuide = this.buildStageGuide(state, storyPackage);
 
-    // --- Optimized: only current speaker's skills ---
+    // --- Skills (stable within a session) ---
     const allSkills = this.skills.list();
     const speakerSkills = allSkills.filter((s) => s.ownerId === speakerId);
     const skillsToShow = speakerSkills.length > 0 ? speakerSkills : allSkills;
@@ -34,32 +38,19 @@ export class PromptService {
       ? `可攻击目标：${attackableNames.join("、")}。`
       : "";
 
-    // --- Optimized: compact state (only HP/MP per character) ---
-    const compactState = state.characters.map((c) => {
-      const name = roster.find((r) => r.id === c.characterId)?.name ?? c.characterId;
-      return `${name}(${c.characterId}): HP${c.hp} MP${c.mp}${c.isDefeated ? " [败]" : ""}`;
-    }).join("、");
-
-    // --- Optimized: only current stage from story setting ---
-    const currentStageDetail = state.scenario.stageDetails.find((s) => s.id === state.scenario.currentStage);
-    const stageContext = currentStageDetail
-      ? `当前阶段「${currentStageDetail.title || state.scenario.currentStage}」：${currentStageDetail.description}${currentStageDetail.guidance ? `\n推进建议：${currentStageDetail.guidance}` : ""}`
-      : `当前阶段：${state.scenario.currentStage}`;
-
-    // --- Recent history (last 10 messages, with full context) ---
-    const recentHistory = history.slice(-10).map((m) => {
-      const name = m.speakerId ? (roster.find((r) => r.id === m.speakerId)?.name ?? m.speakerId) : "玩家";
-      const text = m.content.length > 1000 ? m.content.slice(0, 1000) + "…" : m.content;
-      return `[${name}] ${text}`;
-    }).join("\n");
-
-    // --- Knowledge hits: full content but only for current speaker ---
+    // Knowledge hits for system prompt (stable context from persona)
     const compactKnowledge = knowledgeHits.length > 0
       ? knowledgeHits.map((hit: { title?: string; content: string }) => {
           const title = hit.title ? `【${hit.title}】` : "";
           return `${title}${hit.content}`;
         }).join("\n")
       : "";
+
+    // Stage context (stable within same stage)
+    const currentStageDetail = state.scenario.stageDetails.find((s) => s.id === state.scenario.currentStage);
+    const stageContext = currentStageDetail
+      ? `当前阶段「${currentStageDetail.title || state.scenario.currentStage}」：${currentStageDetail.description}${currentStageDetail.guidance ? `\n推进建议：${currentStageDetail.guidance}` : ""}`
+      : `当前阶段：${state.scenario.currentStage}`;
 
     return [
       "你正在驱动一个多人角色互动故事游戏。每次只有一个角色发言。",
@@ -73,8 +64,8 @@ export class PromptService {
         otherCharacterNames,
         scenarioSetting: stageContext,
         retrievedKnowledge: compactKnowledge,
-        currentGameState: compactState,
-        recentHistory
+        currentGameState: "", // placeholder — dynamic state goes in user prompt
+        recentHistory: ""    // placeholder — dynamic history goes in user prompt
       }),
       `群聊成员：${roster.map((item) => `${item.name}(${item.id},${item.role})`).join("、")}`,
       `当前角色：${speaker.name}(${speakerId})`,
@@ -82,9 +73,54 @@ export class PromptService {
       compactKnowledge ? `知识库：\n${compactKnowledge}` : "",
       ...(introNarration && state.round <= 1 ? [`开场旁白：${introNarration}`] : []),
       `剧情阶段信息：\n${stageGuide}`,
-      `当前状态：${compactState}`,
-      `最近对话：\n${recentHistory}`
     ].filter(Boolean).join("\n\n");
+  }
+
+  /**
+   * Build the dynamic user prompt (current state, recent history, user input).
+   * This changes every turn.
+   */
+  buildUserPrompt(speakerId: CharacterId, state: GameState, history: Message[], query: string): string {
+    const roster = this.characters.list();
+
+    // --- Compact state (changes every turn) ---
+    const compactState = state.characters.map((c) => {
+      const name = roster.find((r) => r.id === c.characterId)?.name ?? c.characterId;
+      return `${name}(${c.characterId}): HP${c.hp} MP${c.mp}${c.isDefeated ? " [败]" : ""}`;
+    }).join("、");
+
+    // --- Recent history (last 5 messages, max 300 chars each to conserve tokens) ---
+    const recentHistory = history.slice(-5).map((m) => {
+      const name = m.speakerId ? (roster.find((r) => r.id === m.speakerId)?.name ?? m.speakerId) : "玩家";
+      const text = m.content.length > 300 ? m.content.slice(0, 300) + "…" : m.content;
+      return `[${name}] ${text}`;
+    }).join("\n");
+
+    // --- Knowledge hits specific to this query ---
+    const { knowledgeHits } = this.agents.buildAgentContext(speakerId, query);
+    const queryKnowledge = knowledgeHits.length > 0
+      ? `相关知识：\n${knowledgeHits.map((hit: { title?: string; content: string }) => {
+          const title = hit.title ? `【${hit.title}】` : "";
+          return `${title}${hit.content}`;
+        }).join("\n")}`
+      : "";
+
+    return [
+      `当前状态：${compactState}`,
+      `最近对话：\n${recentHistory}`,
+      queryKnowledge,
+      `玩家输入：${query}`
+    ].filter(Boolean).join("\n\n");
+  }
+
+  /**
+   * Legacy single-string prompt (for backward compatibility).
+   * Combines system + user prompt into one string.
+   */
+  buildPrompt(speakerId: CharacterId, state: GameState, history: Message[], query: string, storyPackage?: StoryPackage) {
+    const systemPrompt = this.buildSystemPrompt(speakerId, state, storyPackage);
+    const userPrompt = this.buildUserPrompt(speakerId, state, history, query);
+    return `${systemPrompt}\n\n${userPrompt}`;
   }
 
   private renderRules(rules: StoryPromptRule[], variables: Record<string, string>) {
@@ -294,118 +330,25 @@ export class PromptService {
   ): string[] {
     const loop = flow.servingLoop!;
     const cycle = state.currentCycle ?? 1;
-    const cycleKey = String(cycle);
-    const serveModuleId = loop.serveModuleByCycle[cycleKey] ?? loop.serveModuleByCycle["default"];
-    const punishModuleId = loop.punishModuleByCycle[cycleKey] ?? loop.punishModuleByCycle["default"];
-
-    const serveModule = moduleMap.get(serveModuleId);
-    const punishModule = moduleMap.get(punishModuleId);
 
     const lines: string[] = [
-      `【${loop.title}】`,
-      `当前循环：第 ${cycle} 次侍寝`,
+      `【${loop.title}】第 ${cycle} 次侍寝`,
       "",
-      `▸ 当前侍寝模块：${currentModule.title}`,
+      `▸ 当前模块：${currentModule.title}`,
       currentModule.description ? `  含义：${currentModule.description}` : "",
       currentModule.guidance ? `  引导：${currentModule.guidance}` : "",
       currentModule.enterWhen ? `  进入条件：${currentModule.enterWhen}` : "",
       currentModule.exitCondition ? `  退出条件：${currentModule.exitCondition}` : "",
     ];
 
-    // Judgment criteria
+    // Brief judgment reference — detailed scoring is handled by the game engine
     if (loop.judgmentNode) {
-      const judge = loop.judgmentNode;
-      lines.push("", "══════════════", "【侍寝判定标准】", judge.description);
-
-      // 3D scoring
-      if (judge.scoringMethods?.score_3d) {
-        const scoring = judge.scoringMethods.score_3d;
-        const dims = Object.entries(scoring.dimensions as Record<string, { name: string; min: number; max: number; description: string }>).map(([, dim]) =>
-          `  - ${dim.name}（${dim.min}-${dim.max}分）：${dim.description}`
-        ).join("\n");
-
-        const threshold = scoring.thresholdsByCycle[cycleKey] ?? scoring.thresholdsByCycle["default"];
-        const thresholdText = threshold
-          ? `总分≥${threshold.total}分 且 单项不低于${threshold.perDimension}分`
-          : "帝王自行判断";
-
-        lines.push(
-          "【三维评分体系】",
-          dims,
-          `当前循环通过阈值：${thresholdText}`
-        );
-      }
-
-      // 4-trials scoring (cycle 4 / 杆缚媚药)
-      if (judge.scoringMethods?.score_4trials_random) {
-        const trials = judge.scoringMethods.score_4trials_random;
-        const trialText = trials.trials.map((t: { id: string; name: string; description: string }) => `  ${t.id === "oral" ? "①" : t.id === "moan" ? "②" : t.id === "kiss" ? "③" : "④"} ${t.name}：${t.description}`).join("\n");
-        lines.push(
-          "【四重考验体系】",
-          trialText,
-          `全部通过 → 继续；随机失败率 ${Math.round(trials.randomFailChance * 100)}%`,
-          trials.randomFailMessage || ""
-        );
-      }
-
-      // Routes
-      if (judge.routes) {
-        const sat = judge.routes["satisfied"];
-        const unsat = judge.routes["unsatisfied"];
-        const satModule = sat?.targetModule ? moduleMap.get(sat.targetModule) : null;
-        lines.push(
-          "",
-          `✅ 满意：${sat?.condition || ""} → ${satModule?.title || sat?.target || "帝王满意阶段"}`,
-          `❌ 不满意：${unsat?.condition || ""} → 进入惩戒（${punishModule?.title || "惩戒模块"}）→ 循环数+1 → 重新侍寝`
-        );
-      }
+      lines.push("", "本模块完成后将进行侍寝评定（满意→推进，不满意→惩戒后重新侍寝）。");
     }
 
-    // Punishment info
-    if (punishModule) {
-      lines.push(
-        "",
-        `【本循环对应惩戒】${punishModule.title}`,
-        punishModule.description ? `  ${punishModule.description}` : ""
-      );
-    }
-
-    // Punishment menu - only show current cycle's punishment, not the full menu
-    // (avoid spoiling future punishment options)
-
-    // Daily system context
-    if (flow.dailySystem) {
-      const ds = flow.dailySystem;
-      const activeDailies = ds.triggerRules
-        .filter((r) => {
-          // Only show dailies relevant to current state (stage >= 5)
-          const stageNum = parseInt(state.scenario.currentStage.replace("stage_", ""), 10);
-          if (r.module === "mod_daily_wearables" && stageNum >= 5) return true;
-          if (r.module === "mod_daily_morning_inspection" && stageNum >= 7) return true;
-          if (r.module === "mod_daily_kneel_day" && stageNum >= 5) return true;
-          if (r.module === "mod_daily_silence_day" && stageNum >= 5) return true;
-          if (r.module === "mod_daily_dog_bowl" && stageNum >= 11) return true;
-          if (r.module === "mod_daily_sleep_punish" && stageNum >= 7) return true;
-          return false;
-        })
-        .map((r) => {
-          const m = moduleMap.get(r.module);
-          return m ? `  - ${m.title}：${r.trigger}` : `  - ${r.module}：${r.trigger}`;
-        })
-        .join("\n");
-
-      if (activeDailies) {
-        lines.push("", `【当前激活的日常体系 — ${ds.title}】`, activeDailies);
-      }
-    }
-
-    // PunishThenReServe hint
-    if (loop.punishThenReServe) {
-      lines.push(
-        "",
-        `【侍寝失败流程】${loop.punishThenReServe.description}`,
-        loop.punishThenReServe.steps.map((s) => `  → ${s.action}${s.note ? `：${s.note}` : ""}`).join("\n")
-      );
+    // Module-specific consumed skills
+    if (currentModule.consumesSkills?.length) {
+      lines.push("", `本模块相关技能：${currentModule.consumesSkills.join("、")}`);
     }
 
     return lines;

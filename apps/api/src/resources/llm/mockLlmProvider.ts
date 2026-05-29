@@ -1,5 +1,5 @@
 import type { LlmStoryOutput } from "@story-game/shared";
-import type { LlmCompletionResult, LlmProvider, LlmRequest } from "./llmProvider.js";
+import type { LlmCompletionResult, LlmProvider, LlmRequest, LlmStreamResult } from "./llmProvider.js";
 
 const samples: Record<string, Partial<LlmStoryOutput>> = {
   qiaofeng: {
@@ -38,7 +38,16 @@ export class MockLlmProvider implements LlmProvider {
     return { output, raw };
   }
 
-  async *stream(input: LlmRequest): AsyncIterable<string> {
+  stream(input: LlmRequest): LlmStreamResult {
+    let usage: { promptTokens: number; completionTokens: number } | null = null;
+    const self = this;
+    return {
+      tokens: self._streamTokens(input),
+      getUsage() { return usage; }
+    };
+  }
+
+  private async *_streamTokens(input: LlmRequest): AsyncIterable<string> {
     const result = await this.complete(input);
     yield `${result.output.narration}\n${result.output.dialogue}`;
   }

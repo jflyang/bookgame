@@ -55,7 +55,7 @@ describe("TurnProcessor", () => {
     mockCharacters = { get: vi.fn(), list: vi.fn() };
     mockMemory = { append: vi.fn(), recent: vi.fn(), list: vi.fn().mockReturnValue([]) };
     mockStates = { get: vi.fn(), applyAssistantTurn: vi.fn(), withLock: vi.fn((_id: string, fn: () => Promise<unknown>) => fn()) };
-    mockPrompts = { buildPrompt: vi.fn() };
+    mockPrompts = { buildPrompt: vi.fn(), buildSystemPrompt: vi.fn(), buildUserPrompt: vi.fn() };
     mockRules = { validateOutput: vi.fn() };
     mockLlm = { complete: vi.fn(), stream: vi.fn() };
     mockAuditLog = { append: vi.fn() };
@@ -69,6 +69,8 @@ describe("TurnProcessor", () => {
     mockCharacters.list.mockReturnValue([character]);
     mockStates.get.mockReturnValue(gameState);
     mockPrompts.buildPrompt.mockReturnValue("system prompt\nuser query");
+    mockPrompts.buildSystemPrompt.mockReturnValue("system prompt");
+    mockPrompts.buildUserPrompt.mockReturnValue("user query");
     mockLlm.complete.mockResolvedValue({ output: validOutput, raw: JSON.stringify(validOutput) });
     mockRules.validateOutput.mockReturnValue(validOutput);
     mockStates.applyAssistantTurn.mockReturnValue({
@@ -103,7 +105,7 @@ describe("TurnProcessor", () => {
 
   it("validates output via ruleChecker", async () => {
     await processor.sendMessage(sessionId, input);
-    expect(mockRules.validateOutput).toHaveBeenCalledWith("qiaofeng", validOutput);
+    expect(mockRules.validateOutput).toHaveBeenCalledWith("qiaofeng", validOutput, ["qiaofeng"]);
   });
 
   it("records stats on successful turn", async () => {
@@ -148,7 +150,8 @@ describe("TurnProcessor", () => {
 
   it("handles missing story package gracefully", async () => {
     await processor.sendMessage(sessionId, input);
-    expect(mockPrompts.buildPrompt).toHaveBeenCalled();
+    expect(mockPrompts.buildSystemPrompt).toHaveBeenCalled();
+    expect(mockPrompts.buildUserPrompt).toHaveBeenCalled();
   });
 
   // ---- sendMessageStream ----
@@ -156,7 +159,7 @@ describe("TurnProcessor", () => {
   it("yields meta, token, and done events in order", async () => {
     const chunks = ["Hello ", "World"];
     async function* mockStream() { for (const c of chunks) yield c; }
-    mockLlm.stream.mockReturnValue(mockStream());
+    mockLlm.stream.mockReturnValue({ tokens: mockStream(), getUsage: () => null });
 
     const events: string[] = [];
     for await (const event of processor.sendMessageStream(sessionId, input)) {
@@ -167,7 +170,7 @@ describe("TurnProcessor", () => {
 
   it("records stats after stream completes", async () => {
     async function* mockStream() { yield "Hello"; }
-    mockLlm.stream.mockReturnValue(mockStream());
+    mockLlm.stream.mockReturnValue({ tokens: mockStream(), getUsage: () => null });
 
     for await (const _ of processor.sendMessageStream(sessionId, input)) { void _; }
     expect(mockStats.recordCompleteTurn).toHaveBeenCalledTimes(1);
@@ -176,7 +179,7 @@ describe("TurnProcessor", () => {
 
   it("records failed stats on validation error after stream", async () => {
     async function* mockStream() { yield "bad json"; }
-    mockLlm.stream.mockReturnValue(mockStream());
+    mockLlm.stream.mockReturnValue({ tokens: mockStream(), getUsage: () => null });
     mockRules.validateOutput.mockImplementation(() => { throw new Error("invalid"); });
 
     await expect(async () => {
@@ -190,7 +193,7 @@ describe("TurnProcessor", () => {
   it("parses valid JSON from stream buffer", async () => {
     const json = JSON.stringify(validOutput);
     async function* mockStream() { yield json; }
-    mockLlm.stream.mockReturnValue(mockStream());
+    mockLlm.stream.mockReturnValue({ tokens: mockStream(), getUsage: () => null });
 
     for await (const _ of processor.sendMessageStream(sessionId, input)) { void _; }
     expect(mockRules.validateOutput).toHaveBeenCalledWith("qiaofeng", expect.objectContaining({ speakerId: "qiaofeng" }));
@@ -415,7 +418,7 @@ describe("TurnProcessor", () => {
       chunks.push(json.slice(i, i + 30));
     }
     async function* mockStream() { for (const c of chunks) yield c; }
-    mockLlm.stream.mockReturnValue(mockStream());
+    mockLlm.stream.mockReturnValue({ tokens: mockStream(), getUsage: () => null });
 
     const tokens: string[] = [];
     for await (const event of processor.sendMessageStream(sessionId, input)) {
@@ -433,7 +436,7 @@ describe("TurnProcessor", () => {
 
   it("stream passes through non-JSON plain text", async () => {
     async function* mockStream() { yield "Hello "; yield "World"; }
-    mockLlm.stream.mockReturnValue(mockStream());
+    mockLlm.stream.mockReturnValue({ tokens: mockStream(), getUsage: () => null });
 
     const tokens: string[] = [];
     for await (const event of processor.sendMessageStream(sessionId, input)) {
@@ -449,7 +452,7 @@ describe("TurnProcessor", () => {
     });
     const json = JSON.stringify(output);
     async function* mockStream() { yield json; }
-    mockLlm.stream.mockReturnValue(mockStream());
+    mockLlm.stream.mockReturnValue({ tokens: mockStream(), getUsage: () => null });
 
     const tokens: string[] = [];
     for await (const event of processor.sendMessageStream(sessionId, input)) {
@@ -472,7 +475,7 @@ describe("TurnProcessor", () => {
       ':{"type":"observe","targetIds":[]}}',
     ];
     async function* mockStream() { for (const c of chunks) yield c; }
-    mockLlm.stream.mockReturnValue(mockStream());
+    mockLlm.stream.mockReturnValue({ tokens: mockStream(), getUsage: () => null });
 
     const tokens: string[] = [];
     for await (const event of processor.sendMessageStream(sessionId, input)) {

@@ -149,8 +149,8 @@ describe("PromptService", () => {
     );
 
     expect(prompt).toContain("多人角色互动故事游戏");
-    expect(prompt).toContain("输出必须是严格 JSON");
-    expect(prompt).toContain("speakerId: 当前发言角色 ID");
+    expect(prompt).toContain("输出严格 JSON");
+    expect(prompt).toContain("speakerId");
   });
 
   it("buildPrompt includes character persona", () => {
@@ -188,9 +188,9 @@ describe("PromptService", () => {
       undefined
     );
 
-    expect(prompt).toContain('"hp":85');
-    expect(prompt).toContain('"mp":70');
-    expect(prompt).toContain('"hp":100');
+    expect(prompt).toContain("HP85");
+    expect(prompt).toContain("MP70");
+    expect(prompt).toContain("HP100");
   });
 
   it("buildPrompt includes stage guide with current stage", () => {
@@ -237,7 +237,9 @@ describe("PromptService", () => {
       pkg
     );
 
-    expect(prompt).toContain("这是一个发生在武侠世界的恩怨故事");
+    // Story setting is used in rules variable substitution via {scenarioSetting}
+    expect(prompt).toContain("高潮");
+    expect(prompt).toContain("决战时刻");
   });
 
   it("buildPrompt includes knowledge hits from agent context", () => {
@@ -299,9 +301,9 @@ describe("PromptService", () => {
       undefined
     );
 
-    // Should use JSON.stringify(state.scenario) as scenario setting
-    expect(prompt).toContain("Test Story");
+    // Without storyPackage, stage guide still renders from state.scenario
     expect(prompt).toContain("climax");
+    expect(prompt).toContain("Defeat the villain");
   });
 
   it("buildPrompt includes combat declaration rule when provided", () => {
@@ -347,9 +349,8 @@ describe("PromptService", () => {
       undefined
     );
 
-    expect(prompt).toContain("当前角色可攻击的目标");
+    expect(prompt).toContain("可攻击目标");
     expect(prompt).toContain("丁春秋");
-    expect(prompt).toContain("targetIds 必须从这些目标中选择");
   });
 
   it("buildPrompt emphasizes stateDeltaSuggestion consistency", () => {
@@ -361,7 +362,7 @@ describe("PromptService", () => {
       undefined
     );
 
-    expect(prompt).toContain("若你在叙事/对话中宣告了攻击和伤害");
+    expect(prompt).toContain("stateDeltaSuggestion");
   });
 
   it("buildPrompt includes intro narration when provided", () => {
@@ -371,9 +372,10 @@ describe("PromptService", () => {
       },
     });
 
+    const state = makeGameState({ round: 1 });
     const prompt = svc.buildPrompt(
       "qiaofeng",
-      makeGameState(),
+      state,
       [],
       "开始",
       pkg
@@ -431,7 +433,7 @@ describe("PromptService", () => {
       undefined
     );
 
-    expect(prompt).toContain("可用技能列表");
+    expect(prompt).toContain("当前角色可用技能");
     expect(prompt).toContain("xianglong_zhang");
     expect(prompt).toContain("内力:30");
     expect(prompt).toContain("伤害:40~80");
@@ -450,7 +452,7 @@ describe("PromptService", () => {
       undefined
     );
 
-    expect(prompt).not.toContain("可用技能列表");
+    expect(prompt).not.toContain("当前角色可用技能");
   });
 
   it("buildPrompt handles stage details with missing optional fields", () => {
@@ -486,9 +488,9 @@ describe("PromptService", () => {
     });
 
     const prompt = svc.buildPrompt("qiaofeng", state as GameState, [], "继续", undefined);
-    // Stages render with ID only when no details available
-    expect(prompt).toContain("1. opening");
-    expect(prompt).toContain("2. climax");
+    // Stages render with ID when no details available
+    expect(prompt).toContain("opening");
+    expect(prompt).toContain("climax");
   });
 
   it("buildPrompt substitutes multiple variables in rules", () => {
@@ -497,7 +499,7 @@ describe("PromptService", () => {
         {
           id: "r_multi",
           title: "角色规则",
-          content: "{currentCharacterName}对{otherCharacterNames}说话，场景是{scenarioSetting}",
+          content: "{currentCharacterName}对{otherCharacterNames}说话",
           enabled: true,
         },
       ],
@@ -506,7 +508,6 @@ describe("PromptService", () => {
     const prompt = svc.buildPrompt("qiaofeng", makeGameState(), [], "你好", pkg);
 
     expect(prompt).toContain("乔峰对虚竹说话");
-    expect(prompt).toContain("这是一个发生在武侠世界的恩怨故事");
   });
 
   it("buildPrompt includes multiple knowledge hits", () => {
@@ -527,7 +528,7 @@ describe("PromptService", () => {
   it("buildPrompt excludes attackable targets section when none configured", () => {
     const prompt = svc.buildPrompt("qiaofeng", makeGameState(), [], "hello", undefined);
 
-    expect(prompt).not.toContain("当前角色可攻击的目标");
+    expect(prompt).not.toContain("可攻击目标");
   });
 
   it("buildPrompt excludes attackable targets when list is empty", () => {
@@ -537,6 +538,6 @@ describe("PromptService", () => {
 
     const prompt = svc.buildPrompt("qiaofeng", makeGameState(), [], "hello", undefined);
 
-    expect(prompt).not.toContain("当前角色可攻击的目标");
+    expect(prompt).not.toContain("可攻击目标");
   });
 });

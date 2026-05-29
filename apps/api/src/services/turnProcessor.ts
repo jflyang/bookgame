@@ -90,8 +90,10 @@ export class TurnProcessor {
     const round = state.round;
     const stageBefore = state.scenario.currentStage;
     const speakerName = this.characters.get(speakerId).name;
-    const prompt = this.prompts.buildPrompt(speakerId, state, this.memory.recent(sessionId), input.text, storyPackage);
-    logger.debug({ sessionId, promptLength: prompt.length }, "prompt built");
+    const systemPrompt = this.prompts.buildSystemPrompt(speakerId, state, storyPackage);
+    const userPrompt = this.prompts.buildUserPrompt(speakerId, state, this.memory.recent(sessionId), input.text);
+    const prompt = `${systemPrompt}\n\n${userPrompt}`;
+    logger.debug({ sessionId, promptLength: prompt.length, systemPromptLength: systemPrompt.length }, "prompt built");
 
     return this.states.withLock(sessionId, async () => {
       const startTime = Date.now();
@@ -99,7 +101,7 @@ export class TurnProcessor {
       let latency = 0;
 
       try {
-        llmResult = await this.llm.complete({ speakerId, prompt });
+        llmResult = await this.llm.complete({ speakerId, prompt: userPrompt, systemPrompt });
         latency = Date.now() - startTime;
         const result = this.applyOutput(sessionId, speakerId, llmResult.output);
         this.stats.recordCompleteTurn({
@@ -152,7 +154,9 @@ export class TurnProcessor {
     const round = state.round;
     const stageBefore = state.scenario.currentStage;
     const speakerName = this.characters.get(speakerId).name;
-    const prompt = this.prompts.buildPrompt(speakerId, state, this.memory.recent(sessionId), input.text, storyPackage);
+    const systemPrompt = this.prompts.buildSystemPrompt(speakerId, state, storyPackage);
+    const userPrompt = this.prompts.buildUserPrompt(speakerId, state, this.memory.recent(sessionId), input.text);
+    const prompt = `${systemPrompt}\n\n${userPrompt}`;
 
     logger.info({ sessionId, speakerId, round: state.round }, "stream message processing");
     yield { type: "meta" as const, speakerId, speakerName };
@@ -163,8 +167,9 @@ export class TurnProcessor {
       let rawBuffer = "";
       const extractor = new StreamContentExtractor();
       const tokens: Array<{ type: "token"; token: string; speakerId: string }> = [];
+      const llmStream = this.llm.stream({ speakerId, prompt: userPrompt, systemPrompt });
       try {
-        for await (const token of this.llm.stream({ speakerId, prompt })) {
+        for await (const token of llmStream.tokens) {
           rawBuffer += token;
           const displayText = extractor.feed(token);
           if (displayText) {
@@ -179,7 +184,7 @@ export class TurnProcessor {
           validationResult: "failed",
           validationErrors: [String(streamErr)],
           stateDelta: null, stageBefore, stageAfter: stageBefore,
-          latencyMs: latency, tokenUsage: null,
+          latencyMs: latency, tokenUsage: llmStream.getUsage(),
           timestamp: new Date().toISOString(),
         });
         throw streamErr;
@@ -231,7 +236,7 @@ export class TurnProcessor {
           validationResult: "passed", validationErrors: [],
           stateDelta: result.message.stateDelta, stageBefore,
           stageAfter: result.gameState.scenario.currentStage,
-          latencyMs: latency, tokenUsage: null,
+          latencyMs: latency, tokenUsage: llmStream.getUsage(),
           timestamp: new Date().toISOString(),
         });
         return { tokens, done: { type: "done" as const, ...result } };
@@ -245,7 +250,7 @@ export class TurnProcessor {
           rawLlmResponse: rawBuffer, parsedOutput: null,
           validationResult: "failed", validationErrors,
           stateDelta: null, stageBefore, stageAfter: stageBefore,
-          latencyMs: latency, tokenUsage: null,
+          latencyMs: latency, tokenUsage: llmStream.getUsage(),
           timestamp: new Date().toISOString(),
         });
         throw err;

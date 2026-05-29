@@ -1,6 +1,6 @@
 import { llmStoryOutputSchema } from "@story-game/shared";
 import type { LlmConfigService } from "./llmConfigService.js";
-import type { LlmCompletionResult, LlmProvider, LlmRequest } from "./llmProvider.js";
+import type { LlmCompletionResult, LlmProvider, LlmRequest, LlmStreamResult } from "./llmProvider.js";
 import { createModuleLogger } from "../../utils/logger.js";
 
 const logger = createModuleLogger("llm:deepseek");
@@ -33,6 +33,17 @@ export class DeepSeekLlmProvider implements LlmProvider {
       throw new Error("DeepSeek API key is not configured");
     }
 
+    // Debug: log estimated prompt token count before sending
+    const promptCharEstimate = (input.systemPrompt?.length ?? 0) + input.prompt.length;
+    const estimatedTokens = Math.round(promptCharEstimate / 3);
+    logger.debug({ estimatedPromptTokens: estimatedTokens, systemPromptLen: input.systemPrompt?.length ?? 0, userPromptLen: input.prompt.length }, "llm complete request");
+
+    // Use dedicated systemPrompt if provided (enables prefix caching);
+    // otherwise fall back to the generic format instruction as system message.
+    const systemContent = input.systemPrompt
+      ? input.systemPrompt
+      : "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。输出格式：{\"speakerId\":\"角色id\",\"narration\":\"旁白叙述\",\"dialogue\":\"角色对话\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId\":\"技能中文名(仅type=skill时填写,从可用技能列表中选,非skill类型省略此字段)\",\"targetIds\":[\"英文角色ID\"]},\"stateDeltaSuggestion\":{\"角色ID_hp\":-35,\"角色ID_mp\":-20},\"stageSuggestion\":\"阶段名(可选)\"}";
+
     const start = Date.now();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 60_000);
@@ -52,7 +63,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
           messages: [
             {
               role: "system",
-              content: "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。输出格式：{\"speakerId\":\"角色id\",\"narration\":\"旁白叙述\",\"dialogue\":\"角色对话\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId\":\"技能中文名(仅type=skill时填写,从可用技能列表中选,非skill类型省略此字段)\",\"targetIds\":[\"英文角色ID\"]},\"stateDeltaSuggestion\":{\"角色ID_hp\":-35,\"角色ID_mp\":-20},\"stageSuggestion\":\"阶段名(可选)\"}"
+              content: systemContent
             },
             {
               role: "user",
@@ -149,13 +160,42 @@ export class DeepSeekLlmProvider implements LlmProvider {
     };
   }
 
-  async *stream(input: LlmRequest): AsyncIterable<string> {
+  stream(input: LlmRequest): LlmStreamResult {
     const config = this.configService.getConfig();
+    // Pre-compute the prompt length estimate (chars ~= tokens * 3 for Chinese, * 4 for English)
+    const promptCharEstimate = (input.systemPrompt?.length ?? 0) + input.prompt.length;
+    const estimatedTokens = Math.round(promptCharEstimate / 3);
+    logger.debug({ estimatedPromptTokens: estimatedTokens, systemPromptLen: input.systemPrompt?.length ?? 0, userPromptLen: input.prompt.length }, "llm stream request");
+
+    // Use dedicated systemPrompt if provided (enables prefix caching);
+    // otherwise fall back to the generic format instruction as system message.
+    const systemContent = input.systemPrompt
+      ? input.systemPrompt
+      : "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。输出格式：{\"speakerId\":\"角色id\",\"narration\":\"旁白叙述\",\"dialogue\":\"角色对话\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId\":\"技能中文名(仅type=skill时填写,从可用技能列表中选,非skill类型省略此字段)\",\"targetIds\":[\"英文角色ID\"]},\"stateDeltaSuggestion\":{\"角色ID_hp\":-35,\"角色ID_mp\":-20},\"stageSuggestion\":\"阶段名(可选)\"}";
+
+    let streamUsage: DeepSeekUsage | null = null;
+    const self = this;
+
+    return {
+      tokens: self._streamTokens(input, config, systemContent, (usage) => { streamUsage = usage; }),
+      getUsage() {
+        return streamUsage ? { promptTokens: streamUsage.prompt_tokens, completionTokens: streamUsage.completion_tokens } : null;
+      }
+    };
+  }
+
+  private async *_streamTokens(
+    input: LlmRequest,
+    config: ReturnType<LlmConfigService["getConfig"]>,
+    systemContent: string,
+    onUsage: (usage: DeepSeekUsage) => void
+  ): AsyncIterable<string> {
     if (!config.apiKey) {
       throw new Error("DeepSeek API key is not configured");
     }
 
     const start = Date.now();
+    let capturedUsage: DeepSeekUsage | null = null;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 120_000);
     let response: Response;
@@ -175,7 +215,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
           messages: [
             {
               role: "system",
-              content: "你是互动故事游戏的单角色叙事引擎。必须只输出严格 JSON，不要输出 Markdown。输出格式：{\"speakerId\":\"角色id\",\"narration\":\"旁白叙述\",\"dialogue\":\"角色对话\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId\":\"技能中文名(仅type=skill时填写,从可用技能列表中选,非skill类型省略此字段)\",\"targetIds\":[\"英文角色ID\"]},\"stateDeltaSuggestion\":{\"角色ID_hp\":-35,\"角色ID_mp\":-20},\"stageSuggestion\":\"阶段名(可选)\"}"
+              content: systemContent
             },
             {
               role: "user",
@@ -239,6 +279,12 @@ export class DeepSeekLlmProvider implements LlmProvider {
               reasoningBuffer += reasoning;
             }
 
+            // Capture usage from the final SSE frame (arrives before [DONE])
+            if (parsed?.usage) {
+              capturedUsage = parsed.usage as DeepSeekUsage;
+              onUsage(capturedUsage);
+            }
+
             // Only yield content (the actual JSON output)
             if (content) {
               contentBuffer += content;
@@ -261,7 +307,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
     } finally {
       reader.releaseLock();
     }
-    logger.info({ model: config.model, latency: Date.now() - start }, "llm stream complete");
+    logger.info({ model: config.model, latency: Date.now() - start, usage: capturedUsage }, "llm stream complete");
   }
 }
 

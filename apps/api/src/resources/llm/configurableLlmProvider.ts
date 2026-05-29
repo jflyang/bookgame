@@ -1,4 +1,4 @@
-import type { LlmProvider, LlmRequest } from "./llmProvider.js";
+import type { LlmProvider, LlmRequest, LlmStreamResult } from "./llmProvider.js";
 import type { LlmConfigService } from "./llmConfigService.js";
 
 export class ConfigurableLlmProvider implements LlmProvider {
@@ -11,7 +11,7 @@ export class ConfigurableLlmProvider implements LlmProvider {
     return this.currentProvider().complete(input);
   }
 
-  stream(input: LlmRequest) {
+  stream(input: LlmRequest): LlmStreamResult {
     return this.currentProvider().stream(input);
   }
 

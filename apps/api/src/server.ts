@@ -94,6 +94,25 @@ async function listenWithRetry(maxRetries = 8, delayMs = 1000) {
 
 await listenWithRetry();
 
+// Auto-start CosyVoice TTS service if configured
+import { ttsConfigService, ttsProcessManager } from "./modules/container.js";
+{
+  const ttsConfig = ttsConfigService.getConfig();
+  if (ttsConfig.enabled && ttsConfig.provider === "cosyvoice") {
+    const status = ttsProcessManager.getStatus();
+    if (status.status === "stopped" && status.serviceDirExists) {
+      app.log.info("Auto-starting CosyVoice TTS service...");
+      const pythonPath = process.env.TTS_PYTHON_PATH || "python";
+      const result = await ttsProcessManager.start({ pythonPath });
+      if (result.ok) {
+        app.log.info("CosyVoice TTS service auto-started");
+      } else {
+        app.log.warn({ error: result.error }, "CosyVoice TTS auto-start failed (non-fatal)");
+      }
+    }
+  }
+}
+
 // Graceful shutdown
 async function shutdown(signal: string) {
   app.log.info({ signal }, "shutting down gracefully");

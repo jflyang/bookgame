@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ConfigurableLlmProvider } from "../../resources/llm/configurableLlmProvider.js";
 import type { LlmConfigService } from "../../resources/llm/llmConfigService.js";
-import type { LlmProvider, LlmCompletionResult } from "../../resources/llm/llmProvider.js";
+import type { LlmProvider, LlmCompletionResult, LlmStreamResult } from "../../resources/llm/llmProvider.js";
 import type { LlmConfig } from "@story-game/shared";
 
 function makeConfig(overrides: Partial<LlmConfig> = {}): LlmConfig {
@@ -26,6 +26,13 @@ const completionResult: LlmCompletionResult = {
   raw: '{"narration":"Test"}',
 };
 
+function makeStreamResult(tokens: string[]): LlmStreamResult {
+  return {
+    tokens: (async function* () { for (const t of tokens) yield t; })(),
+    getUsage: () => null,
+  };
+}
+
 describe("ConfigurableLlmProvider", () => {
   let provider: ConfigurableLlmProvider;
   let mockConfigService: LlmConfigService;
@@ -42,16 +49,12 @@ describe("ConfigurableLlmProvider", () => {
 
     mockProviderA = {
       complete: vi.fn().mockResolvedValue(completionResult),
-      stream: vi.fn().mockImplementation(async function* () {
-        yield "tokenA";
-      }),
+      stream: vi.fn().mockReturnValue(makeStreamResult(["tokenA"])),
     };
 
     mockProviderB = {
       complete: vi.fn().mockResolvedValue(completionResult),
-      stream: vi.fn().mockImplementation(async function* () {
-        yield "tokenB";
-      }),
+      stream: vi.fn().mockReturnValue(makeStreamResult(["tokenB"])),
     };
 
     providers = { providerA: mockProviderA, providerB: mockProviderB };
@@ -73,10 +76,8 @@ describe("ConfigurableLlmProvider", () => {
 
   it("delegates stream() to the current provider", async () => {
     const tokens: string[] = [];
-    for await (const token of provider.stream({
-      speakerId: "qiaofeng",
-      prompt: "Hi",
-    })) {
+    const llmStream = provider.stream({ speakerId: "qiaofeng", prompt: "Hi" });
+    for await (const token of llmStream.tokens) {
       tokens.push(token);
     }
 

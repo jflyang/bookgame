@@ -182,6 +182,12 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.send(adminApplicationService.listAuditLog(type, sessionId, limitNum));
   });
 
+  // Session token usage — budget tracking
+  app.get("/admin/sessions/:sessionId/token-usage", async (request, reply) => {
+    const { sessionId } = request.params as { sessionId: string };
+    return reply.send(runtimeStatsCollector.getSessionTokenUsage(sessionId));
+  });
+
   registerRuntimeStatsRoutes(app, runtimeStatsCollector);
   registerSessionRoutes(app, sessionRepository, gameStateService, memoryService);
 }

@@ -39,6 +39,23 @@ export class RuntimeStatsCollector {
     return this.repo.listSessionSummaries();
   }
 
+  /** Get per-session token usage + budget status. */
+  getSessionTokenUsage(sessionId: string) {
+    const agg = this.repo.getAggregates(sessionId);
+    const TOKEN_BUDGET_WARN = 150_000;
+    return {
+      sessionId,
+      totalPromptTokens: agg.totalPromptTokens,
+      totalCompletionTokens: agg.totalCompletionTokens,
+      totalTokens: agg.totalPromptTokens + agg.totalCompletionTokens,
+      turnCount: agg.totalTurns,
+      avgPromptTokens: agg.avgPromptTokens,
+      avgCompletionTokens: agg.avgCompletionTokens,
+      budgetWarnThreshold: TOKEN_BUDGET_WARN,
+      budgetExceeded: (agg.totalPromptTokens + agg.totalCompletionTokens) >= TOKEN_BUDGET_WARN,
+    };
+  }
+
   clear(): void {
     this.repo.deleteAll();
     this.records = [];
