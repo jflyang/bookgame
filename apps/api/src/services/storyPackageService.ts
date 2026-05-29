@@ -14,7 +14,7 @@ export const DEFAULT_PACKAGE_ID = "虚竹";
 const maxZipBytes = 50 * 1024 * 1024;
 const maxZipEntries = 256;
 const maxEntryBytes = 10 * 1024 * 1024;
-const maxJsonBytes = 512 * 1024;
+const maxJsonBytes = 5 * 1024 * 1024;
 const performanceAudioExts = new Set([".mp3", ".ogg", ".wav", ".flac"]);
 const performanceImageExts = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 
@@ -268,15 +268,17 @@ export class StoryPackageService {
 
     // Extract media (thumbnail handling)
     const packageMediaDir = this.repository.mediaDir(pkg.id);
+    let hasThumbnail = false;
     for (const entry of mediaEntries) {
       const filename = basename(entry.entryName);
       const ext = normalizeMediaExtension(filename);
       const newName = filename.startsWith("thumbnail.") ? `thumbnail${ext}` : `${pkg.id}${ext}`;
       writeFileSync(resolveInside(packageMediaDir, newName), entry.getData());
-      if (pkg.thumbnail && pkg.thumbnail.includes(filename.split(".")[0])) {
-        pkg.thumbnail = `/api/admin/media/${pkg.id}`;
-        this.upsert(pkg);
-      }
+      if (filename.startsWith("thumbnail.")) hasThumbnail = true;
+    }
+    if (hasThumbnail) {
+      pkg.thumbnail = `/api/admin/media/${pkg.id}`;
+      this.upsert(pkg);
     }
 
     // Extract v2 assets preserving directory structure
@@ -375,6 +377,8 @@ export class StoryPackageService {
       name === "manifest.json",
       name === "story-package.json",
       name === "story.json",
+      name === "flow.json",
+      name === "modules.json",
       name.endsWith(".story-package.json"),
       name === "scenario.json",
       name === "characters.json",
@@ -396,7 +400,7 @@ export class StoryPackageService {
       name.startsWith("assets/animations/") && /\.(png|jpe?g|webp|json|mp3|ogg)$/i.test(name),
       name.startsWith("assets/performances/") && /\.(png|jpe?g|webp|svg|json|mp3|ogg|wav|flac|mp4|webm)$/i.test(name),
     ].some(Boolean);
-    if (!allowed) throw new Error(`ZIP 条目不被允许: ${entry.entryName}`);
+    if (!allowed) return; // skip unknown entries silently
   }
 
   private buildSeed(seed: SeedData): StoryPackage {

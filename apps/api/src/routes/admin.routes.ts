@@ -40,15 +40,21 @@ export async function adminRoutes(app: FastifyInstance) {
   });
 
   app.post("/story-packages/import", async (request, reply) => {
-    const data = await request.file();
-    if (!data) return reply.code(400).send({ error: "No file uploaded" });
-    const buffer = await data.toBuffer();
-    const title = (request.query as Record<string, string>).title;
-    const isJson = data.filename.endsWith(".json") || data.mimetype === "application/json";
-    if (isJson) {
-      return reply.code(201).send(adminApplicationService.importStoryPackageJson(buffer, title));
+    try {
+      const data = await request.file();
+      if (!data) return reply.code(400).send({ error: "No file uploaded" });
+      const buffer = await data.toBuffer();
+      const title = (request.query as Record<string, string>).title;
+      const isJson = data.filename.endsWith(".json") || data.mimetype === "application/json";
+      if (isJson) {
+        return reply.code(201).send(adminApplicationService.importStoryPackageJson(buffer, title));
+      }
+      return reply.code(201).send(adminApplicationService.importStoryPackage(buffer, title));
+    } catch (err) {
+      request.log.error({ err }, "story package import failed");
+      const message = err instanceof Error ? err.message : "Import failed";
+      return reply.code(500).send({ error: message });
     }
-    return reply.code(201).send(adminApplicationService.importStoryPackage(buffer, title));
   });
 
   app.put("/story-packages/:id", async (request, reply) => {
