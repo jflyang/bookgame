@@ -13,14 +13,21 @@ dotenv.config();
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const pinoPrettyPath = require.resolve("pino-pretty");
 
 const level = process.env.LOG_LEVEL ?? "debug";
+const isProduction = process.env.NODE_ENV === "production";
+
+// pino-pretty is a devDependency — only use in development
+let loggerConfig: Record<string, unknown> = { level };
+if (!isProduction) {
+  try {
+    const pinoPrettyPath = require.resolve("pino-pretty");
+    loggerConfig = { level, transport: { target: pinoPrettyPath, options: { colorize: true, translateTime: "SYS:HH:MM:ss" } } };
+  } catch { /* pino-pretty not available, use default JSON logging */ }
+}
+
 const app = Fastify({
-  logger: {
-    level,
-    transport: { target: pinoPrettyPath, options: { colorize: true, translateTime: "SYS:HH:MM:ss" } }
-  },
+  logger: loggerConfig as any,
   bodyLimit: 25 * 1024 * 1024
 });
 const port = Number(process.env.PORT ?? 4000);

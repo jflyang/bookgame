@@ -15,6 +15,12 @@ const defaultConfig: LlmConfig = {
 };
 
 function resolveConfigPath(): string {
+  // In desktop/production mode, GAME_DATA_DIR points to the app's data directory
+  if (process.env.GAME_DATA_DIR) {
+    const dataDir = process.env.GAME_DATA_DIR;
+    if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
+    return join(dataDir, "llm-config.json");
+  }
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const apiRoot = resolve(__dirname, "../../..");

@@ -1,8 +1,11 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
-import { join, resolve } from "node:path";
+import { join, resolve, dirname } from "node:path";
 import { existsSync, mkdirSync, cpSync, writeFileSync, readFileSync } from "node:fs";
 import { fork, type ChildProcess } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 // ===== Constants =====
 const APP_NAME = "互动故事游戏";
 const DEFAULT_WIDTH = 1280;

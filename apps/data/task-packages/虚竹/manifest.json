@@ -26,25 +26,6 @@
   },
   "fonts": {},
   "performances": {
-    "123123": {
-      "name": "飞龙在天",
-      "renderer": "audio",
-      "durationMs": 1500,
-      "trigger": {
-        "type": "knowledgeUse",
-        "characterId": "qiaofeng",
-        "keywords": [],
-        "matchBoldOnly": true
-      },
-      "playOnce": "never",
-      "video": {
-        "containsAudio": false
-      },
-      "layers": {},
-      "audio": {
-        "main": "assets/performances/123123/audio/qiaofeng_heroic_entrance.mp3"
-      }
-    },
     "qiao_feng_kang_long_you_hui": {
       "name": "亢龙有悔",
       "renderer": "layeredCss",

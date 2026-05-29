@@ -31,34 +31,29 @@ export function buildPluginIndex(
   // BGM
   if (manifest.audio.bgm.default) {
     const path = resolveInside(packageDir, manifest.audio.bgm.default);
-    if (!existsSync(path)) throwMissing("BGM default", manifest.audio.bgm.default);
-    index.bgm.set("default", manifest.audio.bgm.default);
+    if (existsSync(path)) index.bgm.set("default", manifest.audio.bgm.default);
   }
   for (const [stage, relPath] of Object.entries(manifest.audio.bgm.scenes)) {
     const path = resolveInside(packageDir, relPath);
-    if (!existsSync(path)) throwMissing(`BGM scenes.${stage}`, relPath);
-    index.bgm.set(stage, relPath);
+    if (existsSync(path)) index.bgm.set(stage, relPath);
   }
 
   // SFX
   for (const [event, relPath] of Object.entries(manifest.audio.sfx)) {
     const path = resolveInside(packageDir, relPath);
-    if (!existsSync(path)) throwMissing(`SFX ${event}`, relPath);
-    index.sfx.set(event, relPath);
+    if (existsSync(path)) index.sfx.set(event, relPath);
   }
 
   // Portraits
   for (const [charId, relPath] of Object.entries(manifest.images.portraits)) {
     const path = resolveInside(packageDir, relPath);
-    if (!existsSync(path)) throwMissing(`portrait ${charId}`, relPath);
-    index.portraits.set(charId, relPath);
+    if (existsSync(path)) index.portraits.set(charId, relPath);
   }
 
   // Backgrounds
   for (const [bgId, relPath] of Object.entries(manifest.images.backgrounds)) {
     const path = resolveInside(packageDir, relPath);
-    if (!existsSync(path)) throwMissing(`background ${bgId}`, relPath);
-    index.backgrounds.set(bgId, relPath);
+    if (existsSync(path)) index.backgrounds.set(bgId, relPath);
   }
 
   // Performance assets
@@ -68,22 +63,19 @@ export function buildPluginIndex(
       for (const [role, relPath] of Object.entries(performance.video)) {
         if (typeof relPath !== "string" || !relPath) continue;
         const path = resolveInside(packageDir, relPath);
-        if (!existsSync(path)) throwMissing(`performance ${performanceId} video.${role}`, relPath);
-        referencedPaths.add(relPath);
+        if (existsSync(path)) referencedPaths.add(relPath);
       }
     }
     for (const [role, relPath] of Object.entries(performance.layers)) {
       const path = resolveInside(packageDir, relPath);
-      if (!existsSync(path)) throwMissing(`performance ${performanceId} layer.${role}`, relPath);
-      referencedPaths.add(relPath);
+      if (existsSync(path)) referencedPaths.add(relPath);
     }
     for (const [role, relPath] of Object.entries(performance.audio)) {
       const pathList = Array.isArray(relPath) ? relPath : [relPath];
       for (const singlePath of pathList) {
         if (typeof singlePath !== "string") continue;
         const path = resolveInside(packageDir, singlePath);
-        if (!existsSync(path)) throwMissing(`performance ${performanceId} audio.${role}`, singlePath);
-        referencedPaths.add(singlePath);
+        if (existsSync(path)) referencedPaths.add(singlePath);
       }
     }
     index.performances.set(performanceId, [...referencedPaths]);
@@ -93,7 +85,7 @@ export function buildPluginIndex(
   for (const [role, relPath] of Object.entries(manifest.fonts)) {
     if (!relPath) continue;
     const path = resolveInside(packageDir, relPath as string);
-    if (!existsSync(path)) throwMissing(`font ${role}`, relPath as string);
+    if (!existsSync(path)) continue;
   }
 
   // Custom CSS
@@ -107,6 +99,6 @@ export function buildPluginIndex(
   return index;
 }
 
-function throwMissing(label: string, path: string): never {
-  throw new Error(`Plugin manifest references missing file: ${label} → ${path}`);
+function throwMissing(label: string, path: string): void {
+  console.warn(`[plugin-index] Missing asset (skipped): ${label} → ${path}`);
 }
