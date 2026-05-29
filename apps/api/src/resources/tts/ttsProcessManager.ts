@@ -85,10 +85,13 @@ export class TtsProcessManager {
         PYTHONUNBUFFERED: "1",
       };
 
-      this.process = spawn(pythonPath, ["-u", "main.py"], {
+      const args = ["-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", String(port), "--log-level", "info"];
+
+      this.process = spawn(pythonPath, args, {
         cwd: serviceDir,
         env,
         stdio: ["ignore", "pipe", "pipe"],
+        shell: true,
         detached: false,
       });
 

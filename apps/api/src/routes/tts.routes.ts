@@ -14,7 +14,7 @@ const synthesizeRequestSchema = z.object({
 
 const ttsConfigUpdateSchema = z.object({
   enabled: z.boolean().optional(),
-  provider: z.enum(["cosyvoice", "mock", "disabled"]).optional(),
+  provider: z.enum(["cosyvoice", "elevenlabs", "mock", "disabled"]).optional(),
   serviceUrl: z.string().optional(),
   defaultInstruct: z.string().optional(),
   autoSynthesize: z.boolean().optional(),
@@ -22,6 +22,8 @@ const ttsConfigUpdateSchema = z.object({
   maxTextLength: z.number().int().positive().optional(),
   defaultFormat: z.enum(["mp3", "ogg", "wav"]).optional(),
   sampleRate: z.number().int().positive().optional(),
+  elevenLabsApiKey: z.string().optional(),
+  elevenLabsModel: z.string().optional(),
 });
 
 export async function ttsRoutes(app: FastifyInstance) {
@@ -33,10 +35,13 @@ export async function ttsRoutes(app: FastifyInstance) {
     }
 
     try {
-      const { text, characterId, emotion, format } = synthesizeRequestSchema.parse(request.body);
+      let { text, characterId, emotion, format } = synthesizeRequestSchema.parse(request.body);
 
-      if (text.length > config.maxTextLength) {
-        return reply.code(400).send({ error: `文本过长，最大 ${config.maxTextLength} 字符` });
+      // Trim long text for faster synthesis — keep first ~150 chars ending at sentence boundary
+      if (text.length > 150) {
+        const cutoff = text.slice(0, 200);
+        const sentenceEnd = cutoff.search(/[。！？；\n]/);
+        text = sentenceEnd > 50 ? cutoff.slice(0, sentenceEnd + 1) : cutoff.slice(0, 150);
       }
 
       const voiceId = voiceRegistry.getVoiceId(characterId);
@@ -110,7 +115,7 @@ export async function ttsRoutes(app: FastifyInstance) {
     }
   });
 
-  // Proxy cached audio from CosyVoice service
+  // Proxy cached audio from CosyVoice service or serve local cache
   app.get("/audio/:filename", async (request, reply) => {
     const { filename } = request.params as { filename: string };
 
@@ -120,6 +125,29 @@ export async function ttsRoutes(app: FastifyInstance) {
     }
 
     const config = ttsConfigService.getConfig();
+
+    // Try local cache first (used by ElevenLabs provider)
+    const { existsSync, createReadStream } = await import("node:fs");
+    const { join, resolve, dirname } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const localCachePath = resolve(__dirname, "../..", "data", "tts-cache", filename);
+
+    if (existsSync(localCachePath)) {
+      const mimeTypes: Record<string, string> = { mp3: "audio/mpeg", ogg: "audio/ogg", wav: "audio/wav" };
+      const ext = filename.split(".").pop() || "mp3";
+      const raw = reply.raw;
+      raw.writeHead(200, {
+        "Content-Type": mimeTypes[ext] || "audio/mpeg",
+        "Cache-Control": "public, max-age=86400",
+      });
+      const stream = createReadStream(localCachePath);
+      stream.pipe(raw);
+      return reply.hijack();
+    }
+
+    // Fallback: proxy from CosyVoice service
     try {
       const upstream = await fetch(`${config.serviceUrl}/v1/tts/audio/${filename}`, {
         signal: AbortSignal.timeout(10_000),
@@ -156,7 +184,7 @@ export async function ttsRoutes(app: FastifyInstance) {
       return reply.hijack();
     } catch (err) {
       logger.error({ err, filename }, "failed to proxy TTS audio");
-      return reply.code(502).send({ error: "Failed to fetch audio from TTS service" });
+      return reply.code(404).send({ error: "Audio not found" });
     }
   });
 

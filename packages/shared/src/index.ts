@@ -478,7 +478,7 @@ export type LlmProviderType = z.infer<typeof llmProviderTypeSchema>;
 
 // ===== TTS Config =====
 
-export const ttsProviderTypeSchema = z.enum(["cosyvoice", "mock", "disabled"]);
+export const ttsProviderTypeSchema = z.enum(["cosyvoice", "elevenlabs", "mock", "disabled"]);
 export type TtsProviderType = z.infer<typeof ttsProviderTypeSchema>;
 
 export const ttsConfigSchema = z.object({

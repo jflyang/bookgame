@@ -89,6 +89,46 @@ export function MessageList({ characters }: { characters: Character[] }) {
     };
   }
 
+  function splitNarrationDialogue(content: string, speakerName?: string): { narration: string | null; dialogue: string | null; combat: string | null } {
+    // Content format: "{narration}\n\n{speakerName}："{dialogue}"{combatLine}"
+    // Or just plain text without the pattern
+    const { text, combat } = splitCombatLine(content);
+
+    if (!speakerName) return { narration: null, dialogue: text, combat };
+
+    // Try to split at "角色名："对话"" pattern
+    const dialoguePattern = new RegExp(`^([\\s\\S]*?)\\n\\n${escapeRegex(speakerName)}[：:]\\s*["「"']([\\s\\S]*?)["」"']\\s*$`);
+    const match = text.match(dialoguePattern);
+    if (match) {
+      return {
+        narration: match[1].trim() || null,
+        dialogue: match[2].trim() || null,
+        combat,
+      };
+    }
+
+    // Fallback: try splitting at double newline — first part is narration, rest is dialogue
+    const doubleNewline = text.indexOf("\n\n");
+    if (doubleNewline > 0 && doubleNewline < text.length - 2) {
+      const firstPart = text.slice(0, doubleNewline).trim();
+      const secondPart = text.slice(doubleNewline + 2).trim();
+      // Check if second part starts with speaker name pattern
+      const speakerPrefix = new RegExp(`^${escapeRegex(speakerName)}[：:]\\s*["「"']?`);
+      if (speakerPrefix.test(secondPart)) {
+        const dialogueText = secondPart.replace(speakerPrefix, "").replace(/["」"']$/, "").trim();
+        return { narration: firstPart, dialogue: dialogueText || null, combat };
+      }
+      // Otherwise treat first part as narration, second as dialogue
+      return { narration: firstPart, dialogue: secondPart, combat };
+    }
+
+    return { narration: null, dialogue: text, combat };
+  }
+
+  function escapeRegex(str: string) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
   return (
     <div className="story-scroll" ref={scrollRef}>
       <div className="story-flow">
@@ -111,18 +151,28 @@ export function MessageList({ characters }: { characters: Character[] }) {
             const isUser = message.role === "user";
             const isContinue = message.content.trim() === "继续";
             if (isContinue) return null;
-            const { text, combat } = message.role === "assistant" ? splitCombatLine(message.content) : { text: message.content, combat: null };
+
+            if (isUser) {
+              return (
+                <article key={message.id} className="story-entry user">
+                  <p className="user-text">{message.content}</p>
+                </article>
+              );
+            }
+
+            const { narration, dialogue, combat } = splitNarrationDialogue(message.content, character?.name);
 
             return (
               <article key={message.id} className={`story-entry ${message.role}`}>
-                {isUser ? (
-                  <p className="user-text">{message.content}</p>
-                ) : (
+                {narration && (
+                  <p className="narration-line">{renderInlineMarkdown(narration)}</p>
+                )}
+                {dialogue && (
                   <div className={`dialogue-card speaker-${message.speakerId ?? "unknown"}`}>
                     {avatarElement(character?.id, character?.avatar)}
                     <div className="dialogue-body">
                       <div className="dialogue-name">{character?.name ?? "旁白"}</div>
-                      <p>{renderInlineMarkdown(text)}</p>
+                      <p>{renderInlineMarkdown(dialogue)}</p>
                       {combat && (
                         <div className="combat-bar">
                           <span>{combat}</span>
@@ -132,10 +182,15 @@ export function MessageList({ characters }: { characters: Character[] }) {
                     {message.speakerId && (
                       <MessageAudioButton
                         messageId={message.id}
-                        text={text}
+                        text={dialogue}
                         characterId={message.speakerId}
                       />
                     )}
+                  </div>
+                )}
+                {!dialogue && combat && (
+                  <div className="combat-bar">
+                    <span>{combat}</span>
                   </div>
                 )}
               </article>

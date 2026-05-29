@@ -7,12 +7,22 @@ import { SaveLoadOverlay } from "./components/SaveLoadOverlay.js";
 import { TtsToggle } from "./components/TtsToggle.js";
 import UiConfigContext, { useLabels, useUiConfig } from "./UiConfigContext.js";
 import { StoryAssetsProvider } from "./contexts/StoryAssetsContext.js";
-import { AudioManagerProvider } from "./contexts/AudioManager.js";
+import { AudioManagerProvider, useAudio } from "./contexts/AudioManager.js";
 import { StoryPerformanceRuntime } from "./performances/StoryPerformanceRuntime.js";
 import { useCustomFonts } from "./hooks/useCustomFonts.js";
 import { useCustomCss } from "./hooks/useCustomCss.js";
 import type { UiConfig } from "@story-game/shared";
 import { useGameStore } from "../../store/gameStore.js";
+
+/** Audio mute toggle — must be rendered inside AudioManagerProvider */
+function AudioMuteMenuItem({ onDone }: { onDone: () => void }) {
+  const { muted, setMuted } = useAudio();
+  return (
+    <button onClick={() => { setMuted(!muted); onDone(); }}>
+      {muted ? "🔇 音效关闭" : "🔊 音效开启"}
+    </button>
+  );
+}
 
 function themeVars(uiConfig?: UiConfig): React.CSSProperties {
   const theme = uiConfig?.theme;
@@ -63,8 +73,8 @@ export function PlayApp() {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [navExpanded, setNavExpanded] = useState(false);
-  const [performanceEnabled, setPerformanceEnabled] = useState(true);
-  const [animationEnabled, setAnimationEnabled] = useState(true);
+  const [performanceEnabled, setPerformanceEnabled] = useState(() => localStorage.getItem("play:performanceEnabled") !== "false");
+  const [animationEnabled, setAnimationEnabled] = useState(() => localStorage.getItem("play:animationEnabled") !== "false");
   const storyPackage = storyPackages.find((p) => p.id === editingPackageId);
   const labels = useLabels();
   const uiConfig = storyPackage?.uiConfig;
@@ -213,12 +223,13 @@ export function PlayApp() {
                   <div className="more-menu" onClick={() => setShowMoreMenu(false)}>
                     <a href="/admin/story-packages">{labels.storyManagement}</a>
                     <button onClick={() => { setShowRules(true); setShowMoreMenu(false); }}>{labels.viewRules}</button>
-                    <button onClick={(e) => { setPerformanceEnabled(!performanceEnabled); setShowMoreMenu(false); }}>
-                      {performanceEnabled ? "表演开启" : "表演关闭"}
+                    <button onClick={() => { const next = !performanceEnabled; setPerformanceEnabled(next); localStorage.setItem("play:performanceEnabled", String(next)); setShowMoreMenu(false); }}>
+                      {performanceEnabled ? "🎭 表演开启" : "🚫 表演关闭"}
                     </button>
-                    <button onClick={(e) => { setAnimationEnabled(!animationEnabled); setShowMoreMenu(false); }}>
-                      {animationEnabled ? "动画开启" : "动画关闭"}
+                    <button onClick={() => { const next = !animationEnabled; setAnimationEnabled(next); localStorage.setItem("play:animationEnabled", String(next)); setShowMoreMenu(false); }}>
+                      {animationEnabled ? "✨ 动画开启" : "🚫 动画关闭"}
                     </button>
+                    <AudioMuteMenuItem onDone={() => setShowMoreMenu(false)} />
                     {editingPackageId ? (
                       <button onClick={() => { void start(editingPackageId); setShowMoreMenu(false); }}>重置剧情</button>
                     ) : null}

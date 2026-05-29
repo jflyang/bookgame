@@ -7,7 +7,7 @@ const logger = createModuleLogger("ttsConfig");
 
 export interface TtsConfig {
   enabled: boolean;
-  provider: "cosyvoice" | "mock" | "disabled";
+  provider: "cosyvoice" | "elevenlabs" | "mock" | "disabled";
   serviceUrl: string;
   defaultInstruct: string;
   autoSynthesize: boolean;
@@ -15,6 +15,10 @@ export interface TtsConfig {
   maxTextLength: number;
   defaultFormat: "mp3" | "ogg" | "wav";
   sampleRate: number;
+  /** ElevenLabs API key */
+  elevenLabsApiKey?: string;
+  /** ElevenLabs model ID (default: eleven_multilingual_v2) */
+  elevenLabsModel?: string;
 }
 
 export interface TtsConfigView {
@@ -28,6 +32,9 @@ export interface TtsConfigView {
   defaultFormat: string;
   sampleRate: number;
   serviceAvailable?: boolean;
+  /** Whether an ElevenLabs API key is configured (never exposes the actual key) */
+  hasElevenLabsKey?: boolean;
+  elevenLabsModel?: string;
 }
 
 const defaultConfig: TtsConfig = {
@@ -101,11 +108,26 @@ export class TtsConfigService {
   }
 
   getView(): TtsConfigView {
-    return { ...this.config };
+    const { elevenLabsApiKey, ...rest } = this.config;
+    return {
+      ...rest,
+      hasElevenLabsKey: Boolean(elevenLabsApiKey),
+    };
   }
 
   update(next: Partial<TtsConfig>): TtsConfigView {
-    this.config = saveToFile({ ...this.config, ...next });
+    // Don't overwrite existing API key with empty string (unless explicitly clearing)
+    const merged = { ...this.config, ...next };
+    if ("elevenLabsApiKey" in next) {
+      const trimmed = (next.elevenLabsApiKey || "").trim();
+      if (trimmed) {
+        merged.elevenLabsApiKey = trimmed;
+      } else {
+        // Empty string = keep existing key unchanged
+        merged.elevenLabsApiKey = this.config.elevenLabsApiKey;
+      }
+    }
+    this.config = saveToFile(merged);
     logger.info({ provider: this.config.provider, enabled: this.config.enabled }, "TTS config updated");
     return this.getView();
   }

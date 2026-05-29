@@ -8,8 +8,6 @@ type ServiceStatus = "stopped" | "starting" | "running" | "error";
 export function TtsConfigPanel() {
   const [config, setConfig] = useState<TtsConfigView | null>(null);
   const [saved, setSaved] = useState(false);
-  const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "fail">("idle");
-  const [testResult, setTestResult] = useState("");
   const [voices, setVoices] = useState<Array<{ id: string; name: string; characterId?: string }>>([]);
 
   // Service process state
@@ -26,7 +24,11 @@ export function TtsConfigPanel() {
       const status = await ttsApi.getServiceStatus();
       setServiceStatus(status.status);
       setServicePid(status.pid);
-      setServiceError(status.lastError);
+      if (status.lastError && status.status === "error") {
+        setServiceError(status.lastError);
+      } else {
+        setServiceError(null);
+      }
     } catch {
       // ignore
     }
@@ -38,10 +40,10 @@ export function TtsConfigPanel() {
     void pollStatus();
   }, [pollStatus]);
 
-  // Poll service status while starting/running
+  // Poll service status while starting
   useEffect(() => {
-    if (serviceStatus === "starting" || serviceStatus === "running") {
-      const timer = setInterval(pollStatus, 3000);
+    if (serviceStatus === "starting") {
+      const timer = setInterval(pollStatus, 2000);
       return () => clearInterval(timer);
     }
   }, [serviceStatus, pollStatus]);
@@ -60,7 +62,7 @@ export function TtsConfigPanel() {
       const result = await ttsApi.listVoices();
       setVoices(result.voices);
     } catch {
-      // Voices may not be available if service is down
+      // ignore
     }
   }
 
@@ -76,24 +78,6 @@ export function TtsConfigPanel() {
     }
   }
 
-  async function handleTest() {
-    setTestStatus("testing");
-    setTestResult("");
-    try {
-      const health = await ttsApi.checkHealth();
-      if (health.status === "ok") {
-        setTestStatus("success");
-        setTestResult(`服务正常 (${health.provider})`);
-      } else {
-        setTestStatus("fail");
-        setTestResult(`服务状态: ${health.status}`);
-      }
-    } catch (err) {
-      setTestStatus("fail");
-      setTestResult(err instanceof Error ? err.message : "连接失败");
-    }
-  }
-
   async function handleStartService() {
     setServiceLoading(true);
     setServiceError(null);
@@ -103,8 +87,7 @@ export function TtsConfigPanel() {
       });
       if (result.ok) {
         setServiceStatus("starting");
-        // Reload config after start (it auto-enables)
-        setTimeout(() => void loadConfig(), 2000);
+        setTimeout(() => void loadConfig(), 3000);
       } else {
         setServiceError(result.error || "启动失败");
         setServiceStatus("error");
@@ -123,6 +106,7 @@ export function TtsConfigPanel() {
       await ttsApi.stopService();
       setServiceStatus("stopped");
       setServicePid(null);
+      setServiceError(null);
     } catch (err) {
       setServiceError(err instanceof Error ? err.message : "停止失败");
     } finally {
@@ -134,7 +118,7 @@ export function TtsConfigPanel() {
     try {
       const result = await ttsApi.getServiceLogs(50);
       setServiceLogs(result.logs);
-      setShowLogs(true);
+      setShowLogs(!showLogs);
     } catch {
       setServiceLogs(["无法获取日志"]);
     }
@@ -142,243 +126,215 @@ export function TtsConfigPanel() {
 
   if (!config) return <p>加载中...</p>;
 
-  const statusLabels: Record<ServiceStatus, string> = {
-    stopped: "⏹ 已停止",
-    starting: "⏳ 启动中...",
-    running: "✅ 运行中",
-    error: "❌ 错误",
-  };
-
-  const statusColors: Record<ServiceStatus, string> = {
-    stopped: "#64748b",
-    starting: "#d97706",
-    running: "#16a34a",
-    error: "#dc2626",
-  };
+  // Determine the real online status
+  const isOnline = config.provider === "elevenlabs"
+    ? (config as any).hasElevenLabsKey === true
+    : config.serviceAvailable === true;
+  const providerLabel = config.provider === "cosyvoice" ? "CosyVoice" : config.provider === "elevenlabs" ? "ElevenLabs" : config.provider;
 
   return (
-    <section className="panel llm-config">
-      <h2><Mic size={16} /> 语音合成 (TTS) 配置</h2>
+    <section className="panel llm-config" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <h2><Mic size={16} /> 语音合成 (TTS)</h2>
 
-      {/* ===== Service Control Section ===== */}
+      {/* ===== Provider Selection ===== */}
+      <div className="inline-fields">
+        <label>
+          Provider
+          <select
+            value={config.provider}
+            onChange={(e) => setConfig({ ...config, provider: e.target.value as TtsConfigView["provider"] })}
+          >
+            <option value="disabled">禁用</option>
+            <option value="mock">Mock 模拟</option>
+            <option value="cosyvoice">CosyVoice (本地 GPU)</option>
+            <option value="elevenlabs">ElevenLabs (云端)</option>
+          </select>
+        </label>
+        <label>
+          启用状态
+          <select
+            value={config.enabled ? "true" : "false"}
+            onChange={(e) => setConfig({ ...config, enabled: e.target.value === "true" })}
+          >
+            <option value="true">启用</option>
+            <option value="false">禁用</option>
+          </select>
+        </label>
+      </div>
+
+      {/* ===== Status Bar ===== */}
       <div style={{
-        background: "#f8fafc",
-        border: "1px solid #e2e8f0",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "10px 14px",
+        background: isOnline ? "#ecfdf5" : "#fef2f2",
+        border: `1px solid ${isOnline ? "#a7f3d0" : "#fecaca"}`,
         borderRadius: 8,
-        padding: 16,
-        marginBottom: 8,
+        fontSize: "0.85rem",
+        fontWeight: 600,
       }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <div>
-            <strong style={{ fontSize: "0.95rem" }}>CosyVoice 语音服务</strong>
-            <span style={{
-              marginLeft: 10,
-              fontSize: "0.82rem",
-              fontWeight: 700,
-              color: statusColors[serviceStatus],
-            }}>
-              {statusLabels[serviceStatus]}
-            </span>
-            {servicePid && (
-              <span style={{ marginLeft: 8, fontSize: "0.75rem", color: "#94a3b8" }}>PID: {servicePid}</span>
-            )}
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {serviceStatus === "stopped" || serviceStatus === "error" ? (
-              <button
-                onClick={handleStartService}
-                disabled={serviceLoading}
-                style={{
-                  background: "#0f766e",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "8px 16px",
-                  fontWeight: 700,
-                  fontSize: "0.85rem",
-                  cursor: serviceLoading ? "wait" : "pointer",
-                  opacity: serviceLoading ? 0.6 : 1,
-                }}
-              >
-                <Play size={14} style={{ marginRight: 4 }} />
-                {serviceLoading ? "启动中..." : "启动服务"}
-              </button>
-            ) : (
-              <button
-                onClick={handleStopService}
-                disabled={serviceLoading}
-                style={{
-                  background: "#dc2626",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "8px 16px",
-                  fontWeight: 700,
-                  fontSize: "0.85rem",
-                  cursor: serviceLoading ? "wait" : "pointer",
-                  opacity: serviceLoading ? 0.6 : 1,
-                }}
-              >
-                <Square size={14} style={{ marginRight: 4 }} />
-                {serviceLoading ? "停止中..." : "停止服务"}
-              </button>
-            )}
-            <button
-              onClick={handleLoadLogs}
-              style={{
-                background: "#fff",
-                border: "1px solid #cbd5e1",
-                borderRadius: 6,
-                padding: "8px 12px",
-                fontSize: "0.82rem",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              查看日志
-            </button>
-          </div>
-        </div>
-
-        {serviceError && (
-          <p style={{ color: "#dc2626", fontSize: "0.82rem", margin: "8px 0 0", fontWeight: 600 }}>
-            错误: {serviceError}
-          </p>
+        <span style={{ fontSize: "1.1rem" }}>{isOnline ? "✅" : "❌"}</span>
+        <span style={{ color: isOnline ? "#065f46" : "#991b1b" }}>
+          {isOnline ? `${providerLabel} 服务在线` : `${providerLabel} 服务离线`}
+        </span>
+        {servicePid && serviceStatus === "running" && (
+          <span style={{ color: "#6b7280", fontSize: "0.78rem", marginLeft: "auto" }}>PID {servicePid}</span>
         )}
+      </div>
 
-        <div style={{ marginTop: 10 }}>
-          <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569", display: "block", marginBottom: 4 }}>
-            Python 路径（可选，默认使用系统 python）
+      {/* ===== CosyVoice Local Service Control ===== */}
+      {config.provider === "cosyvoice" && (
+        <details style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "12px 16px" }}>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "#334155" }}>
+            本地服务管理 (CosyVoice)
+          </summary>
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {serviceStatus === "stopped" || serviceStatus === "error" ? (
+                <button
+                  onClick={handleStartService}
+                  disabled={serviceLoading}
+                  style={{ background: "#0f766e", color: "#fff", border: "none", borderRadius: 6, padding: "7px 14px", fontWeight: 700, fontSize: "0.82rem", cursor: serviceLoading ? "wait" : "pointer", opacity: serviceLoading ? 0.6 : 1 }}
+                >
+                  <Play size={13} style={{ marginRight: 4 }} />
+                  {serviceLoading ? "启动中..." : "启动服务"}
+                </button>
+              ) : (
+                <button
+                  onClick={handleStopService}
+                  disabled={serviceLoading}
+                  style={{ background: "#dc2626", color: "#fff", border: "none", borderRadius: 6, padding: "7px 14px", fontWeight: 700, fontSize: "0.82rem", cursor: serviceLoading ? "wait" : "pointer", opacity: serviceLoading ? 0.6 : 1 }}
+                >
+                  <Square size={13} style={{ marginRight: 4 }} />
+                  {serviceLoading ? "停止中..." : "停止服务"}
+                </button>
+              )}
+              <button
+                onClick={handleLoadLogs}
+                style={{ background: "#fff", border: "1px solid #cbd5e1", borderRadius: 6, padding: "7px 10px", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer" }}
+              >
+                {showLogs ? "隐藏日志" : "查看日志"}
+              </button>
+              {serviceStatus === "starting" && <span style={{ color: "#d97706", fontSize: "0.78rem" }}>⏳ 启动中...</span>}
+            </div>
+
+            {serviceError && (
+              <p style={{ color: "#dc2626", fontSize: "0.8rem", margin: 0, fontWeight: 600 }}>
+                错误: {serviceError}
+              </p>
+            )}
+
+            <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#475569" }}>
+              Python 路径
+              <input
+                value={pythonPath}
+                onChange={(e) => setPythonPath(e.target.value)}
+                placeholder="默认 python，或填 conda 环境完整路径"
+                style={{ fontSize: "0.8rem", padding: "5px 8px", marginTop: 4 }}
+              />
+            </label>
+
+            <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#475569" }}>
+              服务地址
+              <input
+                value={config.serviceUrl}
+                onChange={(e) => setConfig({ ...config, serviceUrl: e.target.value })}
+                placeholder="http://localhost:50001"
+                style={{ fontSize: "0.8rem", padding: "5px 8px", marginTop: 4 }}
+              />
+            </label>
+
+            {showLogs && serviceLogs.length > 0 && (
+              <div style={{ background: "#1e293b", color: "#e2e8f0", borderRadius: 6, padding: 10, maxHeight: 180, overflow: "auto", fontSize: "0.7rem", fontFamily: "monospace", lineHeight: 1.6 }}>
+                {serviceLogs.map((line, i) => <div key={i}>{line}</div>)}
+              </div>
+            )}
+          </div>
+        </details>
+      )}
+
+      {/* ===== ElevenLabs Config ===== */}
+      {config.provider === "elevenlabs" && (
+        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <strong style={{ fontSize: "0.88rem", color: "#334155" }}>ElevenLabs 配置</strong>
+          <label>
+            API Key
+            <input
+              type="password"
+              value={(config as any).elevenLabsApiKey || ""}
+              onChange={(e) => setConfig({ ...config, elevenLabsApiKey: e.target.value } as any)}
+              placeholder={(config as any).hasElevenLabsKey ? "已配置，留空则不修改" : "xi-..."}
+            />
           </label>
-          <input
-            value={pythonPath}
-            onChange={(e) => setPythonPath(e.target.value)}
-            placeholder="python 或 conda 环境路径，如 C:\miniconda3\envs\cosyvoice\python.exe"
-            style={{ fontSize: "0.82rem", padding: "6px 10px", width: "100%" }}
-          />
+          <p className="muted" style={{ margin: 0, fontSize: "0.78rem" }}>
+            密钥状态：{(config as any).hasElevenLabsKey ? "✅ 已配置" : "❌ 未配置"}。密钥保存在服务端，不会回显。
+          </p>
+          <label>
+            Model
+            <select
+              value={(config as any).elevenLabsModel || "eleven_multilingual_v2"}
+              onChange={(e) => setConfig({ ...config, elevenLabsModel: e.target.value } as any)}
+            >
+              <option value="eleven_multilingual_v2">Multilingual v2 (推荐，支持中文)</option>
+              <option value="eleven_turbo_v2_5">Turbo v2.5 (低延迟)</option>
+              <option value="eleven_turbo_v2">Turbo v2</option>
+              <option value="eleven_monolingual_v1">Monolingual v1 (仅英文)</option>
+            </select>
+          </label>
+          <p className="muted" style={{ margin: 0, fontSize: "0.78rem" }}>
+            云端服务，无需本地 GPU。在 <a href="https://elevenlabs.io" target="_blank" rel="noreferrer">elevenlabs.io</a> 获取 API Key。角色 voiceId 需设为 ElevenLabs Voice ID。
+          </p>
         </div>
+      )}
 
-        {showLogs && serviceLogs.length > 0 && (
-          <div style={{
-            marginTop: 12,
-            background: "#1e293b",
-            color: "#e2e8f0",
-            borderRadius: 6,
-            padding: 12,
-            maxHeight: 200,
-            overflow: "auto",
-            fontSize: "0.72rem",
-            fontFamily: "monospace",
-            lineHeight: 1.6,
-          }}>
-            {serviceLogs.map((line, i) => (
-              <div key={i}>{line}</div>
-            ))}
+      {/* ===== Common Settings ===== */}
+      <details open={config.provider !== "disabled"}>
+        <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "#334155", marginBottom: 8 }}>
+          合成参数
+        </summary>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="inline-fields">
+            <label>
+              最大文本长度
+              <input type="number" min={50} max={5000} value={config.maxTextLength} onChange={(e) => setConfig({ ...config, maxTextLength: Number(e.target.value) })} />
+            </label>
+            <label>
+              采样率
+              <input type="number" min={8000} max={48000} step={1000} value={config.sampleRate} onChange={(e) => setConfig({ ...config, sampleRate: Number(e.target.value) })} />
+            </label>
           </div>
-        )}
-      </div>
+          <div className="inline-fields">
+            <label>
+              输出格式
+              <select value={config.defaultFormat} onChange={(e) => setConfig({ ...config, defaultFormat: e.target.value as "mp3" | "ogg" | "wav" })}>
+                <option value="mp3">MP3</option>
+                <option value="ogg">OGG</option>
+                <option value="wav">WAV</option>
+              </select>
+            </label>
+            <label>
+              自动合成
+              <select value={config.autoSynthesize ? "true" : "false"} onChange={(e) => setConfig({ ...config, autoSynthesize: e.target.value === "true" })}>
+                <option value="false">关闭（按需播放）</option>
+                <option value="true">开启（自动合成）</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            默认语音指令
+            <input value={config.defaultInstruct} onChange={(e) => setConfig({ ...config, defaultInstruct: e.target.value })} placeholder="例如：用自然流畅的中文朗读" />
+          </label>
+        </div>
+      </details>
 
-      {/* ===== Config Section ===== */}
-      <label>
-        启用状态
-        <select
-          value={config.enabled ? "true" : "false"}
-          onChange={(e) => setConfig({ ...config, enabled: e.target.value === "true" })}
-        >
-          <option value="true">启用</option>
-          <option value="false">禁用</option>
-        </select>
-      </label>
-
-      <label>
-        Provider
-        <select
-          value={config.provider}
-          onChange={(e) => setConfig({ ...config, provider: e.target.value as TtsConfigView["provider"] })}
-        >
-          <option value="disabled">禁用</option>
-          <option value="mock">Mock 模拟</option>
-          <option value="cosyvoice">CosyVoice</option>
-        </select>
-      </label>
-
-      <label>
-        服务地址
-        <input
-          value={config.serviceUrl}
-          onChange={(e) => setConfig({ ...config, serviceUrl: e.target.value })}
-          placeholder="http://localhost:50001"
-        />
-      </label>
-
-      <div className="inline-fields">
-        <label>
-          最大文本长度
-          <input
-            type="number"
-            min={50}
-            max={5000}
-            value={config.maxTextLength}
-            onChange={(e) => setConfig({ ...config, maxTextLength: Number(e.target.value) })}
-          />
-        </label>
-        <label>
-          采样率
-          <input
-            type="number"
-            min={8000}
-            max={48000}
-            step={1000}
-            value={config.sampleRate}
-            onChange={(e) => setConfig({ ...config, sampleRate: Number(e.target.value) })}
-          />
-        </label>
-      </div>
-
-      <div className="inline-fields">
-        <label>
-          输出格式
-          <select
-            value={config.defaultFormat}
-            onChange={(e) => setConfig({ ...config, defaultFormat: e.target.value as "mp3" | "ogg" | "wav" })}
-          >
-            <option value="mp3">MP3</option>
-            <option value="ogg">OGG</option>
-            <option value="wav">WAV</option>
-          </select>
-        </label>
-        <label>
-          自动合成
-          <select
-            value={config.autoSynthesize ? "true" : "false"}
-            onChange={(e) => setConfig({ ...config, autoSynthesize: e.target.value === "true" })}
-          >
-            <option value="false">关闭（按需播放）</option>
-            <option value="true">开启（自动合成）</option>
-          </select>
-        </label>
-      </div>
-
-      <label>
-        默认语音指令
-        <input
-          value={config.defaultInstruct}
-          onChange={(e) => setConfig({ ...config, defaultInstruct: e.target.value })}
-          placeholder="例如：用自然流畅的中文朗读"
-        />
-      </label>
-
-      <p className="muted">
-        服务状态：{config.serviceAvailable ? "✅ 在线" : "❌ 离线"}
-        {config.provider === "cosyvoice" && " · CosyVoice 服务需要 GPU 支持"}
-      </p>
-
+      {/* ===== Voices ===== */}
       {voices.length > 0 && (
         <details>
-          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "0.9rem", marginBottom: 8 }}>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "#334155" }}>
             已注册音色 ({voices.length})
           </summary>
-          <div style={{ display: "grid", gap: 4, fontSize: "0.85rem" }}>
+          <div style={{ display: "grid", gap: 4, fontSize: "0.82rem", marginTop: 8 }}>
             {voices.map((v) => (
               <div key={v.id} style={{ padding: "4px 8px", background: "#f8fafc", borderRadius: 4 }}>
                 <strong>{v.name}</strong> <span style={{ color: "#64748b" }}>({v.id})</span>
@@ -389,21 +345,14 @@ export function TtsConfigPanel() {
         </details>
       )}
 
+      {/* ===== Actions ===== */}
       <div className="inline-actions">
-        <button onClick={handleTest} disabled={testStatus === "testing"}>
-          <Zap size={16} /> {testStatus === "testing" ? "测试中..." : "测试连接"}
-        </button>
         <button onClick={handleSave}>
-          <Save size={16} /> 保存 TTS 配置
+          <Save size={16} /> 保存配置
         </button>
       </div>
 
-      {saved && (
-        <p className="feedback-toast"><Check size={16} /> 配置已保存</p>
-      )}
-      {testResult && (
-        <p className={`test-result ${testStatus === "success" ? "success" : "error"}`}>{testResult}</p>
-      )}
+      {saved && <p className="feedback-toast"><Check size={16} /> 配置已保存</p>}
     </section>
   );
 }

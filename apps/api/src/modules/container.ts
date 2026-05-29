@@ -34,6 +34,7 @@ import { SessionCollector } from "./sessions/sessionCollector.js";
 import { TtsConfigService } from "../resources/tts/ttsConfigService.js";
 import { ConfigurableTtsProvider } from "../resources/tts/configurableTtsProvider.js";
 import { CosyVoiceTtsProvider } from "../resources/tts/cosyVoiceTtsProvider.js";
+import { ElevenLabsTtsProvider } from "../resources/tts/elevenLabsTtsProvider.js";
 import { MockTtsProvider } from "../resources/tts/mockTtsProvider.js";
 import { VoiceRegistry } from "../resources/tts/voiceRegistry.js";
 import { TtsProcessManager } from "../resources/tts/ttsProcessManager.js";
@@ -137,6 +138,7 @@ export const voiceRegistry = new VoiceRegistry();
 export const ttsProcessManager = new TtsProcessManager();
 export const ttsProvider = new ConfigurableTtsProvider(ttsConfigService, {
   cosyvoice: new CosyVoiceTtsProvider(ttsConfigService),
+  elevenlabs: new ElevenLabsTtsProvider(ttsConfigService),
   mock: new MockTtsProvider(),
 });
 

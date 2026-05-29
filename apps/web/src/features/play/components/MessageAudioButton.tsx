@@ -26,12 +26,8 @@ export function MessageAudioButton({ messageId, text, characterId }: Props) {
   const isLoading = loadingIds.has(messageId);
   const audioUrl = audioCache.get(messageId);
 
-  // Don't render if TTS is disabled
-  if (!ttsEnabled) return null;
-
   const handleClick = useCallback(() => {
     if (isPlaying) {
-      // Stop current playback
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -85,6 +81,9 @@ export function MessageAudioButton({ messageId, text, characterId }: Props) {
       }
     };
   }, []);
+
+  // Hide when TTS is disabled — after all hooks
+  if (!ttsEnabled) return null;
 
   return (
     <button
