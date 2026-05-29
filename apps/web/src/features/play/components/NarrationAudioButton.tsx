@@ -4,13 +4,16 @@ import { useAudioStore } from "../../../store/audioStore.js";
 interface Props {
   messageId: string;
   text: string;
+  /** When provided, uses the character's voice instead of the narrator voice */
+  characterId?: string;
 }
 
 /**
- * Play button for narration text. Uses the narrator voice.
+ * Play button for narration text. Uses the character's voice if provided,
+ * otherwise falls back to the narrator voice.
  * Only renders when narrateEnabled is true.
  */
-export function NarrationAudioButton({ messageId, text }: Props) {
+export function NarrationAudioButton({ messageId, text, characterId }: Props) {
   const ttsEnabled = useAudioStore((s) => s.ttsEnabled);
   const serviceConfig = useAudioStore((s) => s.serviceConfig);
   const currentPlayingId = useAudioStore((s) => s.currentPlayingId);
@@ -21,13 +24,15 @@ export function NarrationAudioButton({ messageId, text }: Props) {
   const autoNarrationId = `autonarr_${messageId}`;
   const isPlaying = currentPlayingId === narrationId || currentPlayingId === autoNarrationId;
 
+  const voiceId = characterId ?? "__narrator__";
+
   const handleClick = useCallback(() => {
     if (isPlaying) {
       stopPlaying();
     } else {
-      playMessage(narrationId, text, "__narrator__");
+      playMessage(narrationId, text, voiceId);
     }
-  }, [isPlaying, narrationId, text, playMessage, stopPlaying]);
+  }, [isPlaying, narrationId, text, voiceId, playMessage, stopPlaying]);
 
   // Hide when TTS disabled or narration not enabled
   if (!ttsEnabled) return null;

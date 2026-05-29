@@ -85,7 +85,12 @@ export class GameStateService {
 
   restore(gameState: GameState) {
     this.cleanupSession(gameState.sessionId);
-    this.states.set(gameState.sessionId, structuredClone(gameState));
+    const cloned = structuredClone(gameState);
+    // Ensure stageEnteredAtRound is initialized for older saves that don't have it
+    if (cloned.stageEnteredAtRound === undefined || cloned.stageEnteredAtRound === null) {
+      cloned.stageEnteredAtRound = 0;
+    }
+    this.states.set(cloned.sessionId, cloned);
   }
 
   cleanupSession(sessionId: string) {
@@ -107,7 +112,7 @@ export class GameStateService {
     this.applyStateDeltaSuggestion(state.characters, output.stateDeltaSuggestion, delta, state.scenario.initialStates);
 
     let stageChanged = false;
-    if (output.stageSuggestion && state.scenario.stages.includes(output.stageSuggestion)) {
+    if (output.stageSuggestion && output.stageSuggestion !== state.scenario.currentStage && state.scenario.stages.includes(output.stageSuggestion)) {
       const prevStage = state.scenario.currentStage;
       state.scenario.currentStage = output.stageSuggestion;
       stageChanged = true;
@@ -128,9 +133,11 @@ export class GameStateService {
 
     state.round += 1;
 
-    // Auto-advance: if stuck in the same stage for 15+ rounds, force advance to next stage
-    const MAX_ROUNDS_PER_STAGE = 15;
-    if (!stageChanged && (state.round - (state.stageEnteredAtRound ?? 0)) >= MAX_ROUNDS_PER_STAGE) {
+    // Auto-advance: if stuck in the same stage for 20+ rounds, force advance to next stage
+    const MAX_ROUNDS_PER_STAGE = 20;
+    const enteredAt = state.stageEnteredAtRound ?? 0;
+    // Only auto-advance if we've genuinely been in this stage for MAX rounds
+    if (!stageChanged && enteredAt < state.round && (state.round - enteredAt) >= MAX_ROUNDS_PER_STAGE) {
       const currentIdx = state.scenario.stages.indexOf(state.scenario.currentStage);
       if (currentIdx >= 0 && currentIdx < state.scenario.stages.length - 1) {
         const nextStage = state.scenario.stages[currentIdx + 1];
@@ -149,19 +156,7 @@ export class GameStateService {
 
     state.lastSpeakerId = speakerId;
     state.updatedAt = new Date().toISOString();
-    state.status = state.characters.some((item) => item.isDefeated)
-      ? "completed"
-      : "active";
-
-    // Story-end lock: if at the last stage and no progression happened this turn,
-    // mark the story as naturally completed (finale reached)
-    if (state.status === "active" && !stageChanged) {
-      const currentIdx = state.scenario.stages.indexOf(state.scenario.currentStage);
-      if (currentIdx >= 0 && currentIdx === state.scenario.stages.length - 1) {
-        state.status = "completed";
-        logger.info({ sessionId, stage: state.scenario.currentStage, round: state.round }, "story completed (final stage reached)");
-      }
-    }
+    state.status = "active";
     logger.debug({ sessionId, speakerId, round: state.round, delta }, "turn applied");
     return { state, delta };
   }

@@ -37,16 +37,16 @@ export function StoryPerformanceOverlay({
 
   useEffect(() => {
     if (performance.renderer === "layeredCss") {
-      const relPath = performance.audio.main;
+      const relPath = resolvePerformanceAudio(performance.audio);
       if (!relPath) return;
       audioTimerRef.current = window.setTimeout(() => {
         audioRef.current = playAudio(resolveAssetUrl(relPath));
       }, 1050);
     } else if (performance.renderer === "audio") {
-      const relPath = performance.audio.main ?? performance.audio.fallback;
+      const relPath = resolvePerformanceAudio(performance.audio);
       if (relPath) audioRef.current = playAudio(resolveAssetUrl(relPath));
     } else if (performance.renderer === "image") {
-      const relPath = performance.audio.main ?? performance.audio.fallback;
+      const relPath = resolvePerformanceAudio(performance.audio);
       if (relPath) audioRef.current = playAudio(resolveAssetUrl(relPath));
     }
 
@@ -65,8 +65,13 @@ export function StoryPerformanceOverlay({
 
   function handleVideoError() {
     setVideoFailed(true);
-    const fallback = performance.audio.fallback ?? performance.audio.main;
+    const fallback = resolvePerformanceAudio(performance.audio);
     if (fallback) audioRef.current = playAudio(resolveAssetUrl(fallback));
+  }
+
+  // Audio-only with pulse disabled: don't render overlay at all, just play audio
+  if (performance.renderer === "audio" && localStorage.getItem("play:showAudioPulse") === "false") {
+    return null;
   }
 
   const overlay = (
@@ -101,9 +106,11 @@ export function StoryPerformanceOverlay({
       ) : null}
 
       {performance.renderer === "audio" ? (
-        <div className="story-performance-audio-pulse">
-          <span>{performance.name}</span>
-        </div>
+        localStorage.getItem("play:showAudioPulse") !== "false" ? (
+          <div className="story-performance-audio-pulse">
+            <span>{performance.name}</span>
+          </div>
+        ) : null
       ) : null}
 
       {performance.renderer === "image" ? (
@@ -161,7 +168,21 @@ function playAudio(url: string) {
   audio.preload = "auto";
   audio.volume = 0.9;
   audio.play().catch((error) => {
-    console.warn("Performance audio playback was blocked or failed.", { url, error });
+    // AbortError is expected when audio is interrupted by the next performance — suppress it
+    if (error?.name === "AbortError") return;
+    console.warn("Performance audio playback failed.", { url, error });
   });
   return audio;
+}
+
+/** Extract a single string path from an audio field that may be string | string[] */
+function getAudioPath(value: string | string[] | undefined): string | undefined {
+  if (!value) return undefined;
+  if (Array.isArray(value)) return value[Math.floor(Math.random() * value.length)];
+  return value;
+}
+
+/** Get the best audio path from a performance's audio config */
+function resolvePerformanceAudio(audio: Record<string, string | string[]>): string | undefined {
+  return getAudioPath(audio.main) ?? getAudioPath(audio.fallback) ?? getAudioPath(audio.variants);
 }

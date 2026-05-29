@@ -9,7 +9,7 @@ const logger = createModuleLogger("llmConfig");
 const defaultConfig: LlmConfig = {
   provider: "mock",
   baseUrl: "https://api.deepseek.com",
-  model: "deepseek-v4-flash",
+  model: "deepseek-chat",
   temperature: 0.8,
   maxTokens: 800,
 };
@@ -95,10 +95,12 @@ export class LlmConfigService {
 
   update(next: LlmConfig) {
     const explicitApiKey = next.apiKey?.trim();
+    // Reject placeholder or suspiciously short keys — don't overwrite a valid key
+    const isValidKey = explicitApiKey && explicitApiKey.length >= 20 && !explicitApiKey.startsWith("sk-new") && !explicitApiKey.startsWith("your-");
     const merged: LlmConfig = {
       ...this.config,
       ...next,
-      apiKey: explicitApiKey !== undefined && explicitApiKey !== "" ? explicitApiKey : this.config.apiKey,
+      apiKey: isValidKey ? explicitApiKey : this.config.apiKey,
     };
     // Guard in-memory state against downgrading to mock (saveToFile also guards disk)
     if (this.config.provider !== "mock" && merged.provider === "mock") {

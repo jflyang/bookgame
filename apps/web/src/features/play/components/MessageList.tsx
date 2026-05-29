@@ -172,7 +172,7 @@ export function MessageList({ characters }: { characters: Character[] }) {
                 {narration && (
                   <div style={{ position: "relative" }}>
                     <p className="narration-line">{renderInlineMarkdown(narration)}</p>
-                    <NarrationAudioButton messageId={message.id} text={narration} />
+                    <NarrationAudioButton messageId={message.id} text={narration} characterId={message.speakerId ?? undefined} />
                   </div>
                 )}
                 {dialogue && (
@@ -196,6 +196,7 @@ export function MessageList({ characters }: { characters: Character[] }) {
                     )}
                   </div>
                 )}
+                {!dialogue && narration && !combat && null}
                 {!dialogue && combat && (
                   <div className="combat-bar">
                     <span>{combat}</span>

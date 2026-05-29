@@ -106,6 +106,14 @@ export function Composer({ icon }: { icon: ReactNode }) {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (mentionOpen) return;
+    if (!text.trim()) {
+      // Empty input + Enter = continue story
+      const { continueStory, isSending, gameState } = useGameStore.getState();
+      if (!isSending && gameState?.status !== "completed") {
+        await continueStory();
+      }
+      return;
+    }
     await send(text);
     setText("");
   }

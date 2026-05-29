@@ -5955,6 +5955,14 @@ textarea {
   animation: performance-shell-in 180ms ease-out both;
 }
 
+.story-performance.story-performance-image {
+  background: transparent;
+  backdrop-filter: none;
+  pointer-events: none;
+  padding: 0;
+  align-content: center;
+}
+
 .story-performance-skip {
   position: fixed;
   top: max(18px, env(safe-area-inset-top));
@@ -5985,22 +5993,17 @@ textarea {
 }
 
 .story-performance-image-wrap {
-  width: min(78vw, 860px);
-  max-height: 72vh;
-  aspect-ratio: 16 / 9;
+  width: min(50vw, 480px);
+  max-height: 60vh;
   display: grid;
   place-items: center;
-  overflow: hidden;
-  border: 1px solid rgba(255, 232, 164, 0.22);
-  border-radius: 8px;
-  background: #05070c;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
 }
 
 .story-performance-image {
   width: 100%;
-  height: 100%;
+  max-height: 60vh;
   object-fit: contain;
+  border-radius: 8px;
 }
 
 .story-performance-audio-pulse {

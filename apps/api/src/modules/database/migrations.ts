@@ -67,6 +67,19 @@ const MIGRATIONS: Array<{ version: number; sql: string[] }> = [
       `CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp DESC)`,
     ],
   },
+  {
+    version: 4,
+    sql: [
+      `CREATE TABLE IF NOT EXISTS session_live_state (
+        session_id          TEXT PRIMARY KEY,
+        story_package_id    TEXT NOT NULL,
+        game_state          TEXT NOT NULL,
+        messages            TEXT NOT NULL,
+        updated_at          TEXT NOT NULL
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_sls_updated ON session_live_state(updated_at DESC)`,
+    ],
+  },
 ];
 
 export function runMigrations(db: Database.Database): void {

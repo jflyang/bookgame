@@ -36,7 +36,7 @@ interface PerformanceDraft {
   knowledgeTitle: string;
   keywordsText: string;
   durationMs: number;
-  playOnce: "session" | "story" | "never";
+  playOnce: "session" | "story" | "never" | "perStage";
   skillId: string;
   eventId: string;
   containsAudio: boolean;
@@ -93,7 +93,7 @@ export function PerformanceConfigPanel() {
         ...(perf.video?.webm ? { webm: perf.video.webm } : {}),
         ...(perf.video?.mp4 ? { mp4: perf.video.mp4 } : {}),
         ...(perf.video?.poster ? { poster: perf.video.poster } : {}),
-        ...(perf.audio?.main ? { main: perf.audio.main } : {}),
+        ...(perf.audio?.main ? { main: Array.isArray(perf.audio.main) ? perf.audio.main[0] : perf.audio.main } : {}),
         ...(perf.layers?.bg ? { bg: perf.layers.bg } : {}),
       },
     });
@@ -211,7 +211,10 @@ export function PerformanceConfigPanel() {
   }
 
   function getPerformanceAssetPath(perf: StoryPerformanceDefinition): string {
-    if (perf.renderer === "audio") return perf.audio?.main ?? "";
+    if (perf.renderer === "audio") {
+      const main = perf.audio?.main;
+      return (Array.isArray(main) ? main[0] : main) ?? "";
+    }
     if (perf.renderer === "image") return perf.layers?.bg ?? "";
     if (perf.renderer === "video") return perf.video?.webm ?? perf.video?.mp4 ?? "";
     return "";

@@ -97,6 +97,11 @@ await listenWithRetry();
 // Auto-start CosyVoice TTS service if configured
 import { ttsConfigService, ttsProcessManager } from "./modules/container.js";
 {
+  // Restore live sessions from SQLite
+  const { dialogueEngine: de } = await import("./modules/container.js");
+  const restored = de.restoreFromDb();
+  if (restored > 0) app.log.info({ restored }, "live sessions restored from database");
+
   const ttsConfig = ttsConfigService.getConfig();
   if (ttsConfig.enabled && ttsConfig.provider === "cosyvoice") {
     const status = ttsProcessManager.getStatus();

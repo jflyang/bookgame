@@ -126,6 +126,20 @@ export async function applyChoice(sessionId: string, branchIndex: number): Promi
   return parseResponse<ChoiceResult>(response);
 }
 
+export async function jumpToStage(sessionId: string, stageId: string): Promise<{ gameState: GameState }> {
+  const response = await fetch(`${API_BASE}/api/game/sessions/${sessionId}/state`, {
+    method: "GET",
+  });
+  const { gameState } = await parseResponse<{ gameState: GameState }>(response);
+  const updatedScenario = { ...gameState.scenario, currentStage: stageId };
+  const putResponse = await fetch(`${API_BASE}/api/game/sessions/${sessionId}/scenario`, {
+    method: "PUT",
+    headers: jsonHeaders(),
+    body: JSON.stringify(updatedScenario)
+  });
+  return parseResponse<{ gameState: GameState }>(putResponse);
+}
+
 function jsonHeaders() {
   return { "Content-Type": "application/json" };
 }

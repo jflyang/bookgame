@@ -1,7 +1,7 @@
 {
   "name": "interactive-story-game-desktop",
   "version": "0.1.0",
-  "description": "互动故事游戏 - 桌面版",
+  "description": "Interactive Story Game - Desktop",
   "main": "dist/main/index.js",
   "author": "jflyang",
   "license": "MIT",
@@ -24,7 +24,7 @@
   },
   "build": {
     "appId": "com.jflyang.interactive-story-game",
-    "productName": "互动故事游戏",
+    "productName": "StoryGame",
     "directories": {
       "output": "release"
     },
@@ -47,27 +47,24 @@
         ]
       },
       {
-        "from": "../data/task-packages",
-        "to": "data/task-packages",
+        "from": "../data/task-packages/虚竹",
+        "to": "data/task-packages/虚竹",
         "filter": [
           "**/*",
-          "!**/saves/**"
+          "!**/saves/**",
+          "!**/assets/performances/**"
         ]
       }
     ],
     "win": {
       "target": [
-        "nsis"
+        "dir"
       ],
-      "icon": "resources/icon.ico"
+      "icon": "resources/icon.ico",
+      "rfc3161TimeStampServer": "",
+      "signAndEditExecutable": false
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "uninstallDisplayName": "互动故事游戏"
-    },
+    "copyright": "Copyright 2026 jflyang",
     "mac": {
       "target": [
         "dmg"

@@ -31,6 +31,7 @@ import { TurnProcessor } from "../services/turnProcessor.js";
 import { RuntimeStatsCollector } from "./runtime-stats/runtimeStatsCollector.js";
 import { SessionRepository } from "./sessions/sessionRepository.js";
 import { SessionCollector } from "./sessions/sessionCollector.js";
+import { SessionStateRepository } from "./sessions/sessionStateRepository.js";
 import { TtsConfigService } from "../resources/tts/ttsConfigService.js";
 import { ConfigurableTtsProvider } from "../resources/tts/configurableTtsProvider.js";
 import { CosyVoiceTtsProvider } from "../resources/tts/cosyVoiceTtsProvider.js";
@@ -88,6 +89,7 @@ const sessionStoryPackageIds = new Map<string, string>();
 gameStateService.onSessionCleanup((sessionId) => {
   memoryService.cleanupSession(sessionId);
   sessionStoryPackageIds.delete(sessionId);
+  try { sessionStateRepository.delete(sessionId); } catch { /* non-critical */ }
 });
 const agentService = new AgentService(characterService, knowledgeBaseService);
 const promptService = new PromptService(characterService, agentService, skillIndex);
@@ -100,6 +102,7 @@ const llmProvider = new ConfigurableLlmProvider(llmConfigService, {
 export const runtimeStatsCollector = new RuntimeStatsCollector();
 export const sessionRepository = new SessionRepository();
 export const sessionCollector = new SessionCollector(sessionRepository);
+export const sessionStateRepository = new SessionStateRepository();
 const speakerSelector = new SpeakerSelector(characterService, gameStateService);
 const storyPackageActivator = new StoryPackageActivator(storyPackageService, characterService, knowledgeBaseService, scenarioService, skillIndex);
 const turnProcessor = new TurnProcessor(
@@ -131,7 +134,8 @@ export const dialogueEngine = new DialogueEngine(
   turnProcessor,
   sessionStoryPackageIds,
   sessionCollector,
-  sessionSaveService
+  sessionSaveService,
+  sessionStateRepository
 );
 
 // ===== TTS Service Layer =====

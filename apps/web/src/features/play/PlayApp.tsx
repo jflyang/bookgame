@@ -4,6 +4,7 @@ import { CharacterRail } from "./components/CharacterRail.js";
 import { Composer } from "./components/Composer.js";
 import { MessageList } from "./components/MessageList.js";
 import { SaveLoadOverlay } from "./components/SaveLoadOverlay.js";
+import { StageJumpModal } from "./components/StageJumpModal.js";
 import { TtsToggle } from "./components/TtsToggle.js";
 import UiConfigContext, { useLabels, useUiConfig } from "./UiConfigContext.js";
 import { StoryAssetsProvider } from "./contexts/StoryAssetsContext.js";
@@ -13,6 +14,7 @@ import { useCustomFonts } from "./hooks/useCustomFonts.js";
 import { useCustomCss } from "./hooks/useCustomCss.js";
 import type { UiConfig } from "@story-game/shared";
 import { useGameStore } from "../../store/gameStore.js";
+import * as gameApi from "../../lib/gameApi.js";
 import { useAudioStore } from "../../store/audioStore.js";
 
 /** Audio mute toggle — must be rendered inside AudioManagerProvider */
@@ -73,6 +75,7 @@ export function PlayApp() {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
+  const [showStageJump, setShowStageJump] = useState(false);
   const [navExpanded, setNavExpanded] = useState(false);
   const [performanceEnabled, setPerformanceEnabled] = useState(() => localStorage.getItem("play:performanceEnabled") !== "false");
   const [animationEnabled, setAnimationEnabled] = useState(() => localStorage.getItem("play:animationEnabled") !== "false");
@@ -233,7 +236,7 @@ export function PlayApp() {
               <h1>{gameState?.scenario.title ?? "正在载入故事"}</h1>
             </div>
             <div className="play-toolbar">
-              <span className={`status-badge ${isCompleted ? "completed" : ""}`}>
+              <span className={`status-badge ${isCompleted ? "completed" : ""}`} onClick={() => !isCompleted && setShowStageJump(true)} style={{ cursor: isCompleted ? "default" : "pointer" }} title="点击跳转阶段">
                 {isCompleted ? labels.statusCompleted : `${labels.round} ${gameState?.round ?? 0} · ${stageDisplayName()}`}
               </span>
               <button className="paper-icon" onClick={() => setShowRules(true)} aria-label="查看规则" title="查看规则">
@@ -260,6 +263,9 @@ export function PlayApp() {
                     <button onClick={() => { const next = !animationEnabled; setAnimationEnabled(next); localStorage.setItem("play:animationEnabled", String(next)); setShowMoreMenu(false); }}>
                       {animationEnabled ? "✨ 动画开启" : "🚫 动画关闭"}
                     </button>
+                    <button onClick={() => { const current = localStorage.getItem("play:showAudioPulse") !== "false"; localStorage.setItem("play:showAudioPulse", String(!current)); setShowMoreMenu(false); }}>
+                      {localStorage.getItem("play:showAudioPulse") !== "false" ? "💬 招式闪字开启" : "🚫 招式闪字关闭"}
+                    </button>
                     <AudioMuteMenuItem onDone={() => setShowMoreMenu(false)} />
                     {editingPackageId ? (
                       <button onClick={() => { void start(editingPackageId); setShowMoreMenu(false); }}>重置剧情</button>
@@ -284,7 +290,10 @@ export function PlayApp() {
               />
             )}
 
-            <section className="story-stage" aria-label="故事互动区">
+            <section
+              className="story-stage"
+              aria-label="故事互动区"
+            >
               <MessageList characters={characters} />
               <div className="play-composer-shell">
                 <div className="quick-actions">
@@ -373,6 +382,22 @@ export function PlayApp() {
               void deleteSavedSession(editingPackageId!, saveId, slot);
             }}
             onClose={() => setShowLoadModal(false)}
+          />
+        )}
+
+        {showStageJump && gameState && sessionId && (
+          <StageJumpModal
+            gameState={gameState}
+            onJump={async (stageId) => {
+              try {
+                const result = await gameApi.jumpToStage(sessionId, stageId);
+                useGameStore.setState({ gameState: result.gameState });
+              } catch (err) {
+                console.error("Stage jump failed:", err);
+              }
+              setShowStageJump(false);
+            }}
+            onClose={() => setShowStageJump(false)}
           />
         )}
       </main>

@@ -20,9 +20,10 @@ import { StoryPackageActivator } from "./storyPackageActivator.js";
 import { TurnProcessor } from "./turnProcessor.js";
 import type { SessionCollector } from "../modules/sessions/sessionCollector.js";
 import type { SessionSaveService } from "./sessionSaveService.js";
+import type { SessionStateRepository } from "../modules/sessions/sessionStateRepository.js";
 
 const logger = createModuleLogger("dialogueEngine");
-const AUTO_SAVE_INTERVAL = 15;
+const AUTO_SAVE_INTERVAL = 5;
 
 export class DialogueEngine {
   constructor(
@@ -37,7 +38,8 @@ export class DialogueEngine {
     private readonly turnProcessor: TurnProcessor,
     private readonly sessionStoryPackageIds = new Map<string, string>(),
     private readonly sessionCollector?: SessionCollector,
-    private readonly sessionSaves?: SessionSaveService
+    private readonly sessionSaves?: SessionSaveService,
+    private readonly sessionStateRepo?: SessionStateRepository
   ) {}
 
   createSession(input: CreateSessionRequest) {
@@ -67,6 +69,12 @@ export class DialogueEngine {
       try {
         this.sessionCollector.create(gameState.sessionId, storyPackage, gameState);
       } catch (err) { logger.warn({ err }, "failed to persist session"); }
+    }
+    // Persist to SQLite
+    if (this.sessionStateRepo && input.storyPackageId) {
+      try {
+        this.sessionStateRepo.save(gameState.sessionId, input.storyPackageId, gameState, []);
+      } catch (err) { logger.warn({ err }, "failed to persist new session state"); }
     }
     return { sessionId: gameState.sessionId, gameState, characters: this.characters.list(), skills: [] as any[], knowledgeDocuments: this.knowledgeBase.list() };
   }
@@ -175,9 +183,17 @@ export class DialogueEngine {
       } catch (err) { logger.warn({ err }, "failed to update session after turn"); }
     }
 
+    // Persist full state to SQLite (survives restarts)
+    const storyPackageId = this.sessionStoryPackageIds.get(sessionId);
+    if (this.sessionStateRepo && storyPackageId) {
+      try {
+        const messages = this.memory.list(sessionId);
+        this.sessionStateRepo.save(sessionId, storyPackageId, gameState, messages);
+      } catch (err) { logger.warn({ err, sessionId }, "failed to persist session state to DB"); }
+    }
+
     // Auto-save every AUTO_SAVE_INTERVAL rounds
     if (this.sessionSaves && gameState.round > 0 && gameState.round % AUTO_SAVE_INTERVAL === 0) {
-      const storyPackageId = this.sessionStoryPackageIds.get(sessionId);
       if (storyPackageId) {
         try {
           const messages = this.memory.list(sessionId);
@@ -190,5 +206,35 @@ export class DialogueEngine {
   applyChoice(sessionId: string, branchIndex: number) {
     this.ensureStoryPackageActivated(sessionId);
     return this.states.applyChoice(sessionId, branchIndex);
+  }
+
+  /** Restore all live sessions from SQLite on startup */
+  restoreFromDb(): number {
+    if (!this.sessionStateRepo) return 0;
+    const sessions = this.sessionStateRepo.loadAll();
+    let restored = 0;
+    for (const session of sessions) {
+      try {
+        // Skip completed sessions
+        if (session.gameState.status === "completed") {
+          this.sessionStateRepo.delete(session.sessionId);
+          continue;
+        }
+        // Activate story package (loads characters, scenarios, etc.)
+        this.storyPackageActivator.activate(session.storyPackageId);
+        // Restore state and messages into memory
+        this.states.restore(session.gameState);
+        this.memory.restore(session.sessionId, session.messages);
+        this.sessionStoryPackageIds.set(session.sessionId, session.storyPackageId);
+        restored++;
+      } catch (err) {
+        logger.warn({ err, sessionId: session.sessionId }, "failed to restore session from DB, removing");
+        this.sessionStateRepo.delete(session.sessionId);
+      }
+    }
+    if (restored > 0) {
+      logger.info({ restored, total: sessions.length }, "sessions restored from database");
+    }
+    return restored;
   }
 }

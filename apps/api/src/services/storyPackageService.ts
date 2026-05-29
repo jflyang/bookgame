@@ -55,14 +55,20 @@ export class StoryPackageService {
     if (!opts?.includeHidden) {
       pkgs = pkgs.filter((p) => p.id === DEFAULT_PACKAGE_ID || !(p as any).hidden);
     }
-    return pkgs;
+    // Always refresh pluginManifest from disk to avoid stale cache
+    return pkgs.map((pkg) => {
+      const freshManifest = this.repository.tryReadPluginManifest(pkg.id);
+      return freshManifest ? { ...pkg, pluginManifest: freshManifest } : pkg;
+    });
   }
 
   get(id: string) {
     assertSafeId(id);
     const storyPackage = this.storyPackages.find((item) => item.id === id);
     if (!storyPackage) throw new Error(`Story package not found: ${id}`);
-    return storyPackage;
+    // Always refresh pluginManifest from disk
+    const freshManifest = this.repository.tryReadPluginManifest(id);
+    return freshManifest ? { ...storyPackage, pluginManifest: freshManifest } : storyPackage;
   }
 
   create(title: string, sourcePackageId?: string) {

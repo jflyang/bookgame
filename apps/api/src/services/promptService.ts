@@ -105,10 +105,17 @@ export class PromptService {
         }).join("\n")}`
       : "";
 
+    // --- Stage progression nudge when stuck too long ---
+    const roundsInStage = state.round - (state.stageEnteredAtRound ?? 0);
+    const stageNudge = roundsInStage >= 8
+      ? `⚠️ 当前阶段已持续 ${roundsInStage} 回合。如果阶段推进条件已满足，请在 stageSuggestion 中填入下一阶段 ID 推动剧情发展。`
+      : "";
+
     return [
       `当前状态：${compactState}`,
       `最近对话：\n${recentHistory}`,
       queryKnowledge,
+      stageNudge,
       `玩家输入：${query}`
     ].filter(Boolean).join("\n\n");
   }

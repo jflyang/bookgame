@@ -23,7 +23,6 @@ export interface TaskPackageRepositoryOptions {
 
 export class TaskPackageRepository {
   private pluginIndexCache: Map<string, PluginAssetIndex | null> = new Map();
-  private listCache: StoryPackage[] | null = null;
 
   constructor(
     private readonly rootDir: string,
@@ -35,62 +34,59 @@ export class TaskPackageRepository {
   }
 
   list(): StoryPackage[] {
-    if (this.listCache) return this.listCache;
-    this.listCache = this.packageDirs().map((dir) => {
+    return this.packageDirs().flatMap((dir) => {
       const id = basename(dir);
-      const entryFile = resolveInside(dir, "story.json");
-      const pkg = storyPackageSchema.parse(JSON.parse(readFileSync(entryFile, "utf-8")));
-      // Override id with directory name — the directory IS the primary key
-      pkg.id = id;
-      // Prefer split scenario.json (may have newer fields like directive)
-      const scenarioFile = resolveInside(dir, "scenario.json");
-      if (existsSync(scenarioFile)) {
-        try {
-          const scenarioRaw = JSON.parse(readFileSync(scenarioFile, "utf-8"));
-          if (scenarioRaw.id && scenarioRaw.stages) {
-            pkg.scenario = scenarioRaw;
-          }
-        } catch { /* ignore, use embedded */ }
+      try {
+        const entryFile = resolveInside(dir, "story.json");
+        const pkg = storyPackageSchema.parse(JSON.parse(readFileSync(entryFile, "utf-8")));
+        pkg.id = id;
+        // Prefer split scenario.json (may have newer fields like directive)
+        const scenarioFile = resolveInside(dir, "scenario.json");
+        if (existsSync(scenarioFile)) {
+          try {
+            const scenarioRaw = JSON.parse(readFileSync(scenarioFile, "utf-8"));
+            if (scenarioRaw.id && scenarioRaw.stages) {
+              pkg.scenario = scenarioRaw;
+            }
+          } catch { /* ignore, use embedded */ }
+        }
+        // Prefer split characters.json — authoritative source for character data (includes voiceId etc.)
+        const charactersFile = resolveInside(dir, "characters.json");
+        if (existsSync(charactersFile)) {
+          try {
+            const charsRaw = JSON.parse(readFileSync(charactersFile, "utf-8"));
+            if (Array.isArray(charsRaw) && charsRaw.length > 0) {
+              pkg.characters = charsRaw;
+            }
+          } catch { /* ignore, use embedded */ }
+        }
+        // Merge split ui/config.json
+        const uiConfigFile = resolveInside(dir, "ui/config.json");
+        if (existsSync(uiConfigFile)) {
+          try {
+            const uiRaw = JSON.parse(readFileSync(uiConfigFile, "utf-8"));
+            if (uiRaw && Object.keys(uiRaw).length > 0) {
+              pkg.uiConfig = { ...pkg.uiConfig, ...uiRaw } as any;
+            }
+          } catch { /* ignore, use embedded */ }
+        }
+        // Fix thumbnail URL to match directory-based id
+        if (pkg.thumbnail && pkg.thumbnail.startsWith("/api/admin/media/")) {
+          pkg.thumbnail = `/api/admin/media/${id}`;
+        }
+        // Attach plugin manifest if v2
+        const manifest = this.tryReadPluginManifest(id);
+        if (manifest) {
+          return [{ ...pkg, pluginManifest: manifest }];
+        }
+        return [pkg];
+      } catch (err) {
+        logger.warn({ err, id }, "failed to load story package, skipping");
+        return [];
       }
-      // Prefer split characters.json — authoritative source for character data (includes voiceId etc.)
-      const charactersFile = resolveInside(dir, "characters.json");
-      if (existsSync(charactersFile)) {
-        try {
-          const charsRaw = JSON.parse(readFileSync(charactersFile, "utf-8"));
-          if (Array.isArray(charsRaw) && charsRaw.length > 0) {
-            pkg.characters = charsRaw;
-          }
-        } catch { /* ignore, use embedded */ }
-      }
-      // Merge split ui/config.json — authoritative source for UI config
-      // Fixes split-brain where story.json has empty uiConfig but ui/config.json has real data
-      const uiConfigFile = resolveInside(dir, "ui/config.json");
-      if (existsSync(uiConfigFile)) {
-        try {
-          const uiRaw = JSON.parse(readFileSync(uiConfigFile, "utf-8"));
-          if (uiRaw && Object.keys(uiRaw).length > 0) {
-            pkg.uiConfig = { ...pkg.uiConfig, ...uiRaw } as any;
-          }
-        } catch { /* ignore, use embedded */ }
-      }
-      // Fix thumbnail URL to match directory-based id
-      if (pkg.thumbnail && pkg.thumbnail.startsWith("/api/admin/media/")) {
-        pkg.thumbnail = `/api/admin/media/${id}`;
-      }
-      // Attach plugin manifest if v2
-      const manifest = this.tryReadPluginManifest(id);
-      if (manifest) {
-        return { ...pkg, pluginManifest: manifest };
-      }
-      return pkg;
     });
-    return this.listCache;
   }
 
-  /** Invalidate the list cache. Call after save/remove operations. */
-  invalidateCache() {
-    this.listCache = null;
-  }
 
   save(pkg: StoryPackage) {
     // Preserve voiceId on characters (may be stripped by schema parse if cache is stale)
@@ -116,13 +112,14 @@ export class TaskPackageRepository {
     writeFileSync(resolveInside(this.packageDir(parsed.id), entryFile), JSON.stringify(parsed, null, 2), "utf-8");
     // Remove stale task-package.json if it exists (legacy v1 entry file)
     const legacyEntry = resolveInside(this.packageDir(parsed.id), "task-package.json");
-    if (existsSync(legacyEntry)) unlinkSync(legacyEntry);
+    if (existsSync(legacyEntry)) {
+      try { unlinkSync(legacyEntry); } catch { /* non-critical */ }
+    }
     writeFileSync(this.manifestFile(parsed.id), JSON.stringify(this.toManifest(parsed), null, 2), "utf-8");
     this.writeSplitFiles(parsed);
     // Rebuild plugin index
     this.pluginIndexCache.delete(parsed.id);
     this.getPluginIndex(parsed.id);
-    this.invalidateCache();
     return parsed;
   }
 
@@ -130,7 +127,6 @@ export class TaskPackageRepository {
     const dir = this.packageDir(id);
     if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
     this.pluginIndexCache.delete(id);
-    this.invalidateCache();
   }
 
   taskFile(id: string) {
@@ -224,12 +220,10 @@ export class TaskPackageRepository {
     copyFileSync(join(mediaDir, legacyMedia), resolveInside(this.mediaDir(id), `thumbnail${normalizeMediaExtension(legacyMedia)}`));
   }
 
-  private toManifest(pkg: StoryPackage): StoryPluginManifest {
-    // Disk is the authoritative source — always prefer what's on disk
-    // over the in-memory cache to prevent stale data from overwriting
-    // hand-authored manifest content (performances, audio config, etc.).
-    const diskV2 = this.tryReadPluginManifest(pkg.id);
-    const source = diskV2 ?? pkg.pluginManifest;
+  private toManifest(pkg: StoryPackage): StoryPluginManifest | Record<string, unknown> {
+    // Use the in-memory pluginManifest (from frontend save) as primary source
+    // Only fall back to disk if pkg doesn't have one
+    const source = pkg.pluginManifest ?? this.tryReadPluginManifest(pkg.id);
 
     if (source) {
       return {
@@ -241,11 +235,24 @@ export class TaskPackageRepository {
       };
     }
 
-    throw new Error(
-      `Story package "${pkg.id}" has no plugin manifest and no v2 manifest.json on disk. ` +
-      "No plugin manifest found. Create a manifest.json with at minimum: " +
-      '{ "type": "story-plugin", "schemaVersion": "2", "capabilities": {}, "performances": {} }'
-    );
+    // Fallback: create a minimal v2 manifest
+    return {
+      id: pkg.id,
+      type: "story-plugin",
+      schemaVersion: "2",
+      title: pkg.title,
+      description: pkg.description,
+      version: "1.0.0",
+      author: "",
+      capabilities: {},
+      audio: {},
+      images: {},
+      fonts: {},
+      performances: {},
+      entry: "story.json",
+      createdAt: pkg.createdAt,
+      updatedAt: pkg.updatedAt,
+    };
   }
 
   private writeSplitFiles(pkg: StoryPackage) {
@@ -267,9 +274,8 @@ export class TaskPackageRepository {
     if (pkg.modules) {
       writeFileSync(resolveInside(packageDir, "modules.json"), JSON.stringify(pkg.modules, null, 2), "utf-8");
     }
-    if (pkg.flow) {
-      writeFileSync(resolveInside(packageDir, "flow.json"), JSON.stringify(pkg.flow, null, 2), "utf-8");
-    }
+    // Note: flow.json is NOT written here — it may contain ReactFlow node positions
+    // that are managed by the story editor. Only the editor should write flow.json.
   }
 }
 

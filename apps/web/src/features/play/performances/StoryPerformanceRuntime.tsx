@@ -24,12 +24,14 @@ export function StoryPerformanceRuntime({ enabled = true, animationEnabled = tru
   const lastMessageIdRef = useRef<string | null>(null);
   const lastStageRef = useRef<string | undefined>(undefined);
   const queuedKeysRef = useRef(new Set<string>());
+  const initialStageTriggeredRef = useRef(false);
 
   useEffect(() => {
     queuedKeysRef.current.clear();
     setQueue([]);
     setActive(null);
     hydratedRef.current = false;
+    initialStageTriggeredRef.current = false;
     lastMessageIdRef.current = null;
     lastStageRef.current = undefined;
   }, [sessionId, editingPackageId]);
@@ -50,12 +52,21 @@ export function StoryPerformanceRuntime({ enabled = true, animationEnabled = tru
     const nextQueue: QueuedPerformance[] = [];
     const hasNewMessage = Boolean(latestMessage && latestMessage.id !== lastMessageIdRef.current);
     const hasNewStage = Boolean(currentStage && currentStage !== lastStageRef.current);
+    const latestIsAssistant = latestMessage?.role === "assistant";
+
+    // stageEnter only triggers when a new assistant message arrives
+    // (not immediately on stage change — wait for the first reply)
+    const shouldTriggerStage = hasNewMessage && latestIsAssistant && (hasNewStage || (!initialStageTriggeredRef.current && !!currentStage));
+    if (shouldTriggerStage && !initialStageTriggeredRef.current) {
+      initialStageTriggeredRef.current = true;
+    }
 
     for (const [id, performance] of Object.entries(manifest.performances)) {
       if (!animationEnabled && VISUAL_RENDERERS.has(performance.renderer)) continue;
       if (hasNewMessage && latestMessage && shouldPlayForMessage(performance, latestMessage, messages, knowledgeDocuments)) {
+        console.log("[Performance] matched:", id, performance.name, "trigger:", performance.trigger.type);
         nextQueue.push({ id, performance });
-      } else if (hasNewStage && shouldPlayForStage(performance, currentStage)) {
+      } else if (shouldTriggerStage && shouldPlayForStage(performance, currentStage)) {
         nextQueue.push({ id, performance });
       }
     }
@@ -64,10 +75,11 @@ export function StoryPerformanceRuntime({ enabled = true, animationEnabled = tru
     lastStageRef.current = currentStage;
 
     const playable = nextQueue.filter((item) => canQueue(item, sessionId, editingPackageId, queuedKeysRef.current));
+    console.log("[Performance] queue:", nextQueue.length, "playable:", playable.length, "hasNewMsg:", hasNewMessage, "msgRole:", latestMessage?.role, "content preview:", latestMessage?.content?.slice(0, 80));
     if (playable.length) {
       setQueue((items) => [...items, ...playable]);
     }
-  }, [editingPackageId, gameState?.scenario?.currentStage, knowledgeDocuments, manifest?.performances, messages, sessionId]);
+  }, [animationEnabled, editingPackageId, gameState?.scenario?.currentStage, knowledgeDocuments, manifest?.performances, messages, sessionId]);
 
   useEffect(() => {
     if (active || queue.length === 0) return;
@@ -146,10 +158,17 @@ function shouldPlayForKnowledgeUse(
   const terms = triggerKeywords.length > 0 ? triggerKeywords : knowledgeKeywords;
   if (terms.length === 0) return false;
 
-  return candidates.some((segment) => {
+  const matched = candidates.some((segment) => {
     const normalizedSegment = normalizeTerm(segment);
     return terms.some((term) => normalizedSegment.includes(term) || term.includes(normalizedSegment));
   });
+
+  // Debug: log first few performances to see what's happening
+  if (performance.name === "深喉窒息" || trigger.keywords?.includes("深喉")) {
+    console.log("[Performance DEBUG]", performance.name, "matchBoldOnly:", trigger.matchBoldOnly, "candidates:", candidates.length, "terms:", terms.slice(0, 5), "matched:", matched);
+  }
+
+  return matched;
 }
 
 export function extractBoldSegments(content: string) {
@@ -202,7 +221,11 @@ function canQueue(
   if (item.performance.playOnce === "story") {
     if (window.localStorage.getItem(key)) return false;
     window.localStorage.setItem(key, "1");
+  } else if (item.performance.playOnce === "perStage") {
+    // perStage: only track in-memory — replays on page refresh, but not twice in same stage visit
+    // (no sessionStorage persistence)
   } else {
+    // "session" — persists for the browser tab lifetime
     if (window.sessionStorage.getItem(key)) return false;
     window.sessionStorage.setItem(key, "1");
   }
@@ -213,5 +236,10 @@ function canQueue(
 function playbackKey(item: QueuedPerformance, sessionId: string, storyPackageId: string) {
   if (item.performance.playOnce === "never") return null;
   if (item.performance.playOnce === "story") return `story-performance:${storyPackageId}:${item.id}`;
+  if (item.performance.playOnce === "perStage") {
+    // perStage: keyed by session + stage, so it replays when re-entering the stage
+    const stageId = item.performance.trigger.stageId ?? "unknown";
+    return `story-performance:${sessionId}:${item.id}:stage:${stageId}`;
+  }
   return `story-performance:${sessionId}:${item.id}`;
 }
