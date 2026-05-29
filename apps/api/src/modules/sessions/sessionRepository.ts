@@ -84,8 +84,6 @@ export class SessionRepository {
     this.db = getDatabase();
   }
 
-  private upsertStmt?: Database.Statement;
-
   upsert(input: SessionUpsertInput): void {
     if (!this.upsertStmt) {
       this.upsertStmt = this.db.prepare(`

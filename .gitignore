@@ -25,6 +25,7 @@ services/tts/audio_cache/
 services/tts/__pycache__/
 services/tts/.venv/
 apps/api/data/tts-config.json
+apps/api/data/tts-cache/
 
 # Local asset packs
 wuxia_sfx_pack*/

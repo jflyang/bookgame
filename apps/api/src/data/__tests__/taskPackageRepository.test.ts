@@ -17,6 +17,22 @@ const pkg: StoryPackage = {
   knowledgeDocuments: [],
   promptRules: [],
   debugConfig: { showPromptLayers: true, showRawOutput: false, showValidation: true },
+  pluginManifest: {
+    id: "task_test",
+    type: "story-plugin",
+    schemaVersion: "2",
+    title: "Task Test",
+    description: "Test",
+    version: "1.0.0",
+    capabilities: { audio: false, customFonts: false, customCss: false, characterPortraits: false, backgroundImages: false, performances: false },
+    audio: { bgm: { scenes: {} }, sfx: {} },
+    images: { portraits: {}, backgrounds: {} },
+    fonts: {},
+    performances: {},
+    entry: "story.json",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  } as any,
   createdAt: "2026-01-01T00:00:00.000Z",
   updatedAt: "2026-01-01T00:00:00.000Z"
 };
@@ -37,7 +53,7 @@ describe("TaskPackageRepository", () => {
     repo.save(pkg);
 
     expect(existsSync(join(tmpDir, pkg.id, "manifest.json"))).toBe(true);
-    expect(existsSync(join(tmpDir, pkg.id, "task-package.json"))).toBe(true);
+    expect(existsSync(join(tmpDir, pkg.id, "story.json"))).toBe(true);
     expect(existsSync(join(tmpDir, pkg.id, "scenario.json"))).toBe(true);
     expect(existsSync(join(tmpDir, pkg.id, "characters.json"))).toBe(true);
     expect(existsSync(join(tmpDir, pkg.id, "knowledge", "documents.json"))).toBe(true);

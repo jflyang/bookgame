@@ -77,7 +77,7 @@ describe("StoryPackageService", () => {
 
   it("stores task packages as self-contained directories", () => {
     const pkg = svc.list()[0];
-    expect(svc.getFilePath(pkg.id)).toBe(join(tmpDir, pkg.id, "task-package.json"));
+    expect(svc.getFilePath(pkg.id)).toBe(join(tmpDir, pkg.id, "story.json"));
     expect(existsSync(svc.getFilePath(pkg.id))).toBe(true);
     expect(existsSync(join(tmpDir, pkg.id, "manifest.json"))).toBe(true);
     expect(existsSync(join(tmpDir, pkg.id, "scenario.json"))).toBe(true);
@@ -125,7 +125,7 @@ describe("StoryPackageService", () => {
 
       const migrated = new StoryPackageService(dataDir, undefined, { legacyDir });
       expect(migrated.list()).toHaveLength(1);
-      expect(existsSync(join(dataDir, pkg.id, "task-package.json"))).toBe(true);
+      expect(existsSync(join(dataDir, pkg.id, "story.json"))).toBe(true);
       expect(existsSync(join(dataDir, pkg.id, "manifest.json"))).toBe(true);
       expect(existsSync(join(dataDir, pkg.id, "media", "thumbnail.jpg"))).toBe(true);
     } finally {

@@ -17,7 +17,6 @@ function playAudioElement(url: string, getState: () => AudioState) {
   }
 
   const thisPlayId = ++playId;
-  console.log(`[TTS] playAudioElement: url=${url.slice(-30)}, playId=${thisPlayId}`);
   const audio = new Audio(url);
   globalAudio = audio;
   const state = getState();
@@ -26,10 +25,8 @@ function playAudioElement(url: string, getState: () => AudioState) {
 
   const finish = () => {
     if (playId !== thisPlayId) {
-      console.log(`[TTS] stale finish ignored, thisPlayId=${thisPlayId}, current=${playId}`);
       return;
     }
-    console.log(`[TTS] audio finished, playId=${thisPlayId}`);
     globalAudio = null;
     useAudioStore.setState({ currentPlayingId: null });
   };
@@ -40,7 +37,7 @@ function playAudioElement(url: string, getState: () => AudioState) {
     finish();
   };
   audio.play().then(() => {
-    console.log(`[TTS] play() started successfully, playId=${thisPlayId}`);
+    // started
   }).catch((err) => {
     console.error(`[TTS] play() rejected:`, err);
     finish();
@@ -133,22 +130,20 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
   async playMessage(messageId, text, characterId, emotion) {
     const { loadingIds, audioCache, ttsEnabled } = get();
-    if (!ttsEnabled) { console.log(`[TTS] playMessage skipped: ttsEnabled=false`); return; }
+    if (!ttsEnabled) { return; }
 
     // Already loading this message
-    if (loadingIds.has(messageId)) { console.log(`[TTS] playMessage skipped: already loading ${messageId}`); return; }
+    if (loadingIds.has(messageId)) { return; }
 
     // Check cache first
     const cached = audioCache.get(messageId);
     if (cached) {
-      console.log(`[TTS] playMessage cache hit: ${messageId}`);
       set({ currentPlayingId: messageId });
       playAudioElement(cached, get);
       return;
     }
 
     // Start loading
-    console.log(`[TTS] playMessage: synthesizing ${messageId}, text="${text.slice(0, 30)}...", char=${characterId}`);
     const nextLoading = new Set(loadingIds);
     nextLoading.add(messageId);
     set({ loadingIds: nextLoading, error: null });
@@ -156,7 +151,6 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     try {
       const result = await ttsApi.synthesize(text, characterId, emotion);
       const audioUrl = ttsApi.resolveAudioUrl(result.audioUrl);
-      console.log(`[TTS] playMessage: synthesize OK, url=${audioUrl.slice(-30)}`);
 
       const nextCache = new Map(get().audioCache);
       nextCache.set(messageId, audioUrl);

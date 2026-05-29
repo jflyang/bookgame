@@ -69,7 +69,7 @@ export const scenarioStageDetailSchema = z.object({
   description: z.string().default(""),
   enterWhen: z.string().default(""),
   guidance: z.string().default(""),
-  directive: z.string().default(""),
+  directive: z.string().optional().default(""),
   branches: z.array(stageBranchSchema).optional(),
   isChoicePoint: z.boolean().optional()
 });

@@ -431,7 +431,23 @@ export class StoryPackageService {
         avatar: { style: "gradient" as const }
       },
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      pluginManifest: {
+        id: "虚竹",
+        type: "story-plugin" as const,
+        schemaVersion: "2" as const,
+        title: "虚竹除害星宿老怪",
+        description: "固定四角色的武侠回合制互动故事 MVP。",
+        version: "1.0.0",
+        capabilities: { audio: true, customFonts: false, customCss: false, characterPortraits: false, backgroundImages: false, performances: false },
+        audio: { bgm: { scenes: {} }, sfx: {} },
+        images: { portraits: {}, backgrounds: {} },
+        fonts: {},
+        performances: {},
+        entry: "story.json",
+        createdAt: now,
+        updatedAt: now,
+      } as any,
     };
   }
 }

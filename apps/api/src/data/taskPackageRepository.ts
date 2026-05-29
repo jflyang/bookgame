@@ -65,6 +65,16 @@ export class TaskPackageRepository {
           }
         } catch { /* ignore, use embedded */ }
       }
+      // Prefer split characters.json — authoritative source for character data (includes voiceId etc.)
+      const charactersFile = resolveInside(dir, "characters.json");
+      if (existsSync(charactersFile)) {
+        try {
+          const charsRaw = JSON.parse(readFileSync(charactersFile, "utf-8"));
+          if (Array.isArray(charsRaw) && charsRaw.length > 0) {
+            pkg.characters = charsRaw;
+          }
+        } catch { /* ignore, use embedded */ }
+      }
       // Merge split ui/config.json — authoritative source for UI config
       // Fixes split-brain where story.json has empty uiConfig but ui/config.json has real data
       const uiConfigFile = resolveInside(dir, "ui/config.json");
@@ -96,10 +106,30 @@ export class TaskPackageRepository {
   }
 
   save(pkg: StoryPackage) {
+    // Preserve voiceId on characters (may be stripped by schema parse if cache is stale)
+    const voiceIdMap = new Map<string, string>();
+    for (const c of (pkg as any).characters ?? []) {
+      if (c.voiceId) voiceIdMap.set(c.id, c.voiceId);
+    }
+
     const parsed = storyPackageSchema.parse(pkg);
+
+    // Re-apply voiceId after parse
+    if (voiceIdMap.size > 0) {
+      for (const c of parsed.characters) {
+        const vid = voiceIdMap.get(c.id);
+        if (vid) (c as any).voiceId = vid;
+      }
+    }
+
     ensureDir(this.packageDir(parsed.id));
-    const entryFile = parsed.pluginManifest ? "story.json" : "task-package.json";
+    // Always write story.json as the canonical entry file (v2 format).
+    // toManifest() below will throw if no v2 manifest exists — v1 has been retired.
+    const entryFile = "story.json";
     writeFileSync(resolveInside(this.packageDir(parsed.id), entryFile), JSON.stringify(parsed, null, 2), "utf-8");
+    // Remove stale task-package.json if it exists (legacy v1 entry file)
+    const legacyEntry = resolveInside(this.packageDir(parsed.id), "task-package.json");
+    if (existsSync(legacyEntry)) unlinkSync(legacyEntry);
     writeFileSync(this.manifestFile(parsed.id), JSON.stringify(this.toManifest(parsed), null, 2), "utf-8");
     this.writeSplitFiles(parsed);
     // Rebuild plugin index
@@ -117,7 +147,10 @@ export class TaskPackageRepository {
   }
 
   taskFile(id: string) {
-    return resolveInside(this.packageDir(id), "task-package.json");
+    const dir = this.packageDir(id);
+    const v2 = resolveInside(dir, "story.json");
+    if (existsSync(v2)) return v2;
+    return resolveInside(dir, "task-package.json");
   }
 
   manifestFile(id: string) {
@@ -189,13 +222,6 @@ export class TaskPackageRepository {
       });
   }
 
-  private packageFiles() {
-    return readdirSync(this.rootDir, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory() && safeDirectoryName(entry.name))
-      .map((entry) => resolveInside(this.rootDir, entry.name, "task-package.json"))
-      .filter((path) => existsSync(path));
-  }
-
   private migrateLegacyPackages() {
     const legacyDir = this.options.legacyDir;
     if (!legacyDir || !existsSync(legacyDir)) return;
@@ -219,26 +245,27 @@ export class TaskPackageRepository {
   }
 
   private toManifest(pkg: StoryPackage): TaskPackageManifest | StoryPluginManifest {
-    if (pkg.pluginManifest) {
+    // Disk is the authoritative source — always prefer what's on disk
+    // over the in-memory cache to prevent stale data from overwriting
+    // hand-authored manifest content (performances, audio config, etc.).
+    const diskV2 = this.tryReadPluginManifest(pkg.id);
+    const source = diskV2 ?? pkg.pluginManifest;
+
+    if (source) {
       return {
-        ...pkg.pluginManifest,
+        ...source,
         id: pkg.id,
         title: pkg.title,
         description: pkg.description,
-        createdAt: pkg.createdAt,
         updatedAt: pkg.updatedAt,
       };
     }
-    return {
-      id: pkg.id,
-      type: "task-package",
-      schemaVersion: "1",
-      title: pkg.title,
-      description: pkg.description,
-      entry: "task-package.json",
-      createdAt: pkg.createdAt,
-      updatedAt: pkg.updatedAt
-    };
+
+    throw new Error(
+      `Story package "${pkg.id}" has no plugin manifest and no v2 manifest.json on disk. ` +
+      "V1 task-package format has been retired. Create a v2 manifest.json with at minimum: " +
+      '{ "type": "story-plugin", "schemaVersion": "2", "capabilities": {}, "performances": {} }'
+    );
   }
 
   private writeSplitFiles(pkg: StoryPackage) {

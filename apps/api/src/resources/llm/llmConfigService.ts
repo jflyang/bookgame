@@ -44,7 +44,7 @@ function saveToFile(config: LlmConfig): LlmConfig {
   if (existing?.apiKey && !config.apiKey) {
     config = { ...config, apiKey: existing.apiKey };
   }
-  if (existing?.provider !== "mock" && config.provider === "mock") {
+  if (existing && existing.provider !== "mock" && config.provider === "mock") {
     config = { ...config, provider: existing.provider };
   }
   const tmpPath = path + ".tmp";

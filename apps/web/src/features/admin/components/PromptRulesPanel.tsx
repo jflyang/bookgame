@@ -8,6 +8,8 @@ const categoryLabels: Record<StoryPromptRule["category"], string> = {
   scenario_injection: "剧情设定注入",
   state_output: "血量/内力状态输出",
   history_state: "历史上下文保留状态行",
+  combat: "战斗规则",
+  skill_linkage: "技能联动",
   custom: "自定义特殊规则"
 };
 

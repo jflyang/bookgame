@@ -327,7 +327,7 @@ export function PlayApp() {
             title="保存进度"
             saveSlots={saveSlots}
             storyPackage={storyPackage}
-            storyPackageId={editingPackageId}
+            storyPackageId={editingPackageId ?? undefined}
             stageName={stageDisplayName()}
             gameRound={gameState?.round ?? 0}
             messageCount={useGameStore.getState().messages.length}
@@ -346,7 +346,7 @@ export function PlayApp() {
             title="载入进度"
             saveSlots={saveSlots}
             storyPackage={storyPackage}
-            storyPackageId={editingPackageId}
+            storyPackageId={editingPackageId ?? undefined}
             stageName={stageDisplayName()}
             gameRound={gameState?.round ?? 0}
             messageCount={useGameStore.getState().messages.length}

@@ -110,7 +110,7 @@ export function StorySettingPanel() {
 
   function addStage() {
     const id = makeUniqueStageId("new_stage");
-    const next = [...stageDetails, { id, title: "新阶段", description: "", enterWhen: "", guidance: "" }];
+    const next = [...stageDetails, { id, title: "新阶段", description: "", enterWhen: "", guidance: "", directive: "" }];
     setStageDetails(next);
     setStagesText(next.map((stage) => stage.id).join(", "));
     if (!currentStage) setCurrentStage(id);
@@ -280,7 +280,8 @@ function buildStageDetails(stages: string[], details: ScenarioStageDetail[]) {
       title: inferStageTitle(stageId),
       description: "",
       enterWhen: "",
-      guidance: ""
+      guidance: "",
+      directive: ""
     };
   });
 }

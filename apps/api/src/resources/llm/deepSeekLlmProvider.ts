@@ -199,6 +199,7 @@ export class DeepSeekLlmProvider implements LlmProvider {
     const decoder = new TextDecoder();
     let buffer = "";
     let contentBuffer = "";
+    let reasoningBuffer = "";
 
     try {
       while (true) {
@@ -215,8 +216,15 @@ export class DeepSeekLlmProvider implements LlmProvider {
 
           const payload = trimmed.slice(5).trim();
           if (payload === "[DONE]") {
-            // Yield whatever content we collected
-            if (contentBuffer) yield contentBuffer;
+            // If content is empty but reasoning has JSON, extract and yield it
+            if (!contentBuffer && reasoningBuffer) {
+              const extracted = extractJsonFromText(reasoningBuffer);
+              if (extracted) {
+                const fallbackJson = JSON.stringify(extracted);
+                logger.info("stream: extracted JSON from reasoning_content (empty content fallback)");
+                yield fallbackJson;
+              }
+            }
             return;
           }
 
@@ -224,8 +232,14 @@ export class DeepSeekLlmProvider implements LlmProvider {
             const parsed = JSON.parse(payload);
             const delta = parsed?.choices?.[0]?.delta;
             const content = delta?.content as string | undefined;
+            const reasoning = delta?.reasoning_content as string | undefined;
 
-            // Only yield content (the actual JSON output), skip reasoning_content
+            // Collect reasoning_content as fallback
+            if (reasoning) {
+              reasoningBuffer += reasoning;
+            }
+
+            // Only yield content (the actual JSON output)
             if (content) {
               contentBuffer += content;
               yield content;
@@ -235,8 +249,15 @@ export class DeepSeekLlmProvider implements LlmProvider {
           }
         }
       }
-      // Stream ended without [DONE]
-      if (contentBuffer) yield contentBuffer;
+      // Stream ended without [DONE] — try fallback from reasoning if content is empty
+      if (!contentBuffer && reasoningBuffer) {
+        const extracted = extractJsonFromText(reasoningBuffer);
+        if (extracted) {
+          const fallbackJson = JSON.stringify(extracted);
+          logger.info("stream: extracted JSON from reasoning_content (stream ended without DONE)");
+          yield fallbackJson;
+        }
+      }
     } finally {
       reader.releaseLock();
     }

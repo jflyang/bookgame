@@ -619,6 +619,7 @@ export function CharacterConfigPanel() {
       personaPrompt: newForm.personaPrompt,
       rules: [],
       knowledgeBaseIds: [],
+      attackableTargetIds: [],
     };
     const nextCharacters = [...characters, newChar];
     const pkg = storyPackages.find((p) => p.id === editingPackageId);
