@@ -78,9 +78,13 @@ export function buildPluginIndex(
       referencedPaths.add(relPath);
     }
     for (const [role, relPath] of Object.entries(performance.audio)) {
-      const path = resolveInside(packageDir, relPath);
-      if (!existsSync(path)) throwMissing(`performance ${performanceId} audio.${role}`, relPath);
-      referencedPaths.add(relPath);
+      const pathList = Array.isArray(relPath) ? relPath : [relPath];
+      for (const singlePath of pathList) {
+        if (typeof singlePath !== "string") continue;
+        const path = resolveInside(packageDir, singlePath);
+        if (!existsSync(path)) throwMissing(`performance ${performanceId} audio.${role}`, singlePath);
+        referencedPaths.add(singlePath);
+      }
     }
     index.performances.set(performanceId, [...referencedPaths]);
   }

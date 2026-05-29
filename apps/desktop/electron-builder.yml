@@ -1,0 +1,35 @@
+appId: com.jflyang.interactive-story-game
+productName: 互动故事游戏
+directories:
+  output: release
+files:
+  - dist/**/*
+extraResources:
+  - from: ../api/dist
+    to: api
+    filter:
+      - "**/*"
+  - from: ../web/dist
+    to: web
+    filter:
+      - "**/*"
+  - from: ../data/task-packages
+    to: data/task-packages
+    filter:
+      - "**/*"
+      - "!**/saves/**"
+win:
+  target:
+    - nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  uninstallDisplayName: 互动故事游戏
+mac:
+  target:
+    - dmg
+linux:
+  target:
+    - AppImage

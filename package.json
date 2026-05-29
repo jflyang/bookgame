@@ -5,7 +5,9 @@
   "description": "A separated frontend/backend LLM interactive story web game.",
   "type": "module",
   "workspaces": [
-    "apps/*",
+    "apps/api",
+    "apps/web",
+    "apps/story-editor",
     "packages/*"
   ],
   "scripts": {

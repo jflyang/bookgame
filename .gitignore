@@ -28,4 +28,8 @@ apps/api/data/tts-config.json
 apps/api/data/tts-cache/
 
 # Local asset packs
-wuxia_sfx_pack*/
+wuxia_sfx_pack*
+
+# Desktop build output
+apps/desktop/release/
+apps/desktop/dist//

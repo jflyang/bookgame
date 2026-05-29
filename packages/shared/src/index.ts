@@ -331,10 +331,10 @@ export const storyPerformanceDefinitionSchema = z.object({
   renderer: z.enum(["video", "layeredCss", "audio", "image", "none"]),
   durationMs: z.number().int().positive().default(3800),
   trigger: storyPerformanceTriggerSchema,
-  playOnce: z.enum(["session", "story", "never"]).default("session"),
+  playOnce: z.enum(["session", "story", "never", "perStage"]).default("session"),
   video: storyPerformanceVideoSchema.optional(),
   layers: z.record(z.string(), z.string()).default({}),
-  audio: z.record(z.string(), z.string()).default({}),
+  audio: z.record(z.string(), z.union([z.string(), z.array(z.string())])).default({}),
 });
 export type StoryPerformanceDefinition = z.infer<typeof storyPerformanceDefinitionSchema>;
 
