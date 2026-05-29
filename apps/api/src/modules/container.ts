@@ -130,7 +130,8 @@ export const dialogueEngine = new DialogueEngine(
   storyPackageActivator,
   turnProcessor,
   sessionStoryPackageIds,
-  sessionCollector
+  sessionCollector,
+  sessionSaveService
 );
 
 // ===== TTS Service Layer =====

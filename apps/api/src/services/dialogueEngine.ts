@@ -19,8 +19,10 @@ import { KnowledgeBaseService } from "./knowledgeBaseService.js";
 import { StoryPackageActivator } from "./storyPackageActivator.js";
 import { TurnProcessor } from "./turnProcessor.js";
 import type { SessionCollector } from "../modules/sessions/sessionCollector.js";
+import type { SessionSaveService } from "./sessionSaveService.js";
 
 const logger = createModuleLogger("dialogueEngine");
+const AUTO_SAVE_INTERVAL = 15;
 
 export class DialogueEngine {
   constructor(
@@ -34,7 +36,8 @@ export class DialogueEngine {
     private readonly storyPackageActivator: StoryPackageActivator,
     private readonly turnProcessor: TurnProcessor,
     private readonly sessionStoryPackageIds = new Map<string, string>(),
-    private readonly sessionCollector?: SessionCollector
+    private readonly sessionCollector?: SessionCollector,
+    private readonly sessionSaves?: SessionSaveService
   ) {}
 
   createSession(input: CreateSessionRequest) {
@@ -152,24 +155,35 @@ export class DialogueEngine {
   async sendMessage(sessionId: string, input: SendMessageRequest) {
     this.ensureStoryPackageActivated(sessionId);
     const result = await this.turnProcessor.sendMessage(sessionId, input);
-    if (this.sessionCollector) {
-      try {
-        const messages = this.memory.list(sessionId);
-        this.sessionCollector.markActive(sessionId, result.gameState, messages.length);
-      } catch (err) { logger.warn({ err }, "failed to update session after turn"); }
-    }
+    this.afterTurn(sessionId, result.gameState);
     return result;
   }
 
   async *sendMessageStream(sessionId: string, input: SendMessageRequest) {
     this.ensureStoryPackageActivated(sessionId);
     yield* this.turnProcessor.sendMessageStream(sessionId, input);
+    const gameState = this.states.get(sessionId);
+    this.afterTurn(sessionId, gameState);
+  }
+
+  private afterTurn(sessionId: string, gameState: import("@story-game/shared").GameState) {
+    // Update session collector
     if (this.sessionCollector) {
       try {
-        const gameState = this.states.get(sessionId);
         const messages = this.memory.list(sessionId);
         this.sessionCollector.markActive(sessionId, gameState, messages.length);
-      } catch (err) { logger.warn({ err }, "failed to update session after stream"); }
+      } catch (err) { logger.warn({ err }, "failed to update session after turn"); }
+    }
+
+    // Auto-save every AUTO_SAVE_INTERVAL rounds
+    if (this.sessionSaves && gameState.round > 0 && gameState.round % AUTO_SAVE_INTERVAL === 0) {
+      const storyPackageId = this.sessionStoryPackageIds.get(sessionId);
+      if (storyPackageId) {
+        try {
+          const messages = this.memory.list(sessionId);
+          this.sessionSaves.autoSave(storyPackageId, gameState, messages);
+        } catch (err) { logger.warn({ err, sessionId }, "auto-save failed"); }
+      }
     }
   }
 

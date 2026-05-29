@@ -2,6 +2,34 @@ import { create } from "zustand";
 import type { TtsConfigView } from "@story-game/shared";
 import * as ttsApi from "../lib/ttsApi.js";
 
+/** Single global Audio element for TTS playback */
+let globalAudio: HTMLAudioElement | null = null;
+
+function playAudioElement(url: string, getState: () => AudioState) {
+  if (globalAudio) {
+    globalAudio.pause();
+    globalAudio.src = "";
+  }
+  const audio = new Audio(url);
+  globalAudio = audio;
+  const state = getState();
+  audio.volume = state.volume;
+  audio.playbackRate = state.playbackRate;
+  audio.onended = () => {
+    globalAudio = null;
+    // Use the store's set via getState pattern
+    useAudioStore.setState({ currentPlayingId: null });
+  };
+  audio.onerror = () => {
+    globalAudio = null;
+    useAudioStore.setState({ currentPlayingId: null });
+  };
+  audio.play().catch(() => {
+    globalAudio = null;
+    useAudioStore.setState({ currentPlayingId: null });
+  });
+}
+
 interface AudioState {
   /** Global TTS on/off */
   ttsEnabled: boolean;
@@ -23,6 +51,9 @@ interface AudioState {
   /** Playback speed (1.0 = normal, 1.2 = slightly faster) */
   playbackRate: number;
 
+  /** Whether auto-read has finished for the current message (signals auto-continue can proceed) */
+  autoReadDone: boolean;
+
   // Actions
   loadConfig: () => Promise<void>;
   setEnabled: (enabled: boolean) => void;
@@ -32,14 +63,16 @@ interface AudioState {
   playMessage: (messageId: string, text: string, characterId: string, emotion?: string) => Promise<void>;
   stopPlaying: () => void;
   setCurrentPlaying: (id: string | null) => void;
+  setAutoReadDone: (done: boolean) => void;
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({
   ttsEnabled: false,
-  autoPlay: false,
+  autoPlay: localStorage.getItem("play:ttsAutoPlay") === "true",
   volume: 0.8,
   playbackRate: parseFloat(localStorage.getItem("play:playbackRate") || "1.15"),
   currentPlayingId: null,
+  autoReadDone: true,
   loadingIds: new Set(),
   audioCache: new Map(),
   serviceConfig: null,
@@ -60,10 +93,18 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
   setEnabled(enabled) {
     set({ ttsEnabled: enabled });
+    if (!enabled) {
+      // Stop all playback and clear loading state
+      get().stopPlaying();
+      set({ loadingIds: new Set() });
+    }
   },
 
   setAutoPlay(enabled) {
     set({ autoPlay: enabled });
+    if (!enabled) {
+      set({ currentPlayingId: null });
+    }
   },
 
   setVolume(volume) {
@@ -75,7 +116,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   },
 
   async playMessage(messageId, text, characterId, emotion) {
-    const { loadingIds, audioCache, ttsEnabled } = get();
+    const { loadingIds, audioCache, ttsEnabled, volume, playbackRate } = get();
     if (!ttsEnabled) return;
 
     // Already loading this message
@@ -85,10 +126,11 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     const cached = audioCache.get(messageId);
     if (cached) {
       set({ currentPlayingId: messageId });
+      playAudioElement(cached, get);
       return;
     }
 
-    // Start loading — use synthesize (which caches on server for replay)
+    // Start loading
     const nextLoading = new Set(loadingIds);
     nextLoading.add(messageId);
     set({ loadingIds: nextLoading, error: null, currentPlayingId: messageId });
@@ -103,26 +145,35 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       const doneLoading = new Set(get().loadingIds);
       doneLoading.delete(messageId);
 
-      set({
-        audioCache: nextCache,
-        loadingIds: doneLoading,
-      });
-      });
+      set({ audioCache: nextCache, loadingIds: doneLoading });
+
+      // Play the audio
+      playAudioElement(audioUrl, get);
     } catch (err) {
       const doneLoading = new Set(get().loadingIds);
       doneLoading.delete(messageId);
       set({
         loadingIds: doneLoading,
+        currentPlayingId: null,
         error: err instanceof Error ? err.message : "语音合成失败",
       });
     }
   },
 
   stopPlaying() {
+    if (globalAudio) {
+      globalAudio.pause();
+      globalAudio.src = "";
+      globalAudio = null;
+    }
     set({ currentPlayingId: null });
   },
 
   setCurrentPlaying(id) {
     set({ currentPlayingId: id });
+  },
+
+  setAutoReadDone(done) {
+    set({ autoReadDone: done });
   },
 }));

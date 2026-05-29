@@ -52,6 +52,17 @@ export function openDirectory(packageDir: string): PackageState {
     } catch { /* ignore parse errors, use embedded */ }
   }
 
+  // Merge split ui/config.json — authoritative source for UI config (fixes split-brain)
+  const uiConfigPath = join(packageDir, "ui", "config.json");
+  if (existsSync(uiConfigPath)) {
+    try {
+      const uiRaw = JSON.parse(readFileSync(uiConfigPath, "utf-8"));
+      if (uiRaw && Object.keys(uiRaw).length > 0) {
+        storyPackage.uiConfig = { ...storyPackage.uiConfig, ...uiRaw };
+      }
+    } catch { /* ignore, use embedded */ }
+  }
+
   const hasManifest = existsSync(join(packageDir, "manifest.json"));
   const manifest = hasManifest ? JSON.parse(readFileSync(join(packageDir, "manifest.json"), "utf-8")) : null;
   const hasCharacters = existsSync(join(packageDir, "characters.json"));
@@ -171,6 +182,13 @@ export function saveStoryPackage(storyPackage: StoryPackage): void {
   // v2: sync modules.json only (flow.json is saved separately with ReactFlow format)
   if (sorted.modules) {
     writeFileSync(join(dir, "modules.json"), JSON.stringify(sorted.modules, null, 2), "utf-8");
+  }
+
+  // Sync ui/config.json — authoritative split file for UI config
+  if (sorted.uiConfig && Object.keys(sorted.uiConfig).length > 0) {
+    const uiDir = join(dir, "ui");
+    if (!existsSync(uiDir)) mkdirSync(uiDir, { recursive: true });
+    writeFileSync(join(uiDir, "config.json"), JSON.stringify(sorted.uiConfig, null, 2), "utf-8");
   }
 
   currentPackage.storyPackage = sorted;

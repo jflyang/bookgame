@@ -436,7 +436,7 @@
       "attackableTargetIds": [
         "xiao_wei"
       ],
-      "voiceId": "MF3mGyEYCl7XYWbV9V6O"
+      "voiceId": "21m00Tcm4TlvDq8ikWAM"
     },
     {
       "id": "er_jie",
@@ -454,7 +454,7 @@
       "attackableTargetIds": [
         "xiao_wei"
       ],
-      "voiceId": "21m00Tcm4TlvDq8ikWAM"
+      "voiceId": "EXAVITQu4vr4xnSDxMaL"
     }
   ],
   "skills": [
@@ -1862,7 +1862,7 @@
     },
     "entry": "story.json",
     "createdAt": "2026-05-27T07:39:23.819Z",
-    "updatedAt": "2026-05-29T03:05:03.331Z"
+    "updatedAt": "2026-05-29T03:45:12.068Z"
   },
   "modules": [
     {
@@ -2351,5 +2351,5 @@
     }
   },
   "createdAt": "2026-05-27T07:39:23.819Z",
-  "updatedAt": "2026-05-29T03:45:12.068Z"
+  "updatedAt": "2026-05-29T04:30:15.289Z"
 }

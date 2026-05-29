@@ -13,6 +13,7 @@ import { useCustomFonts } from "./hooks/useCustomFonts.js";
 import { useCustomCss } from "./hooks/useCustomCss.js";
 import type { UiConfig } from "@story-game/shared";
 import { useGameStore } from "../../store/gameStore.js";
+import { useAudioStore } from "../../store/audioStore.js";
 
 /** Audio mute toggle — must be rendered inside AudioManagerProvider */
 function AudioMuteMenuItem({ onDone }: { onDone: () => void }) {
@@ -134,13 +135,28 @@ export function PlayApp() {
     }
   }, [sessionId, start, storyPackages]); // eslint-disable-line
 
+  // Auto-continue story
+  const ttsAutoPlay = useAudioStore((s) => s.autoPlay);
+  const ttsAutoReadDone = useAudioStore((s) => s.autoReadDone);
+  const ttsEnabled = useAudioStore((s) => s.ttsEnabled);
+
   useEffect(() => {
     if (!isAutoPlaying || isSending || gameState?.status === "completed") return;
+    // Only block auto-continue if TTS is actually enabled AND auto-play is on AND reading not done
+    const ttsBlocking = ttsAutoPlay && ttsEnabled && !ttsAutoReadDone;
+    if (ttsBlocking) {
+      // Safety: if TTS blocks auto-continue for >30s, force release
+      const safetyTimer = window.setTimeout(() => {
+        useAudioStore.getState().setAutoReadDone(true);
+      }, 30_000);
+      return () => window.clearTimeout(safetyTimer);
+    }
+    const delay = (ttsAutoPlay && ttsEnabled) ? 1000 : 3000;
     const timer = window.setTimeout(() => {
       void continueStory();
-    }, 3000);
+    }, delay);
     return () => window.clearTimeout(timer);
-  }, [continueStory, gameState?.round, gameState?.status, isAutoPlaying, isSending]);
+  }, [continueStory, gameState?.round, gameState?.status, isAutoPlaying, isSending, ttsAutoPlay, ttsAutoReadDone, ttsEnabled]);
 
   const isCompleted = gameState?.status === "completed";
 
@@ -311,6 +327,7 @@ export function PlayApp() {
             title="保存进度"
             saveSlots={saveSlots}
             storyPackage={storyPackage}
+            storyPackageId={editingPackageId}
             stageName={stageDisplayName()}
             gameRound={gameState?.round ?? 0}
             messageCount={useGameStore.getState().messages.length}
@@ -329,6 +346,7 @@ export function PlayApp() {
             title="载入进度"
             saveSlots={saveSlots}
             storyPackage={storyPackage}
+            storyPackageId={editingPackageId}
             stageName={stageDisplayName()}
             gameRound={gameState?.round ?? 0}
             messageCount={useGameStore.getState().messages.length}

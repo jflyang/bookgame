@@ -65,6 +65,17 @@ export class TaskPackageRepository {
           }
         } catch { /* ignore, use embedded */ }
       }
+      // Merge split ui/config.json — authoritative source for UI config
+      // Fixes split-brain where story.json has empty uiConfig but ui/config.json has real data
+      const uiConfigFile = resolveInside(dir, "ui/config.json");
+      if (existsSync(uiConfigFile)) {
+        try {
+          const uiRaw = JSON.parse(readFileSync(uiConfigFile, "utf-8"));
+          if (uiRaw && Object.keys(uiRaw).length > 0) {
+            pkg.uiConfig = { ...pkg.uiConfig, ...uiRaw } as any;
+          }
+        } catch { /* ignore, use embedded */ }
+      }
       // Fix thumbnail URL to match directory-based id
       if (pkg.thumbnail && pkg.thumbnail.startsWith("/api/admin/media/")) {
         pkg.thumbnail = `/api/admin/media/${id}`;

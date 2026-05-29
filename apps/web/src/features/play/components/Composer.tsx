@@ -144,7 +144,7 @@ export function Composer({ icon }: { icon: ReactNode }) {
             </div>
           )}
         </div>
-        <button disabled={isSending || isCompleted || !text.trim()}>{isCompleted ? "故事已结束" : `${icon} ${labels.send}`}</button>
+        <button disabled={isSending || isCompleted || !text.trim()}>{isCompleted ? "故事已结束" : <>{icon} {labels.send}</>}</button>
       </div>
     </form>
   );

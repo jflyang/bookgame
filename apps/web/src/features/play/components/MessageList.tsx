@@ -6,6 +6,7 @@ import { useGameStore } from "../../../store/gameStore.js";
 import { ChoiceCards } from "./ChoiceCards.js";
 import { MessageAudioButton } from "./MessageAudioButton.js";
 import { NarrationAudioButton } from "./NarrationAudioButton.js";
+import { useAutoReadMessage } from "../hooks/useAutoReadMessage.js";
 
 export function MessageList({ characters }: { characters: Character[] }) {
   const messages = useGameStore((state) => state.messages);
@@ -13,6 +14,9 @@ export function MessageList({ characters }: { characters: Character[] }) {
   const isStreaming = useGameStore((state) => state.isStreaming);
   const streamingSpeakerId = useGameStore((state) => state.streamingSpeakerId);
   const streamingSpeakerName = useGameStore((state) => state.streamingSpeakerName);
+
+  // Auto-read new messages when autoPlay is enabled
+  useAutoReadMessage(messages, characters, isStreaming);
   const pendingChoices = useGameStore((state) => state.pendingChoices);
   const chooseBranch = useGameStore((state) => state.chooseBranch);
   const isSending = useGameStore((state) => state.isSending);

@@ -159,6 +159,17 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.code(201).send(adminApplicationService.saveCurrentSession(pkgId, sessionId, label, slot));
   });
 
+  // Download save by slot as JSON file
+  app.get("/story-packages/:pkgId/saves/slot/:slot/download", async (request, reply) => {
+    const { pkgId, slot } = request.params as { pkgId: string; slot: string };
+    const slotNum = parseInt(slot, 10);
+    const save = adminApplicationService.getSaveBySlot(pkgId, slotNum);
+    const filename = `${pkgId}_slot-${slotNum}_round-${save.gameState.round}.json`;
+    reply.header("Content-Disposition", `attachment; filename="${encodeURIComponent(filename)}"`);
+    reply.header("Content-Type", "application/json; charset=utf-8");
+    return reply.send(save);
+  });
+
   app.delete("/story-packages/:pkgId/saves/:saveId", async (request, reply) => {
     const { pkgId, saveId } = request.params as { pkgId: string; saveId: string };
     const { slot } = request.query as { slot?: string };

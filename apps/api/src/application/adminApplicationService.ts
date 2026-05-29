@@ -122,6 +122,10 @@ export class AdminApplicationService {
     return { save: this.sessionSaves.get(storyPackageId, saveId) };
   }
 
+  getSaveBySlot(storyPackageId: string, slot: number) {
+    return this.sessionSaves.getBySlot(storyPackageId, slot);
+  }
+
   saveCurrentSession(storyPackageId: string, sessionId: string, label?: string, slot?: number) {
     const state = this.dialogueEngine.getSessionState(sessionId);
     const messages = this.dialogueEngine.getMessages(sessionId);

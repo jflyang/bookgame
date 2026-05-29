@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, Trash2, Upload, X } from "lucide-react";
+import { Download, FileDown, Trash2, Upload, X } from "lucide-react";
 import type { StoryPackage } from "@story-game/shared";
 import type { SaveSlot } from "../../../lib/gameApi.js";
 
@@ -8,6 +8,7 @@ interface SaveLoadOverlayProps {
   title: string;
   saveSlots: SaveSlot[];
   storyPackage?: StoryPackage;
+  storyPackageId?: string;
   stageName: string;
   gameRound: number;
   messageCount: number;
@@ -22,6 +23,7 @@ export function SaveLoadOverlay({
   title,
   saveSlots,
   storyPackage,
+  storyPackageId,
   stageName,
   gameRound,
   messageCount,
@@ -48,6 +50,8 @@ export function SaveLoadOverlay({
   }
 
   function handleSlotClick(slot: SaveSlot) {
+    // Auto-save slot is read-only in save mode
+    if (slot.slot === 0 && mode === "save") return;
     if (mode === "save") {
       if (slot.save) {
         setConfirmSlot(slot.slot);
@@ -85,7 +89,9 @@ export function SaveLoadOverlay({
         )}
 
         <div className="save-slot-grid">
-          {[1, 2, 3].map((slotNum) => {
+          {/* Auto-save slot (read-only in save mode) */}
+          {[0, 1, 2, 3].map((slotNum) => {
+            const isAuto = slotNum === 0;
             const slotData = saveSlots.find((s) => s.slot === slotNum);
             const save = slotData?.save ?? null;
             const isEmpty = !save;
@@ -96,9 +102,18 @@ export function SaveLoadOverlay({
                 className={`save-slot-card ${isEmpty ? "empty" : "filled"} ${mode === "save" && isEmpty ? "save-target" : ""}`}
                 onClick={() => handleSlotClick({ slot: slotNum, save })}
               >
-                <div className="save-slot-number">存档位 {slotNum}</div>
+                <div className="save-slot-number">{isAuto ? "自动存档" : `存档位 ${slotNum}`}</div>
 
-                {isEmpty ? (
+                {isAuto && mode === "save" ? (
+                  <div className="save-slot-empty">
+                    <div className="save-slot-thumb placeholder" style={{ opacity: 0.4 }}>
+                      <span className="empty-icon" style={{ fontSize: "0.75rem" }}>每15回合自动</span>
+                    </div>
+                    <p className="save-slot-hint" style={{ color: "#9ca3af" }}>
+                      自动管理，无需手动保存
+                    </p>
+                  </div>
+                ) : isEmpty ? (
                   <div className="save-slot-empty">
                     <div className="save-slot-thumb placeholder">
                       {mode === "save" ? <Download size={28} /> : <span className="empty-icon">—</span>}
@@ -133,28 +148,48 @@ export function SaveLoadOverlay({
                         <span className="save-slot-badge completed">已完结</span>
                       )}
                     </div>
-                    {mode === "load" && (
+                    {(mode === "load" || mode === "save") && (
                       <div className="save-slot-actions">
+                        {mode === "load" && (
+                          <button
+                            className="save-slot-action-btn load"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onLoadBySlot?.(slotNum);
+                            }}
+                          >
+                            <Upload size={15} />
+                            载入
+                          </button>
+                        )}
                         <button
-                          className="save-slot-action-btn load"
+                          className="save-slot-action-btn download"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onLoadBySlot?.(slotNum);
+                            if (storyPackageId) {
+                              const url = `/api/admin/story-packages/${storyPackageId}/saves/slot/${slotNum}/download`;
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = "";
+                              a.click();
+                            }
                           }}
+                          title="下载存档到本地"
                         >
-                          <Upload size={15} />
-                          载入
+                          <FileDown size={15} />
                         </button>
-                        <button
-                          className="save-slot-action-btn delete"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete?.(save.sessionId, slotNum);
-                          }}
-                        >
-                          <Trash2 size={15} />
-                          删除
-                        </button>
+                        {!isAuto && (
+                          <button
+                            className="save-slot-action-btn delete"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDelete?.(save.sessionId, slotNum);
+                            }}
+                          >
+                            <Trash2 size={15} />
+                            删除
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

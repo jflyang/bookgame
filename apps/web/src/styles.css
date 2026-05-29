@@ -6787,3 +6787,26 @@ textarea {
     font-size: 0.8rem;
   }
 }
+
+/* ===== TTS Auto-play Green Dot ===== */
+
+.tts-green-dot {
+  background: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #22c55e;
+  height: 8px;
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  width: 8px;
+  animation: tts-dot-pulse 1s ease-in-out infinite;
+}
+
+@keyframes tts-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+.tts-play-btn {
+  position: relative;
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { SessionSaveService, MAX_SAVE_SLOTS } from "../sessionSaveService.js";
+import { SessionSaveService, MAX_SAVE_SLOTS, AUTO_SAVE_SLOT } from "../sessionSaveService.js";
 import { mkdtempSync, rmSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -48,20 +48,24 @@ describe("SessionSaveService", () => {
   });
 
   describe("listSlots", () => {
-    it("returns 3 empty slots when no saves exist", () => {
+    it("returns 4 slots (auto + 3 manual) when no saves exist", () => {
       const slots = svc.listSlots("pkg_001");
-      expect(slots).toHaveLength(MAX_SAVE_SLOTS);
+      expect(slots).toHaveLength(MAX_SAVE_SLOTS + 1); // auto-save + manual slots
+      expect(slots[0].slot).toBe(AUTO_SAVE_SLOT);
       expect(slots.every((s) => s.save === null)).toBe(true);
     });
 
     it("returns populated slots after saving", () => {
       svc.saveToSlot("pkg_001", 1, "存档 1", structuredClone(mockGameState), structuredClone(mockMessages));
       const slots = svc.listSlots("pkg_001");
-      expect(slots[0].save).not.toBeNull();
-      expect(slots[0].save?.label).toBe("存档 1");
-      expect(slots[0].save?.round).toBe(3);
-      expect(slots[1].save).toBeNull();
+      // slot 0 is auto-save (empty), slot 1 is the saved slot
+      expect(slots[0].slot).toBe(AUTO_SAVE_SLOT);
+      expect(slots[0].save).toBeNull(); // auto-save is empty
+      expect(slots[1].save).not.toBeNull();
+      expect(slots[1].save?.label).toBe("存档 1");
+      expect(slots[1].save?.round).toBe(3);
       expect(slots[2].save).toBeNull();
+      expect(slots[3].save).toBeNull();
     });
   });
 
@@ -104,8 +108,12 @@ describe("SessionSaveService", () => {
       expect(existsSync(join(tmpDir, "pkg_001", "slot-2.session.json"))).toBe(true);
     });
 
-    it("throws for invalid slot numbers", () => {
-      expect(() => svc.saveToSlot("pkg_001", 0, "Bad", structuredClone(mockGameState), [])).toThrow("Slot must be");
+    it("allows auto-save slot (0) and throws for invalid slot numbers", () => {
+      // slot 0 (auto-save) is now valid
+      const save = svc.saveToSlot("pkg_001", AUTO_SAVE_SLOT, "Auto", structuredClone(mockGameState), []);
+      expect(save.sessionId).toBe("sess_001");
+      expect(existsSync(join(tmpDir, "pkg_001", "slot-auto.session.json"))).toBe(true);
+      // slot 4 is still invalid
       expect(() => svc.saveToSlot("pkg_001", 4, "Bad", structuredClone(mockGameState), [])).toThrow("Slot must be");
     });
 
@@ -123,26 +131,27 @@ describe("SessionSaveService", () => {
   });
 
   describe("save (legacy auto-pick)", () => {
-    it("auto-picks first empty slot", () => {
+    it("auto-picks first empty manual slot", () => {
       const save = svc.save("pkg_001", "Auto", structuredClone(mockGameState), structuredClone(mockMessages));
       expect(existsSync(join(tmpDir, "pkg_001", "slot-1.session.json"))).toBe(true);
       expect(save.label).toBe("Auto");
     });
 
-    it("auto-picks slot 3 when all slots are full", () => {
+    it("overwrites slot 3 when all manual slots are full", () => {
       const gs1 = structuredClone(mockGameState); gs1.sessionId = "a";
       const gs2 = structuredClone(mockGameState); gs2.sessionId = "b";
       const gs3 = structuredClone(mockGameState); gs3.sessionId = "c";
       svc.saveToSlot("pkg_001", 1, "S1", gs1, []);
       svc.saveToSlot("pkg_001", 2, "S2", gs2, []);
       svc.saveToSlot("pkg_001", 3, "S3", gs3, []);
-      // All slots full, legacy save overwrites slot 3
+      // All manual slots full, legacy save overwrites slot 3
       const gs4 = structuredClone(mockGameState); gs4.sessionId = "d";
-      const save = svc.save("pkg_001", "Overflow", gs4, []);
+      svc.save("pkg_001", "Overflow", gs4, []);
       const slots = svc.listSlots("pkg_001");
-      expect(slots[0].save?.sessionId).toBe("a");
-      expect(slots[1].save?.sessionId).toBe("b");
-      expect(slots[2].save?.label).toBe("Overflow");
+      // slot 0 = auto (empty), slot 1 = S1, slot 2 = S2, slot 3 = Overflow
+      expect(slots[1].save?.sessionId).toBe("a");
+      expect(slots[2].save?.sessionId).toBe("b");
+      expect(slots[3].save?.label).toBe("Overflow");
     });
   });
 
@@ -202,10 +211,11 @@ describe("SessionSaveService", () => {
 
       const slotsA = svc.listSlots("pkg_A");
       const slotsB = svc.listSlots("pkg_B");
-      expect(slotsA[0].save?.label).toBe("A-Save");
-      expect(slotsA[0].save?.sessionId).toBe("sess_a");
-      expect(slotsB[0].save?.label).toBe("B-Save");
-      expect(slotsB[0].save?.sessionId).toBe("sess_b");
+      // slot 0 = auto (empty), slot 1 = manual save
+      expect(slotsA[1].save?.label).toBe("A-Save");
+      expect(slotsA[1].save?.sessionId).toBe("sess_a");
+      expect(slotsB[1].save?.label).toBe("B-Save");
+      expect(slotsB[1].save?.sessionId).toBe("sess_b");
     });
 
     it("auto-creates saves directory on first save", () => {
@@ -235,9 +245,9 @@ describe("SessionSaveService", () => {
       writeFileSync(join(dir, "slot-1.session.json"), "not valid json {{{");
 
       const slots = svc.listSlots("pkg_001");
-      expect(slots[0].save).toBeNull();
+      // slot 0 (auto) + slots 1-3, slot 1 is corrupt → treated as null
+      expect(slots[1].slot).toBe(1);
       expect(slots[1].save).toBeNull();
-      expect(slots[2].save).toBeNull();
     });
 
     it("getBySlot throws on corrupt JSON", () => {
@@ -266,24 +276,25 @@ describe("SessionSaveService", () => {
       const gs3 = structuredClone(mockGameState); gs3.sessionId = "s3";
       const gs4 = structuredClone(mockGameState); gs4.sessionId = "s4";
 
-      // Fill all 3
+      // Fill all 3 manual slots
       svc.saveToSlot("pkg_001", 1, "First", gs1, []);
       svc.saveToSlot("pkg_001", 2, "Second", gs2, []);
       svc.saveToSlot("pkg_001", 3, "Third", gs3, []);
       expect(svc.list("pkg_001")).toHaveLength(3);
 
-      // Delete middle
+      // Delete middle (slot 2)
       svc.deleteBySlot("pkg_001", 2);
       const afterDelete = svc.listSlots("pkg_001");
-      expect(afterDelete[0].save).not.toBeNull();
-      expect(afterDelete[1].save).toBeNull();
-      expect(afterDelete[2].save).not.toBeNull();
+      // slot 0 = auto (empty), slot 1 = filled, slot 2 = empty, slot 3 = filled
+      expect(afterDelete[1].save).not.toBeNull();
+      expect(afterDelete[2].save).toBeNull();
+      expect(afterDelete[3].save).not.toBeNull();
 
       // Refill middle
       svc.saveToSlot("pkg_001", 2, "Refilled", gs4, []);
       const afterRefill = svc.listSlots("pkg_001");
-      expect(afterRefill[1].save?.label).toBe("Refilled");
-      expect(afterRefill[1].save?.sessionId).toBe("s4");
+      expect(afterRefill[2].save?.label).toBe("Refilled");
+      expect(afterRefill[2].save?.sessionId).toBe("s4");
       expect(svc.list("pkg_001")).toHaveLength(3);
     });
 
@@ -294,15 +305,17 @@ describe("SessionSaveService", () => {
       expect(loaded.gameState.round).toBe(3);
     });
 
-    it("listSlots returns correct slot numbers 1-3", () => {
+    it("listSlots returns correct slot numbers 0-3", () => {
       svc.saveToSlot("pkg_001", 3, "Third Only", structuredClone(mockGameState), []);
       const slots = svc.listSlots("pkg_001");
-      expect(slots[0].slot).toBe(1);
-      expect(slots[1].slot).toBe(2);
-      expect(slots[2].slot).toBe(3);
-      expect(slots[0].save).toBeNull();
-      expect(slots[1].save).toBeNull();
-      expect(slots[2].save).not.toBeNull();
+      expect(slots[0].slot).toBe(AUTO_SAVE_SLOT); // 0
+      expect(slots[1].slot).toBe(1);
+      expect(slots[2].slot).toBe(2);
+      expect(slots[3].slot).toBe(3);
+      expect(slots[0].save).toBeNull();   // auto-save empty
+      expect(slots[1].save).toBeNull();   // slot 1 empty
+      expect(slots[2].save).toBeNull();   // slot 2 empty
+      expect(slots[3].save).not.toBeNull(); // slot 3 filled
     });
   });
 });

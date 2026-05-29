@@ -139,7 +139,7 @@ export async function gameRoutes(app: FastifyInstance) {
       const { storyPackageId, saveId, slot } = z.object({
         storyPackageId: z.string(),
         saveId: z.string().optional(),
-        slot: z.number().int().min(1).max(3).optional()
+        slot: z.number().int().min(0).max(3).optional()
       }).parse(request.body);
       const result = gameApplicationService.restoreSession(storyPackageId, saveId, slot);
       return reply.send(result);

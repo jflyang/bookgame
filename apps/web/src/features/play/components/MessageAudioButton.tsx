@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useAudioStore } from "../../../store/audioStore.js";
 
 interface Props {
@@ -9,83 +9,27 @@ interface Props {
 
 /**
  * Inline play button for TTS on a single message.
- * Shows a speaker icon; clicking synthesizes and plays audio.
+ * Playback is handled centrally by audioStore.
  */
 export function MessageAudioButton({ messageId, text, characterId }: Props) {
   const ttsEnabled = useAudioStore((s) => s.ttsEnabled);
   const currentPlayingId = useAudioStore((s) => s.currentPlayingId);
   const loadingIds = useAudioStore((s) => s.loadingIds);
-  const audioCache = useAudioStore((s) => s.audioCache);
-  const volume = useAudioStore((s) => s.volume);
-  const playbackRate = useAudioStore((s) => s.playbackRate);
   const playMessage = useAudioStore((s) => s.playMessage);
   const stopPlaying = useAudioStore((s) => s.stopPlaying);
-  const setCurrentPlaying = useAudioStore((s) => s.setCurrentPlaying);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const isPlaying = currentPlayingId === messageId;
-  const isLoading = loadingIds.has(messageId);
-  const audioUrl = audioCache.get(messageId);
+  const isPlaying = currentPlayingId === messageId || currentPlayingId === `autodlg_${messageId}`;
+  const isLoading = loadingIds.has(messageId) || loadingIds.has(`autodlg_${messageId}`);
 
-  const handleClick = useCallback(async () => {
+  const handleClick = useCallback(() => {
     if (isPlaying) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
       stopPlaying();
     } else {
       playMessage(messageId, text, characterId);
     }
   }, [isPlaying, messageId, text, characterId, playMessage, stopPlaying]);
 
-  // Play audio when URL becomes available and this message is current
-  useEffect(() => {
-    if (!isPlaying || !audioUrl) return;
-
-    const audio = audioRef.current || new Audio();
-    audioRef.current = audio;
-    audio.src = audioUrl;
-    audio.volume = volume;
-    audio.playbackRate = playbackRate;
-
-    audio.onended = () => {
-      setCurrentPlaying(null);
-    };
-
-    audio.onerror = () => {
-      setCurrentPlaying(null);
-    };
-
-    audio.play().catch(() => {
-      setCurrentPlaying(null);
-    });
-
-    return () => {
-      audio.onended = null;
-      audio.onerror = null;
-    };
-  }, [isPlaying, audioUrl, volume, setCurrentPlaying]);
-
-  // Update volume/rate on playing audio
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-      audioRef.current.playbackRate = playbackRate;
-    }
-  }, [volume, playbackRate]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  // Hide when TTS is disabled — after all hooks
+  // Hide when TTS is disabled
   if (!ttsEnabled) return null;
 
   return (
@@ -96,6 +40,7 @@ export function MessageAudioButton({ messageId, text, characterId }: Props) {
       title={isPlaying ? "停止播放" : "播放语音"}
       aria-label={isPlaying ? "停止播放语音" : "播放语音"}
     >
+      {isPlaying && <span className="tts-green-dot" />}
       {isLoading ? (
         <span className="tts-icon tts-loading">⏳</span>
       ) : isPlaying ? (
