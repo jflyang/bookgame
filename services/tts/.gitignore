@@ -1,0 +1,18 @@
+# Model files (too large for git)
+pretrained_models/
+
+# Generated audio cache
+audio_cache/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Voice reference files (may be large)
+# Uncomment if you don't want to track voice files in git:
+# voices/*.wav
+# voices/*.mp3
+# voices/*.flac

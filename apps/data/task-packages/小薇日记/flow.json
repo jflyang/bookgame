@@ -15,7 +15,6 @@
         "mod_stage_7",
         "mod_stage_8"
       ],
-      "description": "少爷将小薇带入调教室，从初吻到束缚、从乳环到暴露、从按摩到抉择——完成初步调教与命运分叉。",
       "afterAll": "act2_initiation"
     },
     "act2_initiation": {
@@ -28,7 +27,6 @@
         "mod_stage_13a",
         "mod_stage_14a"
       ],
-      "description": "小薇选择服从。大姐以温柔方式逐步引导——蜜穴初尝、眼罩深吻、口舌教学，最终在边缘交付中完成侍奉初体验。",
       "afterAll": "act4_willbreak"
     },
     "act3_punishment": {
@@ -51,7 +49,6 @@
         "mod_stage_23b",
         "mod_stage_24b"
       ],
-      "description": "小薇选择抵抗。大姐施以强制驯服——极限紧缚、春药涂乳、悬吊惩戒、边缘地狱，直至小薇崩溃臣服、幸福哭泣。",
       "afterAll": "act4_willbreak"
     },
     "act4_willbreak": {
@@ -59,8 +56,7 @@
       "sequence": [
         "mod_stage_21",
         "mod_stage_22"
-      ],
-      "description": "两条路线在此汇合。少爷亲自完成对小薇的初次征服，事后温柔清理——从抗拒到接纳的转折点。"
+      ]
     }
   },
   "finaleSequence": {

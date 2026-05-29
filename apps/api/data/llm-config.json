@@ -1,8 +1,8 @@
 {
   "provider": "deepseek",
   "baseUrl": "https://api.deepseek.com",
-  "model": "deepseek-v4-flash",
+  "model": "deepseek-chat",
   "temperature": 0.8,
-  "maxTokens": 800,
+  "maxTokens": 4000,
   "apiKey": "sk-3f988aa1ada3479688c8aa0c606a9eea"
 }

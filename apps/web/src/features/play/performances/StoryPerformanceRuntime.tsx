@@ -9,7 +9,9 @@ interface QueuedPerformance {
   performance: StoryPerformanceDefinition;
 }
 
-export function StoryPerformanceRuntime({ enabled = true }: { enabled?: boolean }) {
+const VISUAL_RENDERERS = new Set(["video", "layeredCss", "image"]);
+
+export function StoryPerformanceRuntime({ enabled = true, animationEnabled = true }: { enabled?: boolean; animationEnabled?: boolean }) {
   const messages = useGameStore((state) => state.messages);
   const gameState = useGameStore((state) => state.gameState);
   const knowledgeDocuments = useGameStore((state) => state.knowledgeDocuments);
@@ -50,6 +52,7 @@ export function StoryPerformanceRuntime({ enabled = true }: { enabled?: boolean 
     const hasNewStage = Boolean(currentStage && currentStage !== lastStageRef.current);
 
     for (const [id, performance] of Object.entries(manifest.performances)) {
+      if (!animationEnabled && VISUAL_RENDERERS.has(performance.renderer)) continue;
       if (hasNewMessage && latestMessage && shouldPlayForMessage(performance, latestMessage, messages, knowledgeDocuments)) {
         nextQueue.push({ id, performance });
       } else if (hasNewStage && shouldPlayForStage(performance, currentStage)) {

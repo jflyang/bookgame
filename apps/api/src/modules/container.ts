@@ -31,6 +31,12 @@ import { TurnProcessor } from "../services/turnProcessor.js";
 import { RuntimeStatsCollector } from "./runtime-stats/runtimeStatsCollector.js";
 import { SessionRepository } from "./sessions/sessionRepository.js";
 import { SessionCollector } from "./sessions/sessionCollector.js";
+import { TtsConfigService } from "../resources/tts/ttsConfigService.js";
+import { ConfigurableTtsProvider } from "../resources/tts/configurableTtsProvider.js";
+import { CosyVoiceTtsProvider } from "../resources/tts/cosyVoiceTtsProvider.js";
+import { MockTtsProvider } from "../resources/tts/mockTtsProvider.js";
+import { VoiceRegistry } from "../resources/tts/voiceRegistry.js";
+import { TtsProcessManager } from "../resources/tts/ttsProcessManager.js";
 
 const auditLogService = new AuditLogService();
 export { auditLogService };
@@ -124,6 +130,71 @@ export const dialogueEngine = new DialogueEngine(
   sessionStoryPackageIds,
   sessionCollector
 );
+
+// ===== TTS Service Layer =====
+export const ttsConfigService = new TtsConfigService();
+export const voiceRegistry = new VoiceRegistry();
+export const ttsProcessManager = new TtsProcessManager();
+export const ttsProvider = new ConfigurableTtsProvider(ttsConfigService, {
+  cosyvoice: new CosyVoiceTtsProvider(ttsConfigService),
+  mock: new MockTtsProvider(),
+});
+
+// Register default voice profiles for known characters
+voiceRegistry.registerBatch([
+  {
+    characterId: "qiaofeng",
+    voiceId: "qiaofeng",
+    name: "乔峰",
+    instruct: "低沉有力的男声，语速中等，带有豪迈气概",
+    referenceAudio: "voices/qiaofeng_ref.wav",
+    language: "zh",
+    emotions: {
+      angry: "愤怒咆哮的声音，语速加快，声音洪亮",
+      sad: "低沉悲伤的声音，语速放慢",
+      calm: "平静沉稳的声音",
+    },
+  },
+  {
+    characterId: "xuzhu",
+    voiceId: "xuzhu",
+    name: "虚竹",
+    instruct: "温和谦逊的年轻僧人声音，语速适中",
+    referenceAudio: "voices/xuzhu_ref.wav",
+    language: "zh",
+    emotions: {
+      nervous: "紧张结巴的声音",
+      surprised: "惊讶的声音，语调上扬",
+      calm: "平和念经般的声音",
+    },
+  },
+  {
+    characterId: "duanyu",
+    voiceId: "duanyu",
+    name: "段誉",
+    instruct: "温文尔雅的年轻书生声音，略带书卷气",
+    referenceAudio: "voices/duanyu_ref.wav",
+    language: "zh",
+    emotions: {
+      excited: "兴奋激动的声音，语速加快",
+      romantic: "深情款款的声音",
+      scared: "害怕颤抖的声音",
+    },
+  },
+  {
+    characterId: "dingchunqiu",
+    voiceId: "dingchunqiu",
+    name: "丁春秋",
+    instruct: "阴沉狡诈的老年男声，语速偏慢，带有威胁感",
+    referenceAudio: "voices/dingchunqiu_ref.wav",
+    language: "zh",
+    emotions: {
+      angry: "暴怒的声音，尖锐刺耳",
+      mocking: "嘲讽阴笑的声音",
+      commanding: "威严命令的声音",
+    },
+  },
+]);
 
 export const adminApplicationService = new AdminApplicationService(
   dialogueEngine,

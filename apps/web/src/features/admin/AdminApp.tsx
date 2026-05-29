@@ -4,6 +4,7 @@ import { Breadcrumb } from "./components/Breadcrumb.js";
 import { StoryLibrary } from "./components/StoryLibrary.js";
 import { StoryEditor } from "./components/StoryEditor.js";
 import { LlmConfigPanel } from "./components/LlmConfigPanel.js";
+import { TtsConfigPanel } from "./components/TtsConfigPanel.js";
 import { ImportWizard } from "./components/ImportWizard.js";
 import { AuditLogPage } from "./components/AuditLogPage.js";
 import { RuntimeDashboard } from "./components/RuntimeDashboard.js";
@@ -42,7 +43,7 @@ export function AdminApp() {
       return <StoryEditor />;
     }
     if (isImport) return <ImportWizard />;
-    if (isModelConfig) return <LlmConfigPanel />;
+    if (isModelConfig) return <><LlmConfigPanel /><TtsConfigPanel /></>;
     if (pathname === "/admin/sessions" || pathname.startsWith("/admin/sessions/")) return <SessionList />;
     if (pathname === "/admin/runtime") return <RuntimeDashboard />;
     if (pathname === "/admin/audit-log") return <AuditLogPage />;

@@ -40,6 +40,8 @@ npm run typecheck
 | Speaker selection | `apps/api/src/services/speakerSelector.ts` | `turnProcessor.ts` |
 | State updates and damage | `apps/api/src/services/gameStateService.ts` | `skillService.ts`, `scenarioService.ts` |
 | LLM providers | `apps/api/src/resources/llm/configurableLlmProvider.ts` | `mockLlmProvider.ts`, `deepSeekLlmProvider.ts`, `llmConfigService.ts` |
+| TTS providers | `apps/api/src/resources/tts/configurableTtsProvider.ts` | `cosyVoiceTtsProvider.ts`, `mockTtsProvider.ts`, `ttsConfigService.ts`, `voiceRegistry.ts` |
+| TTS Python service | `services/tts/main.py` | `start.py`, `download_model.py`, `Dockerfile` |
 | Story package persistence | `apps/api/src/services/storyPackageService.ts` | `data/taskPackageRepository.ts`, `data/pluginPackageIndex.ts` |
 | Story package assets | `apps/api/src/routes/storyAssets.routes.ts` | `apps/web/src/features/play/contexts/StoryAssetsContext.tsx` |
 | Performance/animation events | `apps/web/src/features/play/performances/StoryPerformanceRuntime.tsx` | `StoryPerformanceOverlay.tsx`, story package `manifest.json` |
@@ -158,6 +160,7 @@ Defined in `apps/api/src/routes/index.ts`:
 ```txt
 /api/game          Gameplay/session routes
 /api/admin         Admin package/config/session/audit routes
+/api/tts           TTS speech synthesis routes
 /api/story-assets  Story package asset files
 ```
 
@@ -168,6 +171,7 @@ apps/web/src/lib/gameApi.ts
 apps/web/src/lib/adminApi.ts
 apps/web/src/lib/sessionApi.ts
 apps/web/src/lib/runtimeStatsApi.ts
+apps/web/src/lib/ttsApi.ts
 ```
 
 ## Shared Contracts

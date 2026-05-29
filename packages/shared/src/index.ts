@@ -476,6 +476,55 @@ export type UpdateTaskPackageRequest = UpdateStoryPackageRequest;
 export const llmProviderTypeSchema = z.enum(["mock", "deepseek"]);
 export type LlmProviderType = z.infer<typeof llmProviderTypeSchema>;
 
+// ===== TTS Config =====
+
+export const ttsProviderTypeSchema = z.enum(["cosyvoice", "mock", "disabled"]);
+export type TtsProviderType = z.infer<typeof ttsProviderTypeSchema>;
+
+export const ttsConfigSchema = z.object({
+  enabled: z.boolean(),
+  provider: ttsProviderTypeSchema,
+  serviceUrl: z.string(),
+  defaultInstruct: z.string(),
+  autoSynthesize: z.boolean(),
+  cacheEnabled: z.boolean(),
+  maxTextLength: z.number().int().positive(),
+  defaultFormat: z.enum(["mp3", "ogg", "wav"]),
+  sampleRate: z.number().int().positive(),
+});
+export type TtsConfig = z.infer<typeof ttsConfigSchema>;
+
+export const ttsConfigViewSchema = ttsConfigSchema.extend({
+  serviceAvailable: z.boolean().optional(),
+});
+export type TtsConfigView = z.infer<typeof ttsConfigViewSchema>;
+
+export const ttsSynthesizeRequestSchema = z.object({
+  text: z.string().min(1).max(2000),
+  characterId: z.string().min(1),
+  emotion: z.string().optional(),
+  format: z.enum(["mp3", "ogg", "wav"]).optional(),
+});
+export type TtsSynthesizeRequest = z.infer<typeof ttsSynthesizeRequestSchema>;
+
+export const ttsSynthesizeResultSchema = z.object({
+  audioUrl: z.string(),
+  durationMs: z.number(),
+  cached: z.boolean(),
+});
+export type TtsSynthesizeResult = z.infer<typeof ttsSynthesizeResultSchema>;
+
+export const voiceProfileSchema = z.object({
+  characterId: z.string(),
+  voiceId: z.string(),
+  name: z.string(),
+  instruct: z.string(),
+  referenceAudio: z.string(),
+  language: z.string(),
+  emotions: z.record(z.string(), z.string()).optional(),
+});
+export type VoiceProfile = z.infer<typeof voiceProfileSchema>;
+
 export const llmConfigSchema = z.object({
   provider: llmProviderTypeSchema,
   baseUrl: z.string().url(),

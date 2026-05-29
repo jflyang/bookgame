@@ -1,0 +1,9 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.3
+torch>=2.1.0
+torchaudio>=2.1.0
+numpy==1.26.4
+soundfile==0.12.1
+pydub==0.25.1
+python-multipart==0.0.18

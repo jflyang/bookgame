@@ -19,5 +19,12 @@ apps/data/task-packages/media/
 # Runtime data
 apps/data/saves/
 
+# TTS service
+services/tts/pretrained_models/
+services/tts/audio_cache/
+services/tts/__pycache__/
+services/tts/.venv/
+apps/api/data/tts-config.json
+
 # Local asset packs
 wuxia_sfx_pack*/

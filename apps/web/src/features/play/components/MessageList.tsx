@@ -4,6 +4,7 @@ import { useUiConfig } from "../UiConfigContext.js";
 import { useStoryAssets } from "../contexts/StoryAssetsContext.js";
 import { useGameStore } from "../../../store/gameStore.js";
 import { ChoiceCards } from "./ChoiceCards.js";
+import { MessageAudioButton } from "./MessageAudioButton.js";
 
 export function MessageList({ characters }: { characters: Character[] }) {
   const messages = useGameStore((state) => state.messages);
@@ -128,6 +129,13 @@ export function MessageList({ characters }: { characters: Character[] }) {
                         </div>
                       )}
                     </div>
+                    {message.speakerId && (
+                      <MessageAudioButton
+                        messageId={message.id}
+                        text={text}
+                        characterId={message.speakerId}
+                      />
+                    )}
                   </div>
                 )}
               </article>

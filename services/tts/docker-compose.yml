@@ -1,0 +1,31 @@
+services:
+  cosyvoice:
+    build: .
+    container_name: cosyvoice-tts
+    ports:
+      - "50001:50001"
+    volumes:
+      - ./voices:/app/voices
+      - ./audio_cache:/app/audio_cache
+      - ./pretrained_models:/app/pretrained_models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - COSYVOICE_MODEL_DIR=/app/pretrained_models/Fun-CosyVoice3-0.5B
+      - VOICES_DIR=/app/voices
+      - AUDIO_CACHE_DIR=/app/audio_cache
+      - PORT=50001
+      - MAX_TEXT_LENGTH=2000
+      - DEFAULT_SAMPLE_RATE=22050
+      - ALLOWED_ORIGINS=http://localhost:4000,http://localhost:5173
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:50001/v1/tts/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

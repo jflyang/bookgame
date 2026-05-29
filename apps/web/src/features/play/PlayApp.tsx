@@ -4,6 +4,7 @@ import { CharacterRail } from "./components/CharacterRail.js";
 import { Composer } from "./components/Composer.js";
 import { MessageList } from "./components/MessageList.js";
 import { SaveLoadOverlay } from "./components/SaveLoadOverlay.js";
+import { TtsToggle } from "./components/TtsToggle.js";
 import UiConfigContext, { useLabels, useUiConfig } from "./UiConfigContext.js";
 import { StoryAssetsProvider } from "./contexts/StoryAssetsContext.js";
 import { AudioManagerProvider } from "./contexts/AudioManager.js";
@@ -63,6 +64,7 @@ export function PlayApp() {
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [navExpanded, setNavExpanded] = useState(false);
   const [performanceEnabled, setPerformanceEnabled] = useState(true);
+  const [animationEnabled, setAnimationEnabled] = useState(true);
   const storyPackage = storyPackages.find((p) => p.id === editingPackageId);
   const labels = useLabels();
   const uiConfig = storyPackage?.uiConfig;
@@ -151,7 +153,7 @@ export function PlayApp() {
       manifest={pluginManifest}
       currentStage={gameState?.scenario?.currentStage}
     >
-    <StoryPerformanceRuntime enabled={performanceEnabled} />
+    <StoryPerformanceRuntime enabled={performanceEnabled} animationEnabled={animationEnabled} />
     <UiConfigContext.Provider value={uiConfig ?? {} as UiConfig}>
       <main className="play-shell" style={themeVars(uiConfig)} data-story-plugin={editingPackageId ?? ""}>
         <aside className={`play-nav ${navExpanded ? "expanded" : ""}`} aria-label="主导航">
@@ -212,7 +214,10 @@ export function PlayApp() {
                     <a href="/admin/story-packages">{labels.storyManagement}</a>
                     <button onClick={() => { setShowRules(true); setShowMoreMenu(false); }}>{labels.viewRules}</button>
                     <button onClick={(e) => { setPerformanceEnabled(!performanceEnabled); setShowMoreMenu(false); }}>
-                      {performanceEnabled ? "🎬 关闭表演" : "🎬 开启表演"}
+                      {performanceEnabled ? "表演开启" : "表演关闭"}
+                    </button>
+                    <button onClick={(e) => { setAnimationEnabled(!animationEnabled); setShowMoreMenu(false); }}>
+                      {animationEnabled ? "动画开启" : "动画关闭"}
                     </button>
                     {editingPackageId ? (
                       <button onClick={() => { void start(editingPackageId); setShowMoreMenu(false); }}>重置剧情</button>
@@ -251,6 +256,7 @@ export function PlayApp() {
                       <RotateCcw size={17} /> {labels.autoPlay}
                     </button>
                   )}
+                  <TtsToggle />
                 </div>
                 <Composer icon={<Send size={19} />} />
               </div>
