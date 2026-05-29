@@ -90,8 +90,26 @@ export class StoryPackageService {
   }
 
   upsert(storyPackage: StoryPackage) {
+    // Preserve voiceId on characters (may be stripped by schema parse if cache is stale)
+    const inputCharacters = (storyPackage as any).characters as Array<{ id: string; voiceId?: string }> | undefined;
+    const voiceIdMap = new Map<string, string>();
+    if (inputCharacters) {
+      for (const c of inputCharacters) {
+        if (c.voiceId) voiceIdMap.set(c.id, c.voiceId);
+      }
+    }
+
     const parsed = storyPackageSchema.parse(storyPackage);
     assertSafeId(parsed.id);
+
+    // Re-apply voiceId after parse (in case schema stripped it)
+    if (voiceIdMap.size > 0) {
+      for (const c of parsed.characters) {
+        const vid = voiceIdMap.get(c.id);
+        if (vid) (c as any).voiceId = vid;
+      }
+    }
+
     const next = { ...parsed, updatedAt: new Date().toISOString() };
     const index = this.storyPackages.findIndex((item) => item.id === next.id);
     if (index >= 0) {

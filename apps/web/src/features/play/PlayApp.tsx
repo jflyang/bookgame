@@ -258,12 +258,12 @@ export function PlayApp() {
               <div className="play-composer-shell">
                 <div className="quick-actions">
                   {showQuickActions && (
-                    <button className="btn-continue" onClick={() => void continueStory()} disabled={isSending || !sessionId} title={labels.continue}>
+                    <button className="btn-continue" onClick={() => void continueStory()} disabled={isSending || !sessionId || isCompleted} title={isCompleted ? "故事已结束" : labels.continue}>
                       <ScrollText size={17} />
                     </button>
                   )}
                   {showAutoPlay && (
-                    <button className={`btn-auto ${isAutoPlaying ? "active" : ""}`} onClick={() => setAutoPlay(!isAutoPlaying)} disabled={!sessionId}>
+                    <button className={`btn-auto ${isAutoPlaying ? "active" : ""}`} onClick={() => setAutoPlay(!isAutoPlaying)} disabled={!sessionId || isCompleted}>
                       <RotateCcw size={17} /> {labels.autoPlay}
                     </button>
                   )}

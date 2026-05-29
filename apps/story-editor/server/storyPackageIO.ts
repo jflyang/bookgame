@@ -70,6 +70,18 @@ export function openDirectory(packageDir: string): PackageState {
       // ReactFlow format — preserve exact node positions and edges
       flowNodes = flowRaw.nodes;
       flowEdges = flowRaw.edges || [];
+    }
+    // Also extract runtime FlowDefinition from merged file (can have both nodes + linearPhases)
+    if (!storyPackage.flow && flowRaw.linearPhases) {
+      storyPackage.flow = {
+        id: flowRaw.id,
+        title: flowRaw.title,
+        description: flowRaw.description,
+        linearPhases: flowRaw.linearPhases,
+        servingLoop: flowRaw.servingLoop,
+        finaleSequence: flowRaw.finaleSequence,
+        dailySystem: flowRaw.dailySystem,
+      };
     } else if (!storyPackage.flow) {
       // FlowDefinition format — only use if story.json doesn't already have flow
       storyPackage.flow = flowRaw;

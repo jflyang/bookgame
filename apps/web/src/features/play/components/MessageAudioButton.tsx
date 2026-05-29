@@ -17,6 +17,7 @@ export function MessageAudioButton({ messageId, text, characterId }: Props) {
   const loadingIds = useAudioStore((s) => s.loadingIds);
   const audioCache = useAudioStore((s) => s.audioCache);
   const volume = useAudioStore((s) => s.volume);
+  const playbackRate = useAudioStore((s) => s.playbackRate);
   const playMessage = useAudioStore((s) => s.playMessage);
   const stopPlaying = useAudioStore((s) => s.stopPlaying);
   const setCurrentPlaying = useAudioStore((s) => s.setCurrentPlaying);
@@ -26,7 +27,7 @@ export function MessageAudioButton({ messageId, text, characterId }: Props) {
   const isLoading = loadingIds.has(messageId);
   const audioUrl = audioCache.get(messageId);
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
     if (isPlaying) {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -46,6 +47,7 @@ export function MessageAudioButton({ messageId, text, characterId }: Props) {
     audioRef.current = audio;
     audio.src = audioUrl;
     audio.volume = volume;
+    audio.playbackRate = playbackRate;
 
     audio.onended = () => {
       setCurrentPlaying(null);
@@ -65,12 +67,13 @@ export function MessageAudioButton({ messageId, text, characterId }: Props) {
     };
   }, [isPlaying, audioUrl, volume, setCurrentPlaying]);
 
-  // Update volume on playing audio
+  // Update volume/rate on playing audio
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
+      audioRef.current.playbackRate = playbackRate;
     }
-  }, [volume]);
+  }, [volume, playbackRate]);
 
   // Cleanup on unmount
   useEffect(() => {

@@ -5,30 +5,1152 @@
   "title": "冷霜风云",
   "description": "冷傲女侠冷霜被抓入乌托邦帝国。采用模块-流控制分离架构：35阶段拆分为41个独立模块，由流控制图驱动侍寝循环判断分支。",
   "version": "1.0.0",
-  "capabilities": { "audio": true, "customFonts": false, "customCss": false, "characterPortraits": true, "backgroundImages": true, "performances": true },
-  "audio": { "bgm": { "scenes": {} }, "sfx": {} },
-  "images": { "portraits": {}, "backgrounds": {} },
+  "capabilities": {
+    "audio": true,
+    "customFonts": false,
+    "customCss": false,
+    "characterPortraits": true,
+    "backgroundImages": true,
+    "performances": true
+  },
+  "audio": {
+    "bgm": {
+      "scenes": {}
+    },
+    "sfx": {}
+  },
+  "images": {
+    "portraits": {},
+    "backgrounds": {}
+  },
   "fonts": {},
   "performances": {
-    "lengshuang_kiss": { "name": "冷霜亲吻", "renderer": "audio", "durationMs": 2000, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["亲吻","接吻","吻上","深吻"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "variants": ["assets/performances/lengshuang_passion/audio/lengshuang_kiss_01.mp3","assets/performances/lengshuang_passion/audio/lengshuang_kiss_02.mp3","assets/performances/lengshuang_passion/audio/lengshuang_kiss_03.mp3"] } },
-    "lengshuang_pleasure_moan": { "name": "冷霜愉悦呻吟", "renderer": "audio", "durationMs": 2500, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["愉悦呻吟","快感呻吟","娇喘"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "variants": ["assets/performances/lengshuang_passion/audio/lengshuang_pleasure_moan_01.mp3","assets/performances/lengshuang_passion/audio/lengshuang_pleasure_moan_02.mp3","assets/performances/lengshuang_passion/audio/lengshuang_pleasure_moan_03.mp3"] } },
-    "lengshuang_orgasm": { "name": "冷霜高潮", "renderer": "audio", "durationMs": 3500, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["高潮","绝顶","去了"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "variants": ["assets/performances/lengshuang_passion/audio/lengshuang_orgasm_01.mp3","assets/performances/lengshuang_passion/audio/lengshuang_orgasm_02.mp3","assets/performances/lengshuang_passion/audio/lengshuang_orgasm_03.mp3"] } },
-    "lengshuang_intense_moan": { "name": "冷霜强烈呻吟", "renderer": "audio", "durationMs": 3000, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["强烈呻吟","失控呻吟","失声"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "variants": ["assets/performances/lengshuang_passion/audio/lengshuang_intense_moan_01.mp3","assets/performances/lengshuang_passion/audio/lengshuang_intense_moan_02.mp3"] } },
-    "lengshuang_short_moan": { "name": "冷霜短暂呻吟", "renderer": "audio", "durationMs": 1500, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["轻吟","短暂呻吟","轻哼"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "variants": ["assets/performances/lengshuang_passion/audio/lengshuang_short_moan_01.mp3","assets/performances/lengshuang_passion/audio/lengshuang_short_moan_02.mp3"] } },
-    "lengshuang_quiet_moan": { "name": "冷霜压抑呻吟", "renderer": "audio", "durationMs": 2500, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["压抑呻吟","闷哼","咬着嘴唇"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "variants": ["assets/performances/lengshuang_passion/audio/lengshuang_quiet_intense_01.mp3","assets/performances/lengshuang_passion/audio/lengshuang_quiet_intense_02.mp3"] } },
-    "lengshuang_quick_breath": { "name": "冷霜急促喘息", "renderer": "audio", "durationMs": 1500, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["急促喘息","呼吸急促","急喘"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/lengshuang_passion/audio/lengshuang_quick_breath_01.mp3" } },
-    "lengshuang_bed_creak": { "name": "冷霜床摇", "renderer": "audio", "durationMs": 2500, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["床摇","床响","晃动"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/lengshuang_passion/audio/lengshuang_bed_creak_01.mp3" } },
-    "lengshuang_heavy_breath": { "name": "冷霜沉重呼吸", "renderer": "audio", "durationMs": 2000, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["沉重呼吸","粗重喘息","喘粗气"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/lengshuang_passion/audio/lengshuang_heavy_breath_01.mp3" } },
-    "lengshuang_long_breath": { "name": "冷霜长呼吸", "renderer": "audio", "durationMs": 2000, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["长呼吸","深呼吸","长舒一口气"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "variants": ["assets/performances/lengshuang_passion/audio/lengshuang_long_breath_01.mp3","assets/performances/lengshuang_passion/audio/lengshuang_long_breath_02.mp3"] } },
-    "lengshuang_exhale_pleasure": { "name": "冷霜愉悦呼气", "renderer": "audio", "durationMs": 2000, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "keywords": ["愉悦呼气","舒服叹息","满足叹气"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "variants": ["assets/performances/lengshuang_passion/audio/lengshuang_pleasure_exhale_01.mp3","assets/performances/lengshuang_passion/audio/lengshuang_pleasure_exhale_02.mp3"] } },
-    "skill_shensui_zhixi": { "name": "深喉窒息", "renderer": "audio", "durationMs": 2000, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "knowledgeTitle": "深喉窒息", "keywords": ["深喉窒息","深喉","窒息"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/wuxia_sfx/audio/lengshuang_gasp_pleasure_01.mp3" } },
-    "skill_sanxue_menjue": { "name": "三穴闷绝", "renderer": "audio", "durationMs": 2500, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "knowledgeTitle": "三穴闷绝", "keywords": ["三穴闷绝","三穴","口塞","肛塞","阴塞"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/wuxia_sfx/audio/lengshuang_moan_intense_01.mp3" } },
-    "skill_jiaji_bengkui": { "name": "夹击崩溃", "renderer": "audio", "durationMs": 3000, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "knowledgeTitle": "夹击崩溃", "keywords": ["夹击崩溃","双头龙","前后贯穿"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/wuxia_sfx/audio/lengshuang_moan_intense_06.mp3" } },
-    "skill_chuci_shixin": { "name": "初次侍寝", "renderer": "audio", "durationMs": 3500, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "knowledgeTitle": "初次侍寝", "keywords": ["初次侍寝","第一次侍寝","侍寝"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/wuxia_sfx/audio/lengshuang_moan_long_01.mp3" } },
-    "skill_meiyao_zhuoshao": { "name": "媚药灼烧", "renderer": "audio", "durationMs": 2500, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "knowledgeTitle": "媚药灼烧", "keywords": ["媚药灼烧","媚药","灼烧"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/wuxia_sfx/audio/lengshuang_breath_heavy_01.mp3" } },
-    "skill_gaochao_shifang": { "name": "高潮释放", "renderer": "audio", "durationMs": 4000, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "knowledgeTitle": "高潮释放", "keywords": ["高潮释放","允许高潮","终于释放"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/wuxia_sfx/audio/lengshuang_orgasm_05.mp3" } },
-    "skill_zhongji_bengkui": { "name": "终极崩溃", "renderer": "audio", "durationMs": 4000, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "knowledgeTitle": "终极崩溃", "keywords": ["终极崩溃","五件全副武装","最强振动"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/wuxia_sfx/audio/lengshuang_orgasm_03.mp3" } },
-    "skill_qiangzhi_gaochao": { "name": "强制高潮后禁止", "renderer": "audio", "durationMs": 3500, "trigger": { "type": "knowledgeUse", "characterId": "leng_shuang", "knowledgeTitle": "强制高潮后禁止", "keywords": ["强制高潮后禁止","强制高潮","继续振动"], "matchBoldOnly": true }, "playOnce": "never", "video": { "containsAudio": false }, "layers": {}, "audio": { "main": "assets/performances/wuxia_sfx/audio/lengshuang_orgasm_01.mp3" } }
+    "lengshuang_kiss": {
+      "name": "冷霜亲吻",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "亲吻",
+          "接吻",
+          "吻上",
+          "深吻"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_passion/audio/lengshuang_kiss_01.mp3",
+          "assets/performances/lengshuang_passion/audio/lengshuang_kiss_02.mp3",
+          "assets/performances/lengshuang_passion/audio/lengshuang_kiss_03.mp3"
+        ]
+      }
+    },
+    "lengshuang_pleasure_moan": {
+      "name": "冷霜舒服激情呻吟",
+      "renderer": "audio",
+      "durationMs": 5000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "舒服",
+          "快感",
+          "背叛",
+          "觉醒",
+          "松口",
+          "乞求",
+          "渴望",
+          "想要",
+          "身体",
+          "不由自主",
+          "迎合"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/舒服激情呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_orgasm": {
+      "name": "冷霜高潮",
+      "renderer": "audio",
+      "durationMs": 3500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "高潮",
+          "绝顶",
+          "去了"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_passion/audio/lengshuang_orgasm_01.mp3",
+          "assets/performances/lengshuang_passion/audio/lengshuang_orgasm_02.mp3",
+          "assets/performances/lengshuang_passion/audio/lengshuang_orgasm_03.mp3"
+        ]
+      }
+    },
+    "lengshuang_intense_moan": {
+      "name": "冷霜强烈呻吟",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "强烈呻吟",
+          "失控呻吟",
+          "失声"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_passion/audio/lengshuang_intense_moan_01.mp3",
+          "assets/performances/lengshuang_passion/audio/lengshuang_intense_moan_02.mp3"
+        ]
+      }
+    },
+    "lengshuang_short_moan": {
+      "name": "冷霜短促呻吟",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "短促呻吟",
+          "突然",
+          "一颤",
+          "惊叫",
+          "急促",
+          "猝不及防",
+          "触电般"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/短呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_quiet_moan": {
+      "name": "冷霜压抑呻吟",
+      "renderer": "audio",
+      "durationMs": 2500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "压抑呻吟",
+          "闷哼",
+          "咬着嘴唇"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_passion/audio/lengshuang_quiet_intense_01.mp3",
+          "assets/performances/lengshuang_passion/audio/lengshuang_quiet_intense_02.mp3"
+        ]
+      }
+    },
+    "lengshuang_quick_breath": {
+      "name": "冷霜急促喘息",
+      "renderer": "audio",
+      "durationMs": 1500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "急促喘息",
+          "呼吸急促",
+          "急喘"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/lengshuang_passion/audio/lengshuang_quick_breath_01.mp3"
+      }
+    },
+    "lengshuang_bed_creak": {
+      "name": "冷霜床摇",
+      "renderer": "audio",
+      "durationMs": 2500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "床摇",
+          "床响",
+          "晃动"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/lengshuang_passion/audio/lengshuang_bed_creak_01.mp3"
+      }
+    },
+    "lengshuang_heavy_breath": {
+      "name": "冷霜沉重呼吸",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "沉重呼吸",
+          "粗重喘息",
+          "喘粗气"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/lengshuang_passion/audio/lengshuang_heavy_breath_01.mp3"
+      }
+    },
+    "lengshuang_long_breath": {
+      "name": "冷霜长呼吸",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "长呼吸",
+          "深呼吸",
+          "长舒一口气"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_passion/audio/lengshuang_long_breath_01.mp3",
+          "assets/performances/lengshuang_passion/audio/lengshuang_long_breath_02.mp3"
+        ]
+      }
+    },
+    "lengshuang_exhale_pleasure": {
+      "name": "冷霜愉悦呼气",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "愉悦呼气",
+          "舒服叹息",
+          "满足叹气"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_passion/audio/lengshuang_pleasure_exhale_01.mp3",
+          "assets/performances/lengshuang_passion/audio/lengshuang_pleasure_exhale_02.mp3"
+        ]
+      }
+    },
+    "skill_shensui_zhixi": {
+      "name": "深喉窒息",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "knowledgeTitle": "深喉窒息",
+        "keywords": [
+          "深喉窒息",
+          "深喉",
+          "窒息"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/lengshuang_gasp_pleasure_01.mp3"
+      }
+    },
+    "skill_sanxue_menjue": {
+      "name": "三穴闷绝",
+      "renderer": "audio",
+      "durationMs": 2500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "knowledgeTitle": "三穴闷绝",
+        "keywords": [
+          "三穴闷绝",
+          "三穴",
+          "口塞",
+          "肛塞",
+          "阴塞"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/lengshuang_moan_intense_01.mp3"
+      }
+    },
+    "skill_jiaji_bengkui": {
+      "name": "夹击崩溃",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "knowledgeTitle": "夹击崩溃",
+        "keywords": [
+          "夹击崩溃",
+          "双头龙",
+          "前后贯穿"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/lengshuang_moan_intense_06.mp3"
+      }
+    },
+    "skill_chuci_shixin": {
+      "name": "初次侍寝",
+      "renderer": "audio",
+      "durationMs": 3500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "knowledgeTitle": "初次侍寝",
+        "keywords": [
+          "初次侍寝",
+          "第一次侍寝",
+          "侍寝"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/lengshuang_moan_long_01.mp3"
+      }
+    },
+    "skill_meiyao_zhuoshao": {
+      "name": "媚药灼烧",
+      "renderer": "audio",
+      "durationMs": 2500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "knowledgeTitle": "媚药灼烧",
+        "keywords": [
+          "媚药灼烧",
+          "媚药",
+          "灼烧"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/lengshuang_breath_heavy_01.mp3"
+      }
+    },
+    "skill_gaochao_shifang": {
+      "name": "高潮释放",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "knowledgeTitle": "高潮释放",
+        "keywords": [
+          "高潮释放",
+          "允许高潮",
+          "终于释放"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/lengshuang_orgasm_05.mp3"
+      }
+    },
+    "skill_zhongji_bengkui": {
+      "name": "终极崩溃",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "knowledgeTitle": "终极崩溃",
+        "keywords": [
+          "终极崩溃",
+          "五件全副武装",
+          "最强振动"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/lengshuang_orgasm_03.mp3"
+      }
+    },
+    "skill_qiangzhi_gaochao": {
+      "name": "强制高潮后禁止",
+      "renderer": "audio",
+      "durationMs": 3500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "knowledgeTitle": "强制高潮后禁止",
+        "keywords": [
+          "强制高潮后禁止",
+          "强制高潮",
+          "继续振动"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/wuxia_sfx/audio/lengshuang_orgasm_01.mp3"
+      }
+    },
+    "lengshuang_undress": {
+      "name": "冷霜脱衣",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "脱衣",
+          "换装",
+          "褪去",
+          "衣衫滑落",
+          "侍女服",
+          "换上",
+          "更衣"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/脱衣服.wav"
+        ]
+      }
+    },
+    "lengshuang_soft_moan": {
+      "name": "冷霜轻声呻吟",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "轻声呻吟",
+          "轻哼",
+          "低吟",
+          "闷哼",
+          "初次触碰",
+          "颤抖着声音",
+          "细微呻吟"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_medium_moan": {
+      "name": "冷霜中度呻吟",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "中度呻吟",
+          "酥麻",
+          "乳推",
+          "精油",
+          "涂抹",
+          "敏感",
+          "揉捏",
+          "抹遍"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/中度呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_oral": {
+      "name": "冷霜口交",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "口交",
+          "含住",
+          "深喉",
+          "吞吐",
+          "口侍",
+          "舔舐",
+          "含入",
+          "喉间",
+          "小嘴"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/口交.wav"
+        ]
+      }
+    },
+    "lengshuang_training_moan": {
+      "name": "冷霜调教呻吟",
+      "renderer": "audio",
+      "durationMs": 3500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "调教",
+          "蒙眼",
+          "束缚",
+          "捆绑",
+          "拘束",
+          "绑住",
+          "捆缚",
+          "束缚带",
+          "皮具"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_massage": {
+      "name": "冷霜按摩下体",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "精油",
+          "按摩",
+          "下体",
+          "花穴",
+          "蜜穴",
+          "私处",
+          "抹油",
+          "润滑"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩下体.mp3"
+        ]
+      }
+    },
+    "lengshuang_vibe": {
+      "name": "冷霜按摩棒",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "按摩棒",
+          "跳蛋",
+          "震动",
+          "嗡嗡",
+          "器具",
+          "玩具",
+          "入体"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒.wav"
+        ]
+      }
+    },
+    "lengshuang_vibe_moan": {
+      "name": "冷霜按摩棒呻吟",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "按摩棒呻吟",
+          "震动呻吟",
+          "跳蛋呻吟",
+          "器具刺激",
+          "震动频率",
+          "开到最大"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_vibe_gasp": {
+      "name": "冷霜按摩棒喘息",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "按摩棒喘息",
+          "边缘",
+          "即将高潮",
+          "临界",
+          "快要",
+          "忍住",
+          "不许高潮"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "lengshuang_suspended_moan": {
+      "name": "冷霜放置呻吟",
+      "renderer": "audio",
+      "durationMs": 5000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "放置",
+          "悬吊",
+          "吊起",
+          "悬挂",
+          "孤独",
+          "无人",
+          "独自",
+          "等待",
+          "漫长"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/放置呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_punish_moan": {
+      "name": "冷霜受刑呻吟",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "受刑",
+          "惩戒",
+          "惩罚",
+          "责罚",
+          "教训",
+          "三塞",
+          "双龙",
+          "媚药",
+          "具强制",
+          "套餐"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_dual_attack": {
+      "name": "冷霜前后夹击",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "前后夹击",
+          "双头龙",
+          "夹击",
+          "双龙",
+          "同时进入",
+          "前后同时",
+          "双穴"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/前后夹击.wav"
+        ]
+      }
+    },
+    "lengshuang_fast_insert": {
+      "name": "冷霜快速插入",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "快速插入",
+          "帝王临幸",
+          "侍寝",
+          "临幸",
+          "抽送",
+          "进入",
+          "挺入",
+          "贯穿",
+          "占有"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "lengshuang_intense_sex": {
+      "name": "冷霜激烈性爱",
+      "renderer": "audio",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "激烈",
+          "猛力",
+          "冲刺",
+          "狂暴",
+          "撞击",
+          "开腿",
+          "杆缚",
+          "M字",
+          "猛烈抽送"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/激烈性爱.wav"
+        ]
+      }
+    },
+    "lengshuang_final_orgasm": {
+      "name": "冷霜最终高潮",
+      "renderer": "audio",
+      "durationMs": 5000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "高潮",
+          "释放",
+          "去了",
+          "到了",
+          "不行了",
+          "满足",
+          "满意",
+          "终于",
+          "允许高潮",
+          "尽情释放"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_oil": {
+      "name": "精油调教",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse",
+        "skillIds": [
+          "skill_oil_massage",
+          "skill_oil_tremble",
+          "skill_lubrication"
+        ]
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩下体.mp3"
+        ]
+      }
+    },
+    "lengshuang_skill_deepthroat": {
+      "name": "深喉训练",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse",
+        "skillIds": [
+          "skill_deepthroat_train",
+          "skill_deepthroat_choke"
+        ]
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/口交.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_vibe": {
+      "name": "跳蛋刺激",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse",
+        "skillIds": [
+          "skill_vibe_insert",
+          "skill_sensitive_tremble"
+        ]
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_edge": {
+      "name": "边缘控制",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse",
+        "skillIds": [
+          "skill_edge_control",
+          "skill_edge_struggle",
+          "skill_edge_breakdown"
+        ]
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_dual": {
+      "name": "双龙夹击",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse",
+        "skillIds": [
+          "skill_dual_dragon",
+          "skill_dual_collapse"
+        ]
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/前后夹击.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_punish": {
+      "name": "惩戒执行",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse",
+        "skillIds": [
+          "skill_fail_punish",
+          "skill_ultimate_punish",
+          "skill_punish_endure",
+          "skill_aphrodisiac_punish",
+          "skill_ice_fire_execute",
+          "skill_dog_tie_place",
+          "skill_public_expose",
+          "skill_forced_orgasm_deny",
+          "skill_inverted_candle",
+          "skill_shock_collar"
+        ]
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_serve": {
+      "name": "帝王临幸",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse",
+        "skillIds": [
+          "skill_emperor_back_entry",
+          "skill_emperor_suspension",
+          "skill_emperor_front",
+          "skill_emperor_pole_entry",
+          "skill_emperor_custom"
+        ]
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_orgasm": {
+      "name": "高潮释放",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse",
+        "skillIds": [
+          "skill_orgasm_release",
+          "skill_emperor_satisfied",
+          "skill_body_betrayal"
+        ]
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    }
   },
   "entry": "task-package.json",
   "createdAt": "2026-05-28T05:44:43.614Z",

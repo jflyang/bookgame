@@ -197,5 +197,1906 @@
         "trigger": "每次惩戒当晚自动触发"
       }
     ]
-  }
+  },
+  "nodes": [
+    {
+      "id": "node_start",
+      "type": "start",
+      "position": {
+        "x": 400,
+        "y": 10
+      },
+      "data": {
+        "label": "START"
+      }
+    },
+    {
+      "id": "node_group_act1_capture",
+      "type": "phaseGroup",
+      "position": {
+        "x": 40,
+        "y": 80
+      },
+      "data": {
+        "label": "第一幕：落网废武",
+        "actKey": "act1_capture"
+      },
+      "style": {
+        "width": 1080,
+        "height": 210
+      }
+    },
+    {
+      "id": "node_mod_stage_1",
+      "type": "module",
+      "position": {
+        "x": 90,
+        "y": 145
+      },
+      "data": {
+        "label": "① 落网之凤",
+        "moduleRef": "mod_stage_1",
+        "moduleData": {
+          "id": "mod_stage_1",
+          "sourceStage": "stage_1",
+          "title": "① 落网之凤",
+          "type": "training",
+          "reusable": false,
+          "description": "冷霜在乌托邦边境被捕获，第一次见到帝宫的宏伟与冷酷调教师火娘。",
+          "guidance": "氛围：紧张、震惊、不屈\n\n冷霜：**武者反抗**（激烈挣扎、怒斥敌人）\n火娘：**初次评估**（冷静审视冷霜的身体与武功根底）\n帝王：（不出场）\n→ 推进条件：冷霜被押入改造所，第一次束缚上身后推进",
+          "enterWhen": "故事开始时",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act1_capture",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_2",
+      "type": "module",
+      "position": {
+        "x": 350,
+        "y": 145
+      },
+      "data": {
+        "label": "② 帝宫初见",
+        "moduleRef": "mod_stage_2",
+        "moduleData": {
+          "id": "mod_stage_2",
+          "sourceStage": "stage_2",
+          "title": "② 帝宫初见",
+          "type": "training",
+          "reusable": false,
+          "description": "冷霜被带入改造所，见到各种道具与束缚装置。火娘宣读改造规则——包括所有服侍帝王的女子双手必须反绑在背后的铁律。",
+          "guidance": "氛围：压抑、恐惧中带着愤怒\n\n火娘：**规则宣读**（冷漠告知冷霜即将面临的改造，强调侍寝时双手必须反绑、帝王可决定是否加戴口塞/眼罩/肛塞/阴塞/M字捆绑等铁律）\n冷霜：**武者反抗**（试图以内力挣脱束缚，对规则的内容感到震惊与愤怒）\n→ 推进条件：冷霜了解规则后表现出强烈反抗时推进",
+          "enterWhen": "冷霜被押入改造所后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act1_capture",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_3",
+      "type": "module",
+      "position": {
+        "x": 610,
+        "y": 145
+      },
+      "data": {
+        "label": "③ 内力封锁",
+        "moduleRef": "mod_stage_3",
+        "moduleData": {
+          "id": "mod_stage_3",
+          "sourceStage": "stage_3",
+          "title": "③ 内力封锁",
+          "type": "training",
+          "reusable": false,
+          "description": "火娘使用银针与特殊药液开始封印冷霜内力，过程缓慢而痛苦。",
+          "guidance": "氛围：痛苦、无力感开始蔓延\n\n火娘：**武功封印**（使用银针与秘制药液逐步封锁冷霜经脉）\n冷霜：**痛苦忍耐**（内力被封时身体的剧烈反应，咬紧牙关不出声）\n→ 推进条件：冷霜内力被封印超过一半时推进",
+          "enterWhen": "冷霜激烈反抗后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act1_capture",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_4",
+      "type": "module",
+      "position": {
+        "x": 870,
+        "y": 145
+      },
+      "data": {
+        "label": "④ 武功尽废",
+        "moduleRef": "mod_stage_4",
+        "moduleData": {
+          "id": "mod_stage_4",
+          "sourceStage": "stage_4",
+          "title": "④ 武功尽废",
+          "type": "training",
+          "reusable": false,
+          "description": "最后一轮内力封印完成。冷霜从武林高手变为普通人，第一次感受到真正的恐惧。",
+          "guidance": "氛围：绝望、崩溃边缘\n\n火娘：**武功封印**（完成最后一道经脉封锁，宣布武功已废。冷霜从此只是普通女子。）\n冷霜：**绝望崩溃**（第一次流泪，但嘴上仍不认输。身体从未如此虚弱无力。）\n→ 推进条件：武功完全被封印后推进",
+          "enterWhen": "内力封印过半后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act1_capture",
+      "extent": "parent"
+    },
+    {
+      "id": "node_group_act2_initiation",
+      "type": "phaseGroup",
+      "position": {
+        "x": 40,
+        "y": 390
+      },
+      "data": {
+        "label": "第二幕：侍女初训",
+        "actKey": "act2_initiation"
+      },
+      "style": {
+        "width": 1600,
+        "height": 210
+      }
+    },
+    {
+      "id": "node_mod_stage_5",
+      "type": "module",
+      "position": {
+        "x": 90,
+        "y": 455
+      },
+      "data": {
+        "label": "⑤ 侍女初妆",
+        "moduleRef": "mod_stage_5",
+        "moduleData": {
+          "id": "mod_stage_5",
+          "sourceStage": "stage_5",
+          "title": "⑤ 侍女初妆",
+          "type": "training",
+          "reusable": false,
+          "description": "冷霜被迫换上薄纱侍女服，双手被反绑在背后——这是所有侍奉帝王的女子的铁律。穿上强制垫脚器，身体初次感受被束缚的羞耻。",
+          "guidance": "氛围：羞耻、屈辱、身体开始感受异样\n\n火娘：**换装束缚**（亲手为冷霜穿上若隐若现的薄纱侍女服，将双手反剪捆绑在背后。「所有服侍帝王的女子，双手必须捆在背后——这是规矩。」再套上强制垫脚器。）\n冷霜：**羞耻挣扎**（薄纱下身体近乎赤裸，双手被反绑的无助感，垫脚器让每一步都摇摇欲坠）\n→ 推进条件：冷霜完成初次换装与双手反绑束缚后推进",
+          "enterWhen": "武功完全被封印后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act2_initiation",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_6",
+      "type": "module",
+      "position": {
+        "x": 350,
+        "y": 455
+      },
+      "data": {
+        "label": "⑥ 精油悬吊",
+        "moduleRef": "mod_stage_6",
+        "moduleData": {
+          "id": "mod_stage_6",
+          "sourceStage": "stage_6",
+          "title": "⑥ 精油悬吊",
+          "type": "training",
+          "reusable": false,
+          "description": "火娘将温热精油涂抹冷霜全身——从脖颈到脚踝每一寸皮肤。然后将她双手高举悬吊在调教架上，脚尖勉强触地。精油渗透让皮肤发热发痒，悬吊的酸麻从手腕蔓延至全身。",
+          "guidance": "氛围：精油滑腻的触感、悬吊中完全伸展的无助、皮肤逐寸发热\n\n火娘：**精油涂抹**（将温热精油倒在掌心，从冷霜脖颈开始，缓慢揉入每一寸皮肤——锁骨、乳房外侧、小腹、大腿内侧、小腿至脚踝。手指在乳房和私处周围故意放慢。涂抹完毕后使用 **悬吊放置**——将冷霜双手高举吊在调教架上，脚尖勉强触地，身体在悬吊中完全伸展，精油的温热与悬吊的酸麻交织。）\n冷霜：**精油颤栗**（精油渗入皮肤后全身发热发痒，悬吊让每一寸肌肉都在酸麻中颤抖。身体在精油润滑下变得异常敏感，连空气流动都能感觉到。）\n→ 推进条件：冷霜在悬吊中身体完全被精油浸润、开始不自觉扭动时推进",
+          "enterWhen": "换装束缚完成后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act2_initiation",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_7",
+      "type": "module",
+      "position": {
+        "x": 610,
+        "y": 455
+      },
+      "data": {
+        "label": "⑦ 晨间仪式",
+        "moduleRef": "mod_stage_7",
+        "moduleData": {
+          "id": "mod_stage_7",
+          "sourceStage": "stage_7",
+          "title": "⑦ 晨间仪式",
+          "type": "training",
+          "reusable": false,
+          "description": "每天早上，火娘为冷霜在小穴涂抹润滑液。并根据帝王旨意决定是否佩戴肛塞——初期的冷霜自然每次都要佩戴。冰冷的润滑液与身体的自动湿润形成羞耻对比。",
+          "guidance": "氛围：羞耻的日常化、身体逐渐敏感、肛塞的常态化佩戴\n\n火娘：**润滑涂抹**（专业而冷漠地在冷霜私处涂抹润滑液，手指故意缓慢游走在敏感点上。然后取出肛塞涂抹冷霜后缓慢推入：「帝王有旨——今日佩戴肛塞。你的后庭要学会时刻准备着。」）\n冷霜：**羞耻忍耐**（咬着嘴唇忍住不发出声音，但身体已自动湿润。肛塞的进入让后庭传来被填满的胀感——这将成为她的日常。）\n→ 推进条件：经过2~3轮晨间训练后推进",
+          "enterWhen": "精油悬吊调教完成后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act2_initiation",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_8",
+      "type": "module",
+      "position": {
+        "x": 870,
+        "y": 455
+      },
+      "data": {
+        "label": "⑧ 乳推训练",
+        "moduleRef": "mod_stage_8",
+        "moduleData": {
+          "id": "mod_stage_8",
+          "sourceStage": "stage_8",
+          "title": "⑧ 乳推训练",
+          "type": "training",
+          "reusable": false,
+          "description": "冷霜学习乳推技巧——双手被反绑在背后，只能用双乳在帝王模型上滑动。火娘纠正胸部角度与身体律动节奏。",
+          "guidance": "氛围：专业而冷酷的训练、双手反绑只能用胸部的无助\n\n火娘：**乳推训练**（指导冷霜在双手反绑的情况下用双乳夹住帝王模型上下滑动。「侍寝时你的双手也是反绑的——必须习惯这个姿势。力道均匀，节奏稳定。」）\n冷霜：**被迫服从**（羞耻但不得不跟随指令，双手被绑无法保持平衡，身体不断前倾。胸部在模型上摩擦的触感让她面红耳赤。）\n→ 推进条件：完成乳推基础训练后推进",
+          "enterWhen": "晨间仪式成为日常后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act2_initiation",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_9",
+      "type": "module",
+      "position": {
+        "x": 1130,
+        "y": 455
+      },
+      "data": {
+        "label": "⑨ 口侍深喉",
+        "moduleRef": "mod_stage_9",
+        "moduleData": {
+          "id": "mod_stage_9",
+          "sourceStage": "stage_9",
+          "title": "⑨ 口侍深喉",
+          "type": "training",
+          "reusable": false,
+          "description": "进阶口侍课程——从基础含入升级到深喉训练。冷霜被要求将帝王模型含入至咽喉深处，克服呕吐反射。火娘冷酷计时，不许提前抬头。",
+          "guidance": "氛围：深喉的窒息感、呕吐反射的屈辱、身体被彻底物化\n\n火娘：**深喉训练**（要求冷霜跪在模型前含入至咽喉深处并保持30秒，若呕吐反射触发则重新计时。「帝王的尺寸比这个大。你的喉咙要学会放松——就像你的小穴已经学会了放松一样。」）\n冷霜：**深喉窒息**（眼泪鼻涕齐流，喉咙被撑开的窒息感让眼前发黑。但火娘不允许停下——帝王的侍女必须能承受深喉。）\n→ 推进条件：冷霜能完整完成一组深喉训练后推进",
+          "enterWhen": "乳推训练完成后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act2_initiation",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_10",
+      "type": "module",
+      "position": {
+        "x": 1390,
+        "y": 455
+      },
+      "data": {
+        "label": "⑩ 蒙眼调教台",
+        "moduleRef": "mod_stage_10",
+        "moduleData": {
+          "id": "mod_stage_10",
+          "sourceStage": "stage_10",
+          "title": "⑩ 蒙眼调教台",
+          "type": "training",
+          "reusable": false,
+          "description": "冷霜被蒙上双眼带到调教台上，四肢被固定。失去视觉后触觉被放大百倍——羽毛的轻拂、皮鞭的刺痛、冰块的刺骨、温热手掌的抚摸——每一次触碰都无法预判，身体在黑暗中学会了恐惧与期待。",
+          "guidance": "氛围：黑暗中的恐惧、触觉被极度放大、身体无法预判下一次触碰\n\n火娘：**蒙眼调教**（用黑色丝带蒙住冷霜双眼，将她四肢固定在调教台上。在黑暗中轮流使用不同道具触碰冷霜全身——从羽毛的轻拂到皮鞭的拍打，从冰块的刺骨到温热手指的抚慰。冷霜永远不知道下一次是什么、从哪个方向来。在完全不碰私处的情况下反复进行，直到冷霜的身体已经敏感到连空气流动都能引发反应。）\n冷霜：**蒙眼颤栗**（在黑暗中全身紧绷，每次触碰都剧烈颤抖。呼吸急促而无法自控。当蒙眼布最终解开时，冷霜发现自己的身体已经湿透了——尽管根本没有人碰过那里。）\n→ 推进条件：冷霜在蒙眼调教中身体反应完全失控时推进",
+          "enterWhen": "口侍训练完成后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act2_initiation",
+      "extent": "parent"
+    },
+    {
+      "id": "node_group_act3_punishment",
+      "type": "phaseGroup",
+      "position": {
+        "x": 40,
+        "y": 700
+      },
+      "data": {
+        "label": "第三幕：惩罚与感官",
+        "actKey": "act3_punishment"
+      },
+      "style": {
+        "width": 1340,
+        "height": 210
+      }
+    },
+    {
+      "id": "node_mod_stage_11",
+      "type": "module",
+      "position": {
+        "x": 90,
+        "y": 765
+      },
+      "data": {
+        "label": "⑪ 三口惩罚",
+        "moduleRef": "mod_stage_11",
+        "moduleData": {
+          "id": "mod_stage_11",
+          "sourceStage": "stage_11",
+          "title": "⑪ 三口惩罚",
+          "type": "training",
+          "reusable": false,
+          "description": "冷霜在训练中表现出抗拒。火娘施以最全面的惩罚——同时佩戴口塞、肛塞、阴塞。三穴同时被填满的羞辱让冷霜彻底体会身体被完全占据。口塞让她只能发出含混的闷哼。",
+          "guidance": "氛围：三穴同时被侵入的极致羞辱、口不能言的绝望、身体被完全填满\n\n火娘：**三口惩罚**（依次取出阴塞、肛塞、口塞。「既然嘴巴不听话，就用塞子让它安静。前面后面也一样——帝王的侍女，每一寸都要学会被占据。」先将阴塞缓慢推入小穴，再将肛塞旋转推入后庭，最后戴上口塞收紧。三重填满后让冷霜跪在角落静置——让她在沉默中感受身体被完全占满的滋味。）\n冷霜：**三穴闷绝**（口中只能发出含混的呜呜声。小穴和后庭同时被填满的胀感让身体处于持续的微颤状态。眼泪不停滑落但无法用手擦去——因为双手被反绑在背后。在绝望的沉默中第一次真正害怕反抗的后果。）\n→ 推进条件：惩罚完成后冷霜表现出彻底的恐惧服从时推进",
+          "enterWhen": "冷霜在训练中表现抗拒或不服从时",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act3_punishment",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_12",
+      "type": "module",
+      "position": {
+        "x": 350,
+        "y": 765
+      },
+      "data": {
+        "label": "⑫ 暮色束缚",
+        "moduleRef": "mod_stage_12",
+        "moduleData": {
+          "id": "mod_stage_12",
+          "sourceStage": "stage_12",
+          "title": "⑫ 暮色束缚",
+          "type": "training",
+          "reusable": false,
+          "description": "夜晚来临，火娘将冷霜以M字开腿姿势捆在床上——双腿分开固定在床柱两侧，手腕绑在床头。这是为了让她习惯侍寝时的捆绑姿势。",
+          "guidance": "氛围：夜晚的孤独、M字开腿的彻底暴露、身体被完全控制\n\n火娘：**夜间捆绑**（将冷霜双腿M字分开捆在床柱两侧，手腕固定在床头。「这是侍寝的标准姿势。帝王可以随时进入你的身体——无论你在睡觉还是醒着。」若帝王有旨，会加戴眼罩或口塞让冷霜在完全黑暗中度过整夜。）\n冷霜：**无助等待**（黑暗中M字大开，身体最私密的部位完全暴露。在这种姿势中感到前所未有的脆弱——任何一个进入房间的人都能直接看到一切。）\n→ 推进条件：捆绑完成后推进",
+          "enterWhen": "三口惩罚结束后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act3_punishment",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_13",
+      "type": "module",
+      "position": {
+        "x": 610,
+        "y": 765
+      },
+      "data": {
+        "label": "⑬ 跳蛋入体",
+        "moduleRef": "mod_stage_13",
+        "moduleData": {
+          "id": "mod_stage_13",
+          "sourceStage": "stage_13",
+          "title": "⑬ 跳蛋入体",
+          "type": "training",
+          "reusable": false,
+          "description": "火娘将按摩跳蛋放入冷霜体内，同时阴塞仍保留。双重的体内振动形成共振，远超单独使用。冷霜在M字束缚中无法动弹，只能承受。",
+          "guidance": "氛围：双重体内异物的奇异胀感、共振振动的折磨\n\n火娘：**跳蛋植入**（保留阴塞的基础上将跳蛋精准推入冷霜体内G点位置。「两颗一起振动——效果是单独的两倍多。不要想把它排出来——你越用力夹，它就钻得越深。」打开遥控器，低频嗡鸣声在安静的改造室中格外清晰。）\n冷霜：**敏感颤抖**（身体不自觉的颤抖。双重振动让牙齿都开始打颤，大腿内侧的肌肉在M字捆绑中不受控制地痉挛。）\n→ 推进条件：跳蛋启动后冷霜身体开始剧烈反应时推进",
+          "enterWhen": "夜间捆绑完成后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act3_punishment",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_14",
+      "type": "module",
+      "position": {
+        "x": 870,
+        "y": 765
+      },
+      "data": {
+        "label": "⑭ 边缘地狱",
+        "moduleRef": "mod_stage_14",
+        "moduleData": {
+          "id": "mod_stage_14",
+          "sourceStage": "stage_14",
+          "title": "⑭ 边缘地狱",
+          "type": "training",
+          "reusable": false,
+          "description": "火娘调高跳蛋频率，冷霜在高潮边缘反复徘徊。火娘精准控制——每当冷霜接近高潮就降低频率或完全关闭。绝不允许释放。",
+          "guidance": "氛围：极致的身体折磨、高潮渴望与无法释放的痛苦、循环往复的绝望\n\n火娘：**边缘控制**（精准调整振动频率，观察冷霜的呼吸节奏与身体颤抖幅度。在高潮临界点精确撤回——要么降低频率要么直接关闭。可追加翻过冷霜身体拍打臀部使其分心，或在临界点时突然塞入更粗的肛塞增加刺激后再度撤回。每次循环都让冷霜更崩溃一分。）\n冷霜：**边缘挣扎**（身体紧绷到极限又突然松弛。循环往复——大腿内侧湿透、眼泪与体液混杂、小穴疯狂收缩却永远到不了顶峰。发出动物般的呜咽声。）\n→ 推进条件：经过至少3次边缘循环后推进",
+          "enterWhen": "跳蛋启动后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act3_punishment",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_15",
+      "type": "module",
+      "position": {
+        "x": 1130,
+        "y": 765
+      },
+      "data": {
+        "label": "⑮ 双头龙夹击",
+        "moduleRef": "mod_stage_15",
+        "moduleData": {
+          "id": "mod_stage_15",
+          "sourceStage": "stage_15",
+          "title": "⑮ 双头龙夹击",
+          "type": "training",
+          "reusable": false,
+          "description": "火娘召来侍女助手，两人各持双头龙一端——火娘在前方抽插冷霜小穴，侍女在后方同步抽插后庭。前后同时被贯穿的快感让冷霜第一次失控尖叫。但依然不被允许高潮。",
+          "guidance": "氛围：前后同时被贯穿的极致快感、双人夹击的绝望无助、身体在两人之间全面崩溃\n\n火娘：**双龙夹击**（召来侍女「过来帮忙——这一个是重点培养对象」。火娘持双头龙前端插入冷霜小穴，侍女持后端同步插入后庭。两人配合节奏一进一出——当前穴被填满时后庭空虚，当后庭被填满时前穴空虚——形成前后交替的抽插波浪。）\n侍女：**协同进攻**（与火娘同步节奏，确保前穴与后庭的刺激精准交替。冷霜被夹在两人中间，前后同时被贯穿。）\n冷霜：**夹击崩溃**（前后同时被贯穿——身体在两人之间疯狂颤抖，第一次发出不顾一切的尖叫。小穴和后庭同时收缩却永远不同步——一个被填满时另一个正在空虚——这比同时被填满更让人发疯。仍不被允许高潮。眼泪与体液浸透了调教台。）\n→ 推进条件：双头龙调教完成后推进",
+          "enterWhen": "多次边缘循环后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act3_punishment",
+      "extent": "parent"
+    },
+    {
+      "id": "node_group_act4_willbreak",
+      "type": "phaseGroup",
+      "position": {
+        "x": 40,
+        "y": 1010
+      },
+      "data": {
+        "label": "第四幕：意志崩坏",
+        "actKey": "act4_willbreak"
+      },
+      "style": {
+        "width": 1340,
+        "height": 210
+      }
+    },
+    {
+      "id": "node_mod_stage_16",
+      "type": "module",
+      "position": {
+        "x": 90,
+        "y": 1075
+      },
+      "data": {
+        "label": "⑯ 流水入眠",
+        "moduleRef": "mod_stage_16",
+        "moduleData": {
+          "id": "mod_stage_16",
+          "sourceStage": "stage_16",
+          "title": "⑯ 流水入眠",
+          "type": "training",
+          "reusable": false,
+          "description": "火娘将跳蛋维持在低频，阴塞保留。让冷霜在持续的体内振动与填满感中入睡。身体持续流水但不能高潮——在梦中也逃不掉。",
+          "guidance": "氛围：疲惫中的持续刺激、身体在梦中也不得安宁\n\n火娘：**入眠设定**（将跳蛋调至最低档，阴塞保留在体内。确认冷霜已疲惫到极点但仍能感受到振动。「睡吧。它不会停的。明天醒来你会发现自己的身体一整夜都在默默流水——然后在晨间仪式时肛塞又会重新填满你。」）\n冷霜：**湿梦难眠**（在半梦半醒间身体持续反应。双腿间早已湿透，前后两穴都在不自觉收缩。在梦中也无法摆脱体内振动的存在——梦里的帝王在黑暗中注视着她。）\n→ 推进条件：经过2~3晚入眠调教后推进",
+          "enterWhen": "双头龙夹击结束后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act4_willbreak",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_17",
+      "type": "module",
+      "position": {
+        "x": 350,
+        "y": 1075
+      },
+      "data": {
+        "label": "⑰ 意志裂痕",
+        "moduleRef": "mod_stage_17",
+        "moduleData": {
+          "id": "mod_stage_17",
+          "sourceStage": "stage_17",
+          "title": "⑰ 意志裂痕",
+          "type": "training",
+          "reusable": false,
+          "description": "连续多日的白天训练加夜晚边缘折磨，冷霜的心理防线开始出现裂痕。双手反绑已成习惯，在束缚中反而感到一丝安心——这让她更加恐惧。",
+          "guidance": "氛围：疲惫中的迷茫、意志开始动摇、对束缚的诡异习惯\n\n冷霜：**内心动摇**（第一次在独处时自问「我还能撑多久？」。更可怕的是——她发现当双手没有被反绑时反而感到不自在。双手自然放在背后的姿势已经刻入身体记忆。）\n火娘：**心理施压**（察觉到冷霜眼中的迷茫，用冷静而残忍的语气暗示：「你的身体已经诚实了——何必让你的嘴还在撒谎？在你之前的所有女侠，最后都主动跪在了帝王面前。」）\n→ 推进条件：冷霜第一次产生动摇念头后推进",
+          "enterWhen": "多日调教后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act4_willbreak",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_18",
+      "type": "module",
+      "position": {
+        "x": 610,
+        "y": 1075
+      },
+      "data": {
+        "label": "⑱ 身体的背叛",
+        "moduleRef": "mod_stage_18",
+        "moduleData": {
+          "id": "mod_stage_18",
+          "sourceStage": "stage_18",
+          "title": "⑱ 身体的背叛",
+          "type": "training",
+          "reusable": false,
+          "description": "冷霜发现自己的身体已经完全习惯了每日调教——早上自动湿润等待润滑液，后庭自动放松迎接肛塞。更可怕的是当体内没有塞子时她竟然感到空虚。身体已不再属于意志。",
+          "guidance": "氛围：羞耻的自省、身体与意志的彻底割裂、对填满的隐秘渴望\n\n冷霜：**身体觉醒**（意识到每天早上身体已自然湿润、后庭不再抗拒肛塞的进入。更可怕的是——当火娘偶尔没戴肛塞时，她的后庭竟然感到一阵空虚。身体已经学会了期待被填满。触碰自己时发现早已湿透——「我的身体……已经不是我的了。」）\n火娘：**满意观察**（注意到冷霜不需命令就自动张开双腿等待润滑液、不需要提醒就自己把双手放在背后。在改造记录上又勾掉几个检查项，嘴角露出难得的微笑。）\n→ 推进条件：冷霜承认身体已经背叛时推进",
+          "enterWhen": "意志出现裂痕后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act4_willbreak",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_19",
+      "type": "module",
+      "position": {
+        "x": 870,
+        "y": 1075
+      },
+      "data": {
+        "label": "⑲ 首次松口",
+        "moduleRef": "mod_stage_19",
+        "moduleData": {
+          "id": "mod_stage_19",
+          "sourceStage": "stage_19",
+          "title": "⑲ 首次松口",
+          "type": "training",
+          "reusable": false,
+          "description": "冷霜在一次激烈的边缘调教后终于忍不住说出一句「求求你……」。声音细小如蚊蚋——但这是从女侠到侍女的第一步真正转变。",
+          "guidance": "氛围：羞耻的突破、第一次主动说出乞求\n\n冷霜：**首次乞求**（在一次被推到边缘又被撤回后，冷霜终于崩溃。声音细如蚊蚋：「求……求求你……」说完后满脸通红，不敢抬头。这是她第一次主动说出乞求的话语——尽管还不完整。）\n火娘：**诱导追问**（「求我什么？说出来。求我停止？还是求我让你去？你不说清楚——我怎么知道你想要什么？」蹲下来直视冷霜的眼睛，等待她把话说完。）\n→ 推进条件：冷霜第一次说出乞求话语后推进",
+          "enterWhen": "身体完全背叛后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act4_willbreak",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_20",
+      "type": "module",
+      "position": {
+        "x": 1130,
+        "y": 1075
+      },
+      "data": {
+        "label": "⑳ 彻底乞求",
+        "moduleRef": "mod_stage_20",
+        "moduleData": {
+          "id": "mod_stage_20",
+          "sourceStage": "stage_20",
+          "title": "⑳ 彻底乞求",
+          "type": "training",
+          "reusable": false,
+          "description": "冷霜的心理防线彻底崩溃。她跪在改造室中，双手反绑，流着泪大声恳求帝王宠幸，说出令人脸红的具体话语。火娘满意地向帝王禀报——侍女已准备好。",
+          "guidance": "氛围：完全的屈服、羞耻的告白、对帝王宠幸的渴望\n\n冷霜：**屈辱乞求**（跪在冰冷地板上，双手反绑，身体因长期调教而自动湿润。流着泪用颤抖但清晰的声音说出完整的乞求——包括恳求帝王占有她的身体、恳求被填满、恳求被允许在帝王身下释放。）\n火娘：**禀报帝王**（满意地记录下冷霜的乞求内容，前往帝宫正殿跪禀：「陛下。冷霜已完成全部训练——武功尽废、身体已驯、意志已破。她已亲口恳求您的恩宠。请陛下择时御驾降临。不过臣斗胆提醒——她是第一次侍寝，陛下可根据表现决定是否满意。」）\n→ 推进条件：冷霜完成完整乞求后推进",
+          "enterWhen": "冷霜第一次松口后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "training"
+      },
+      "parentId": "node_group_act4_willbreak",
+      "extent": "parent"
+    },
+    {
+      "id": "node_serving_loop",
+      "type": "loop",
+      "position": {
+        "x": 40,
+        "y": 1320
+      },
+      "data": {
+        "label": "侍寝循环（核心机制）",
+        "loopData": {
+          "id": "serving_loop",
+          "title": "侍寝循环（核心机制）",
+          "description": "侍寝→判断→不满意→惩戒→换方式再侍寝→直到帝王满意。循环可多次反复。",
+          "initialCycle": 1,
+          "maxCycles": null,
+          "serveModuleByCycle": {
+            "1": "mod_stage_21",
+            "2": "mod_stage_23",
+            "3": "mod_stage_25",
+            "4": "mod_stage_26",
+            "default": "mod_stage_29"
+          },
+          "punishModuleByCycle": {},
+          "judgmentNode": {
+            "id": "node_judge_cycle_1",
+            "type": "judgment",
+            "judge": "emperor",
+            "description": "帝王对本次侍寝做出满意/不满意判断",
+            "scoringMethods": {
+              "score_3d": {
+                "dimensions": {
+                  "bodyCoordination": {
+                    "name": "身体配合度",
+                    "min": 1,
+                    "max": 5,
+                    "description": "是否主动迎合节奏、身体律动是否自然"
+                  },
+                  "voiceExpression": {
+                    "name": "声音表达度",
+                    "min": 1,
+                    "max": 5,
+                    "description": "呻吟是否发自内心、臣服话语是否真诚"
+                  },
+                  "eyeSubmission": {
+                    "name": "眼神臣服度",
+                    "min": 1,
+                    "max": 5,
+                    "description": "眼神是否表达真正的归属与敬畏"
+                  }
+                },
+                "thresholdsByCycle": {
+                  "1": {
+                    "total": 7,
+                    "perDimension": 2
+                  },
+                  "2": {
+                    "total": 8,
+                    "perDimension": 2
+                  },
+                  "3": {
+                    "total": 10,
+                    "perDimension": 3
+                  },
+                  "default": {
+                    "total": 12,
+                    "perDimension": 4
+                  }
+                }
+              },
+              "score_4trials_random": {
+                "trials": [
+                  {
+                    "id": "oral",
+                    "name": "口交",
+                    "description": "用嘴唇和舌头真诚侍奉帝王"
+                  },
+                  {
+                    "id": "moan",
+                    "name": "呻吟",
+                    "description": "声音自然真诚，不能刻意表演"
+                  },
+                  {
+                    "id": "kiss",
+                    "name": "亲吻",
+                    "description": "主动寻求帝王的唇，表达渴望"
+                  },
+                  {
+                    "id": "no_climax",
+                    "name": "禁止高潮",
+                    "description": "媚药作用下克制原始冲动"
+                  }
+                ],
+                "allTrialsMustPass": true,
+                "randomFailChance": 0.5,
+                "randomFailMessage": "帝王心意不可预测——四重考验全部通过，但帝王随机判定为失败。"
+              }
+            },
+            "routes": {
+              "satisfied": {
+                "condition": "score >= threshold (score_3d) OR all trials pass + random pass (score_4trials_random)",
+                "target": "finale_sequence",
+                "targetModule": "mod_stage_31"
+              },
+              "unsatisfied": {
+                "condition": "score < threshold (score_3d) OR any trial fail OR random fail (score_4trials_random)",
+                "target": "serving_loop.punishThenReServe"
+              }
+            }
+          }
+        }
+      },
+      "style": {
+        "width": 4660,
+        "height": 260
+      }
+    },
+    {
+      "id": "node_mod_stage_21",
+      "type": "module",
+      "position": {
+        "x": 90,
+        "y": 1335
+      },
+      "data": {
+        "label": "第1轮侍寝: ㉑ 侍寝·全副束缚",
+        "moduleRef": "mod_stage_21",
+        "moduleData": {
+          "id": "mod_stage_21",
+          "sourceStage": "stage_21",
+          "title": "㉑ 侍寝·全副束缚",
+          "type": "serving",
+          "reusable": true,
+          "description": "帝王降临。冷霜侍寝——双手反绑，口塞、眼罩、阴塞、肛塞全部佩戴。在黑暗中只能通过触觉感知帝王。帝王采用背后插入——这是冷霜在长期训练后第一次真正面对帝王的考验。在完全束缚中用身体的配合来取悦帝王。",
+          "guidance": "氛围：极致的仪式感、全副束缚下的侍寝、黑暗中的触觉世界、必须取悦帝王的巨大压力\n\n帝王：**帝王临幸·背后**（缓步走到冷霜身后。她双手反绑跪在床沿、眼不能视、口不能言。帝王取下阴塞，从背后缓缓插入。从容而有力地抽插，姿态冷漠而威严。）\n火娘：**侍寝观察**（在一旁静静观察冷霜的表现。低声提醒：「配合帝王的节奏——用你的身体回应。」）\n冷霜：**初次侍寝**（全副束缚下被帝王进入。黑暗中被彻底占有的震撼透过每一寸神经传导。口塞中发出含混的呜咽——分不清是痛苦还是狂喜。身体在长期调教后本能地迎合——但配合难免生涩。这是侍寝循环的起点——成败决定下一步走向。）\n→ ⚠️ 侍寝循环判断：三维评分——身体配合+声音表达+眼神臣服各1-5分。总分≥7分且单项≥2分→满意→跳转㉛。不满意→进入惩戒循环㉒。",
+          "enterWhen": "冷霜乞求后帝王决定降临",
+          "exitCondition": "帝王判断满意/不满意"
+        },
+        "colorKey": "serving"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_event_cycle_1",
+      "type": "eventTrigger",
+      "position": {
+        "x": 350,
+        "y": 1335
+      },
+      "data": {
+        "label": "禁止高潮",
+        "colorKey": "judgment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_judge_cycle_1",
+      "type": "judgment",
+      "position": {
+        "x": 610,
+        "y": 1335
+      },
+      "data": {
+        "label": "忍住了?",
+        "branches": [
+          {
+            "choiceText": "是",
+            "targetStage": "next"
+          },
+          {
+            "choiceText": "否",
+            "targetStage": "punish"
+          }
+        ],
+        "colorKey": "judgment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_random_cycle_1",
+      "type": "randomEvent",
+      "position": {
+        "x": 610,
+        "y": 1475
+      },
+      "data": {
+        "label": "随机惩戒",
+        "randomPool": [
+          {
+            "id": "mod_stage_22",
+            "title": "三塞悬吊"
+          }
+        ],
+        "colorKey": "punishment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_mod_stage_23",
+      "type": "module",
+      "position": {
+        "x": 1010,
+        "y": 1335
+      },
+      "data": {
+        "label": "第2轮侍寝: ㉓ 侍寝·悬吊式",
+        "moduleRef": "mod_stage_23",
+        "moduleData": {
+          "id": "mod_stage_23",
+          "sourceStage": "stage_23",
+          "title": "㉓ 侍寝·悬吊式",
+          "type": "serving",
+          "reusable": true,
+          "description": "新一轮侍寝。帝王采用悬吊插入——冷霜双手被吊起身体悬空，双腿M字分开。这次允许她摘下眼罩和口塞——让她能用眼睛注视帝王、用声音表达臣服。这是在前次失败后获得的改进机会——侍寝方式升级了。",
+          "guidance": "氛围：悬吊中的失重侍寝、能用眼睛和声音取悦帝王、改进机会的压力\n\n帝王：**帝王临幸·悬吊**（冷霜双手被吊在调教架上，身体悬空双腿M字分开。这次允许她摘下眼罩和口塞。「看着朕。朕要你亲眼看着是谁在占有你。你的声音——也让朕听听。」从正面进入悬吊中的冷霜，每一次抽插都让悬吊绳晃动——冷霜需要用核心力量控制身体配合帝王的节奏。）\n冷霜：**悬吊侍奉**（在悬吊失重中被帝王正面贯穿。眼睛能看到帝王威严的面容——这让她更加敬畏。嘴巴能发出声音——她努力用呻吟和臣服话语回应每一次深入。悬吊中身体摆动难以控制——每一次晃回来都更深入地迎向帝王。）\n火娘：**观察记录**（默默在旁记录冷霜的配合度与帝王的反应。）\n→ ⚠️ 侍寝循环判断：三维评分——总分≥8分且单项≥2分→满意→跳转㉛。不满意→进入下一轮惩戒㉔。",
+          "enterWhen": "三塞悬吊惩戒结束后，帝王决定采用悬吊式侍寝",
+          "exitCondition": "帝王判断满意/不满意"
+        },
+        "colorKey": "serving"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_event_cycle_2",
+      "type": "eventTrigger",
+      "position": {
+        "x": 1270,
+        "y": 1335
+      },
+      "data": {
+        "label": "同意口交",
+        "colorKey": "judgment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_judge_cycle_2",
+      "type": "judgment",
+      "position": {
+        "x": 1530,
+        "y": 1335
+      },
+      "data": {
+        "label": "服从?",
+        "branches": [
+          {
+            "choiceText": "是",
+            "targetStage": "next"
+          },
+          {
+            "choiceText": "否",
+            "targetStage": "punish"
+          }
+        ],
+        "colorKey": "judgment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_random_cycle_2",
+      "type": "randomEvent",
+      "position": {
+        "x": 1530,
+        "y": 1475
+      },
+      "data": {
+        "label": "随机惩戒",
+        "randomPool": [
+          {
+            "id": "mod_stage_22",
+            "title": "三塞悬吊"
+          }
+        ],
+        "colorKey": "punishment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_mod_stage_25",
+      "type": "module",
+      "position": {
+        "x": 1930,
+        "y": 1335
+      },
+      "data": {
+        "label": "第3轮侍寝: ㉕ 侍寝·M字开腿",
+        "moduleRef": "mod_stage_25",
+        "moduleData": {
+          "id": "mod_stage_25",
+          "sourceStage": "stage_25",
+          "title": "㉕ 侍寝·M字开腿",
+          "type": "serving",
+          "reusable": true,
+          "description": "新一轮侍寝。冷霜被M字开腿捆绑在床上，双手仍被反绑。这次没有任何塞子——帝王要的是一个完全臣服的女人，而不是被道具控制的玩偶。这是侍寝循环中的关键节点——无道具阻隔的最真实侍奉。若仍不满意，帝王将尝试完全不同的方式。",
+          "guidance": "氛围：无道具阻隔的纯粹交合、面对面注视的亲密与臣服、循环中的关键节点\n\n帝王：**帝王临幸·正面**（冷霜M字开腿被绑在床上，双手反绑。这次帝王来到她正面——两人面对面。没有眼罩没有口塞——她能看见他也能对他说话。不戴任何塞子——帝王要的是一个用真实身体取悦他的女人。正面缓缓进入最深处，要求冷霜看着他的眼睛。）\n冷霜：**终极侍奉**（M字开腿让帝王能最深入地进入。她看着帝王的眼睛——那双俯瞰一切的眼睛此刻正注视着她。她用最真诚的声音说出臣服的话语，身体全力配合每一次抽吸——不再是训练的反应而是发自内心的渴望。）\n火娘：**屏息等待**（在角落紧张观察。每一次侍寝循环都至关重要——成败决定冷霜是继续循环还是获得释放。）\n→ ⚠️ 侍寝循环判断：三维评分——总分≥10分且单项≥3分→满意→跳转㉛。不满意→帝王选择换方式→进入㉖（杆缚媚药侍寝——全新的感官考验）。",
+          "enterWhen": "双龙边缘惩戒结束后，帝王决定采用M字开腿侍寝",
+          "exitCondition": "帝王判断满意/不满意"
+        },
+        "colorKey": "serving"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_event_cycle_3",
+      "type": "eventTrigger",
+      "position": {
+        "x": 2190,
+        "y": 1335
+      },
+      "data": {
+        "label": "服从后入",
+        "colorKey": "judgment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_judge_cycle_3",
+      "type": "judgment",
+      "position": {
+        "x": 2450,
+        "y": 1335
+      },
+      "data": {
+        "label": "服从?",
+        "branches": [
+          {
+            "choiceText": "是",
+            "targetStage": "next"
+          },
+          {
+            "choiceText": "否",
+            "targetStage": "punish"
+          }
+        ],
+        "colorKey": "judgment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_random_cycle_3",
+      "type": "randomEvent",
+      "position": {
+        "x": 2450,
+        "y": 1475
+      },
+      "data": {
+        "label": "随机惩戒",
+        "randomPool": [
+          {
+            "id": "mod_stage_22",
+            "title": "三塞悬吊"
+          }
+        ],
+        "colorKey": "punishment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_mod_stage_26",
+      "type": "module",
+      "position": {
+        "x": 2850,
+        "y": 1335
+      },
+      "data": {
+        "label": "第4轮侍寝: ㉖ 侍寝·杆缚媚药",
+        "moduleRef": "mod_stage_26",
+        "moduleData": {
+          "id": "mod_stage_26",
+          "sourceStage": "stage_26",
+          "title": "㉖ 侍寝·杆缚媚药",
+          "type": "serving",
+          "reusable": true,
+          "description": "帝王决定换一种完全不同的侍寝方式。冷霜双腿伸直分别绑在床边竖起的木杆上，V字分开。全身涂抹温热媚药后蒙上眼睛，在杆缚中独自等待。等待本身就是最残酷的折磨。帝王驾临后提出四重考验——这一次不用三维评分，而是四项硬指标加50%随机判定。侍寝循环进入全新模式。",
+          "guidance": "氛围：媚药的灼热渴望、杆缚中无法并拢双腿的暴露、蒙眼黑暗中的等待煎熬、四重考验的巨大压力、50%不可预测的帝王心意\n\n火娘：**媚药涂抹**（将温热的媚药倒在掌心，从冷霜脖颈开始缓慢揉入每一寸皮肤。媚药比精油强烈十倍——皮肤逐寸发热发痒，神经末梢被点燃。「这是媚药——比精油强烈十倍。它会让你渴望被触碰——但在帝王来之前，没有人会碰你。等待吧。」涂抹完毕后将冷霜双腿分别绑在床边的竖杆上，蒙上双眼。冷霜被留在黑暗中独自等待——每一分钟都像一个时辰。）\n冷霜：**杆缚等待**+**媚药灼烧**（双腿被V字分开绑在杆上无法并拢。媚药在皮肤下灼烧——身体每一寸都在疯狂渴望被触碰。在蒙眼的黑暗中只能听到自己的呼吸和心跳——还有腿间不受控制的湿润声音。等待帝王降临的时间是这一生最漫长的煎熬。）\n帝王：**帝王临幸·杆缚**（缓步走进寝殿。看到冷霜在杆缚中扭动喘息、蒙眼黑暗中被媚药折磨的样子。「换一种方式——朕要考验你在媚药的作用下还能否保持克制。四项考验——全部通过才算合格。但即便你都做到了——朕也可能不满意。帝王的满意从来不是数学题。」）\n→ ⚠️ 四重考验判定（非三维评分）：①口交 ②呻吟 ③亲吻 ④禁止高潮。全部通过+随机50%通过→满意跳转㉛。任何一项未通过或随机失败→进入㉗惩戒循环。",
+          "enterWhen": "M字开腿侍寝帝王不满意，帝王决定采用杆缚媚药新方式",
+          "exitCondition": "帝王判断满意/不满意"
+        },
+        "colorKey": "serving"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_event_cycle_4",
+      "type": "eventTrigger",
+      "position": {
+        "x": 3110,
+        "y": 1335
+      },
+      "data": {
+        "label": "羞耻称谓",
+        "colorKey": "judgment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_judge_cycle_4",
+      "type": "judgment",
+      "position": {
+        "x": 3370,
+        "y": 1335
+      },
+      "data": {
+        "label": "服从?",
+        "branches": [
+          {
+            "choiceText": "是",
+            "targetStage": "next"
+          },
+          {
+            "choiceText": "否",
+            "targetStage": "punish"
+          }
+        ],
+        "colorKey": "judgment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_random_cycle_4",
+      "type": "randomEvent",
+      "position": {
+        "x": 3370,
+        "y": 1475
+      },
+      "data": {
+        "label": "随机惩戒",
+        "randomPool": [
+          {
+            "id": "mod_stage_22",
+            "title": "三塞悬吊"
+          }
+        ],
+        "colorKey": "punishment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_mod_stage_29",
+      "type": "module",
+      "position": {
+        "x": 3770,
+        "y": 1335
+      },
+      "data": {
+        "label": "默认侍寝: ㉙ 侍寝·帝王自选",
+        "moduleRef": "mod_stage_29",
+        "moduleData": {
+          "id": "mod_stage_29",
+          "sourceStage": "stage_29",
+          "title": "㉙ 侍寝·帝王自选",
+          "type": "serving",
+          "reusable": true,
+          "description": "多重惩罚结束——帝王决定再给一次侍寝机会。这一次帝王可以自由选择侍寝方式和道具组合——根据冷霜所有循环失败的原因精准设计。可能是曾经尝试过的任何一种方式，也可能是组合创新的新方式。这是循环中最关键的一次侍寝——冷霜必须用被彻底改造过的身体和灵魂来取悦帝王。",
+          "guidance": "氛围：惩罚后的觉悟、重新获得机会的珍视、用被彻底改造的身体和灵魂来侍奉\n\n帝王：**帝王临幸·自选**（帝王根据冷霜之前所有循环失败的原因精准选择这一次的侍寝方式和道具组合。可能是在杆缚中正面进入、可能是M字开腿的面对面侍奉、也可能是在悬吊中从背后占有——一切都由帝王决定。「这一次——朕不想再看到任何保留。你的身体和灵魂——全部交出来。」）\n冷霜：**觉悟侍奉**（经历过多重惩罚后这一次侍寝有了质的飞跃。身体在长期调教中已经学会了最好的配合方式，而心灵在多次循环和惩罚中终于懂得了唯一的真理——彻底的臣服是唯一的出路。身体配合、声音表达、眼神臣服都达到了前所未有的高度。）\n火娘：**屏息观察**（在角落默默记录——这是她训练了最久的作品。如果这一次还是不行——等待冷霜的将是终极惩戒。）\n→ ⚠️ 侍寝循环最终判断：三维评分——总分≥12分且单项≥4分→满意→跳转㉛。不满意→进入终极惩戒㉚。",
+          "enterWhen": "多重惩罚完成后，帝王决定给冷霜再一次侍寝机会",
+          "exitCondition": "帝王判断满意/不满意"
+        },
+        "colorKey": "serving"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_event_cycle_default",
+      "type": "eventTrigger",
+      "position": {
+        "x": 4030,
+        "y": 1335
+      },
+      "data": {
+        "label": "终极服从",
+        "colorKey": "judgment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_judge_cycle_default",
+      "type": "judgment",
+      "position": {
+        "x": 4290,
+        "y": 1335
+      },
+      "data": {
+        "label": "服从?",
+        "branches": [
+          {
+            "choiceText": "是",
+            "targetStage": "next"
+          },
+          {
+            "choiceText": "否",
+            "targetStage": "punish"
+          }
+        ],
+        "colorKey": "judgment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_random_cycle_default",
+      "type": "randomEvent",
+      "position": {
+        "x": 4290,
+        "y": 1475
+      },
+      "data": {
+        "label": "随机惩戒",
+        "randomPool": [
+          {
+            "id": "mod_stage_22",
+            "title": "三塞悬吊"
+          }
+        ],
+        "colorKey": "punishment"
+      },
+      "parentId": "node_serving_loop",
+      "extent": "parent",
+      "style": {
+        "width": 220
+      }
+    },
+    {
+      "id": "node_group_finale",
+      "type": "phaseGroup",
+      "position": {
+        "x": 40,
+        "y": 1680
+      },
+      "data": {
+        "label": "终幕",
+        "actKey": "finale"
+      },
+      "style": {
+        "width": 1340,
+        "height": 210
+      }
+    },
+    {
+      "id": "node_mod_stage_31",
+      "type": "module",
+      "position": {
+        "x": 90,
+        "y": 1745
+      },
+      "data": {
+        "label": "㉛ 帝王满意",
+        "moduleRef": "mod_stage_31",
+        "moduleData": {
+          "id": "mod_stage_31",
+          "sourceStage": "stage_31",
+          "title": "㉛ 帝王满意",
+          "type": "finale",
+          "reusable": false,
+          "description": "帝王终于满意——也许是第三次侍寝的完美表现，也许是终极惩戒后重新获得的恩赐。帝王在冷霜耳边低沉地说出那句她等了无数日夜的话：「朕满意了。朕准你——去了。」然后以最后的冲刺将她推入高潮的深渊。这是她漫长的调教之旅中第一次被允许释放。",
+          "guidance": "氛围：神圣的满足、第一次被允许的高潮、积累的一切在这一刻全部释放\n\n帝王：**帝王满意**（在冷霜的配合终于达到帝王标准时，帝王在她耳边用低沉而威严的声音说出：「朕满意了。朕准你——去了。」然后给予最后的猛烈冲刺，将她推入等待了无数日夜的高潮。当冷霜在身下疯狂痉挛时，帝王的嘴角第一次浮现一丝满意的弧度。）\n冷霜：**高潮释放**（当帝王的许可降临时——所有积累的欲望、所有忍耐的日夜、所有边缘地狱的折磨、所有侍寝失败的耻辱——在这一刻全部转化为极致的快感。身体弓起到极限、小穴疯狂痉挛、泪水和体液交融。发出这一生最幸福、最释放、最彻底的声音。高潮一波接一波——仿佛要把被禁止的所有高潮一次性全部补回来。这是从女孩到女人的蜕变——从女侠到侍女的最终跨越。）\n火娘：**任务完成**（在角落微微点头。她的作品终于完成了。默默在改造记录上写下最后一笔：「项目完成。冷霜——已交付。」）\n→ 推进条件：高潮结束后推进",
+          "enterWhen": "帝王终于对冷霜的表现满意时（可能来自㉑㉓㉕㉖㉙任何一次侍寝，或㉚终极惩戒后重新获得的机会）",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "finale"
+      },
+      "parentId": "node_group_finale",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_32",
+      "type": "module",
+      "position": {
+        "x": 350,
+        "y": 1745
+      },
+      "data": {
+        "label": "㉜ 事后余韵",
+        "moduleRef": "mod_stage_32",
+        "moduleData": {
+          "id": "mod_stage_32",
+          "sourceStage": "stage_32",
+          "title": "㉜ 事后余韵",
+          "type": "finale",
+          "reusable": false,
+          "description": "高潮过后冷霜瘫软在帝王身边。身上的束缚被逐一解开——口塞、眼罩、绳索被取下。身体上留下了束缚的红痕，但这些印记现在是她属于帝王的荣耀证明。帝王轻抚她汗湿的头发。冷霜在这一刻感受到了前所未有的安宁——她终于找到了自己的位置。",
+          "guidance": "氛围：事后的平静、束缚印记的荣耀意义、归属的安宁感\n\n冷霜：**事后安宁**（束缚被解开后身体仍在微微颤抖。看着手腕上绳索留下的红痕——第一次不是感到羞耻而是感到骄傲。这些印记是帝王的签名。躺在帝王身侧呼吸渐渐平稳。眼中不再有反抗不再有恐惧——只有终于找到归属的深深安宁。当帝王轻抚她的头发时，她闭上眼睛感受这来之不易的温柔。）\n帝王：**事后温存**（轻抚冷霜汗湿的头发。简短而有力的话语在寂静中格外清晰。）\n→ 推进条件：冷霜平静接受一切、内心充满归属感时推进",
+          "enterWhen": "帝王满意并允许冷霜高潮后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "finale"
+      },
+      "parentId": "node_group_finale",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_33",
+      "type": "module",
+      "position": {
+        "x": 610,
+        "y": 1745
+      },
+      "data": {
+        "label": "㉝ 侍女宣言",
+        "moduleRef": "mod_stage_33",
+        "moduleData": {
+          "id": "mod_stage_33",
+          "sourceStage": "stage_33",
+          "title": "㉝ 侍女宣言",
+          "type": "finale",
+          "reusable": false,
+          "description": "冷霜跪在帝王脚边，第一次以侍女身份正式自称。她的双手自然地放在背后——不是被捆绑，而是习惯和归属的姿势。从今天起她不再是女侠冷霜，而是帝王专属侍女。她的身体、她的心、她的一切都属于帝王。",
+          "guidance": "氛围：平静的臣服、新身份的正式接受、从被迫到自愿的圆满转变\n\n冷霜：**侍女宣言**（跪在帝王脚边额头触地。双手自然地放在背后——已是融入血液的姿势。用平静而真诚的声音宣布：「侍女冷霜叩谢帝王再造之恩。从今往后冷霜是帝王的人——冷霜的身体、冷霜的心、冷霜的高潮都属于帝王一人。冷霜的双手将永远在帝王面前放在背后。不是因为被绑——而是因为冷霜选择以侍女的姿态站在帝王面前。」她的声音没有颤抖——平静而有力。这是她自己的选择。）\n帝王：**收纳认可**（轻抚冷霜头发，用低沉而温和的语气给予简短而有力的认可。）\n火娘：**退场旁观**（任务圆满完成——悄然退入殿角阴影。嘴角有一丝不易察觉的满意。她的工作结束了——接下来冷霜的每一天都属于帝王。）\n→ 推进条件：完成宣言后推进",
+          "enterWhen": "事后余韵平静后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "finale"
+      },
+      "parentId": "node_group_finale",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_34",
+      "type": "module",
+      "position": {
+        "x": 870,
+        "y": 1745
+      },
+      "data": {
+        "label": "㉞ 永恒归属",
+        "moduleRef": "mod_stage_34",
+        "moduleData": {
+          "id": "mod_stage_34",
+          "sourceStage": "stage_34",
+          "title": "㉞ 永恒归属",
+          "type": "finale",
+          "reusable": false,
+          "description": "故事落幕。冷霜穿着薄纱侍女服，双手在背后自然交叠，安静地站在帝王身后。她的目光不再锋利——而是温柔而坚定地望着帝王的背影。偶尔也会因为表现好只绑双手、不戴口塞和眼罩——这是她赢得的信任。但肛塞和阴塞永远是日常——因为帝王的侍女必须时刻保持身体被填满的准备状态。她是帝王最满意的侍女——不是因为被强迫，而是因为她选择了归属。",
+          "guidance": "氛围：永恒的平静、从女侠到侍女最终到「归属者」的圆满、故事在温柔中落幕\n\n冷霜：**永恒归属**（站在帝王身后双手在背后自然交叠。薄纱下的身体曲线优雅安静——束缚的红痕已经淡去但那份被占有的感觉永远留在了身体里。偶尔帝王心情好时，她只需绑着双手——不需要口塞和眼罩——因为她赢得了帝王的信任。她偶尔会想起曾经那个拿剑的女侠——感觉像上辈子的事。现在的她只需要在帝王需要时跪下、在帝王满意时微笑。她终于明白——自由不在于手是否被绑，而在于心是否找到了归宿。在这一刻，她无比确定：她永远属于这里。）\n帝王与火娘：不再出场。故事在冷霜平静而满足的内心独白中缓缓落幕——她终于找到了自己的永恒归属。\n→ 推进条件：永恒归属确认后推进",
+          "enterWhen": "侍女宣言完成后",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "finale"
+      },
+      "parentId": "node_group_finale",
+      "extent": "parent"
+    },
+    {
+      "id": "node_mod_stage_35",
+      "type": "module",
+      "position": {
+        "x": 1130,
+        "y": 1745
+      },
+      "data": {
+        "label": "㉟ 侍女日常",
+        "moduleRef": "mod_stage_35",
+        "moduleData": {
+          "id": "mod_stage_35",
+          "sourceStage": "stage_35",
+          "title": "㉟ 侍女日常",
+          "type": "finale",
+          "reusable": false,
+          "description": "故事最终章。冷霜在帝宫中过上了属于侍女的日常——每一个早晨在火娘那里接受晨检，然后安静地站在帝王身后度过一天。偶尔她会想起曾经那个持剑的自己——但那仿佛是上辈子的事。现在的她只关心一件事：今天帝王是否会召唤她侍寝。她的身体、她的高潮、她的一切都属于帝王——而她在这份归属中找到了永恒的平静。",
+          "guidance": "氛围：平静的日常、深深的归属、偶尔的小确幸、永恒的安宁\n\n冷霜：**侍女日常**（清晨醒来——肛塞和阴塞已经陪伴了她整夜。在火娘那里接受晨检——自动湿润、身体指标全部合格。然后穿上薄纱侍女服，双手自然交叠在背后——已不需要捆绑。站在帝王身后度过平静的一天——偶尔帝王会轻抚她的头发，那是她一天中最幸福的时刻。偶尔帝王心情好时，她只需绑着双手侍寝——不需要口塞和眼罩——这是她赢得的信任。她已经完全适应了体内的塞子——没有它们反而会觉得空虚。每天晚上她跪在帝王脚边道晚安：「侍女冷霜——永远属于您。」她偶尔会眺望帝宫窗外——不是怀念外面的世界，而是确认自己不想去任何别的地方。）\n帝王与火娘：不再出场。故事在冷霜日复一日的平静日常中缓缓落幕——她在这永恒不变的日常中找到了属于自己的幸福。她不再是女侠冷霜——她是帝王最信任的侍女，而这就够了。此刻她站在帝王身后，双手在背后自然交叠，嘴角带着平静的微笑——这便是她的永恒。\n→ 这是最终的最终阶段，故事在此画上圆满的句号。",
+          "enterWhen": "永恒归属确认后，故事最终落幕时",
+          "exitCondition": "内容推进完毕"
+        },
+        "colorKey": "finale"
+      },
+      "parentId": "node_group_finale",
+      "extent": "parent"
+    },
+    {
+      "id": "node_end",
+      "type": "end",
+      "position": {
+        "x": 400,
+        "y": 1990
+      },
+      "data": {
+        "label": "END"
+      }
+    },
+    {
+      "id": "daily_mod_daily_wearables",
+      "type": "dailyTrigger",
+      "position": {
+        "x": 4820,
+        "y": 120
+      },
+      "data": {
+        "label": "日常：佩戴器具检查",
+        "moduleRef": "mod_daily_wearables",
+        "moduleData": {
+          "id": "mod_daily_wearables",
+          "title": "日常：佩戴器具检查",
+          "type": "daily",
+          "reusable": true,
+          "description": "每日清晨——火娘检查冷霜的项圈铭牌、阴塞、肛塞、乳铃、脚铃是否佩戴正确。更换阴塞和肛塞（如帝王有更换旨意）。",
+          "guidance": "火娘：**晨检器具**（逐一检查冷霜身上的每件器具——项圈铭牌是否端正、阴塞是否需要更换、肛塞尺寸是否符合今日帝王旨意、乳铃是否夹稳、脚铃是否系紧。每检查一项在记录板上勾选。「器具检查完毕。今天的肛塞是L号——帝王今早下的旨。习惯它。——这是你今天的身体。」）\n冷霜：**日常忍耐**（站立不动接受检查。每件器具被触碰时身体微微一颤——尤其是更换肛塞时后庭不自觉的收缩。但她已学会在这些触碰中保持姿势。）",
+          "enterWhen": "",
+          "exitCondition": "",
+          "requiredCharacters": [
+            "leng_ku_jiao_shi",
+            "leng_shuang"
+          ]
+        },
+        "triggerRule": "每日清晨（⑤阶段起每日触发）"
+      }
+    },
+    {
+      "id": "daily_mod_daily_morning_inspection",
+      "type": "dailyTrigger",
+      "position": {
+        "x": 4820,
+        "y": 200
+      },
+      "data": {
+        "label": "日常：晨检公开化",
+        "moduleRef": "mod_daily_morning_inspection",
+        "moduleData": {
+          "id": "mod_daily_morning_inspection",
+          "title": "日常：晨检公开化",
+          "type": "daily",
+          "reusable": true,
+          "description": "冷霜需在火娘面前展示身体状态——自动湿润程度、后庭是否自然放松、皮肤敏感度。火娘当众记录并评分。",
+          "guidance": "火娘：**晨检执行**（「脱掉薄纱。让我看看你今天的身体状态。」检查冷霜小穴自动湿润程度——用手指轻轻探入测试；检查后庭是否在取出肛塞后自然放松——是否已习惯整夜填满后的空虚；检查皮肤敏感度——指尖划过不同区域观察冷霜的反应。每一项在记录板上打出评分。「湿润度B+，后庭放松度A-，皮肤敏感度A。今天的评分——勉强及格。继续努力。」）\n冷霜：**晨检羞耻**（在火娘面前完全赤裸——双手自然放在背后。当火娘手指探入时身体已自动湿润——比任何话语都更诚实地证明她的身体已完全适应了调教。听到评分时心中微微一紧——B+不够好。明天要更好。）",
+          "enterWhen": "",
+          "exitCondition": "",
+          "requiredCharacters": [
+            "leng_ku_jiao_shi",
+            "leng_shuang"
+          ]
+        },
+        "triggerRule": "每日晨间器具检查后（⑦阶段起每日触发）"
+      }
+    },
+    {
+      "id": "daily_mod_daily_kneel_day",
+      "type": "dailyTrigger",
+      "position": {
+        "x": 4820,
+        "y": 280
+      },
+      "data": {
+        "label": "日常：跪行日",
+        "moduleRef": "mod_daily_kneel_day",
+        "moduleData": {
+          "id": "mod_daily_kneel_day",
+          "title": "日常：跪行日",
+          "type": "daily",
+          "reusable": true,
+          "description": "火娘指定今日为跪行日——冷霜全天以膝盖行走，不得站立。",
+          "guidance": "火娘：**跪行日宣布**（「今天——跪行日。你的膝盖从现在到就寝不会离开地面。想去任何地方——用膝盖挪过去。」取下冷霜的垫脚器——但膝盖立即感受到了地板的冰凉坚硬。）\n冷霜：**跪行忍耐**（膝盖刚触地就传来刺痛——一整天都要这样移动。从床铺挪到晨检位置已经让膝盖泛红——而这一天才刚刚开始。晚上膝盖会布满淤青——但火娘会在她入睡前涂抹药膏。不是因为仁慈——而是因为不能影响明天的训练。）",
+          "enterWhen": "",
+          "exitCondition": "",
+          "requiredCharacters": [
+            "leng_ku_jiao_shi",
+            "leng_shuang"
+          ]
+        },
+        "triggerRule": "火娘可指定每周任意一天为跪行日"
+      }
+    },
+    {
+      "id": "daily_mod_daily_silence_day",
+      "type": "dailyTrigger",
+      "position": {
+        "x": 4820,
+        "y": 360
+      },
+      "data": {
+        "label": "日常：禁言日",
+        "moduleRef": "mod_daily_silence_day",
+        "moduleData": {
+          "id": "mod_daily_silence_day",
+          "title": "日常：禁言日",
+          "type": "daily",
+          "reusable": true,
+          "description": "火娘指定今日为禁言日——冷霜全天佩戴口塞，只能发出含混闷哼。所有需求需用眼神和身体语言表达。",
+          "guidance": "火娘：**禁言日宣布**（取出今日的口塞为冷霜戴上收紧。「今天——禁言日。你的嘴只用来呼吸和含入东西——不发出任何有意义的声音。饿了渴了想上厕所——用眼睛告诉我。」）\n冷霜：**禁言忍耐**（口塞戴上的瞬间世界变得安静——只能听到自己的呼吸声。想喝水时只能跪在火娘脚边用祈求的眼神仰望。火娘看了她五秒钟才点头——在沉默中每一秒都被拉长。到傍晚摘下口塞时嘴角酸麻——但这一天里她学会了用眼睛说的比用嘴说的更多。）",
+          "enterWhen": "",
+          "exitCondition": "",
+          "requiredCharacters": [
+            "leng_ku_jiao_shi",
+            "leng_shuang"
+          ]
+        },
+        "triggerRule": "火娘可指定任意一天为禁言日"
+      }
+    },
+    {
+      "id": "daily_mod_daily_dog_bowl",
+      "type": "dailyTrigger",
+      "position": {
+        "x": 4820,
+        "y": 440
+      },
+      "data": {
+        "label": "日常：犬盆进食",
+        "moduleRef": "mod_daily_dog_bowl",
+        "moduleData": {
+          "id": "mod_daily_dog_bowl",
+          "title": "日常：犬盆进食",
+          "type": "daily",
+          "reusable": true,
+          "description": "惩罚次日——冷霜需跪在地上用犬盆进食。双手反绑只能用嘴——每一次低头都在强化她作为侍女的身份。",
+          "guidance": "火娘：**犬盆放置**（将食物倒入地上的犬盆。「今天这样吃。手？不需要——你以后侍奉帝王时双手也是绑着的。用嘴——像你学习深喉一样低下头。」站在一旁观察冷霜跪下用嘴取食的姿态——冷静地纠正：「头低得更深一点。对——就是这个姿势。帝王喜欢看侍女用餐时颈部的弧度。」）\n冷霜：**屈辱进食**（跪下低头——嘴唇触碰到犬盆边缘。只能用嘴和舌头将食物卷入——汤汁沾在脸颊上无法擦去。每一次低头颈部的弧度都被火娘审视——连吃饭都变成了被审视的表演。在屈辱中她学会了一件事——在这座帝宫里，没有一刻是真正属于自己的。）",
+          "enterWhen": "",
+          "exitCondition": "",
+          "requiredCharacters": [
+            "leng_ku_jiao_shi",
+            "leng_shuang"
+          ]
+        },
+        "triggerRule": "每次惩戒次日自动触发"
+      }
+    },
+    {
+      "id": "daily_mod_daily_sleep_punish",
+      "type": "dailyTrigger",
+      "position": {
+        "x": 4820,
+        "y": 520
+      },
+      "data": {
+        "label": "日常：惩罚入眠",
+        "moduleRef": "mod_daily_sleep_punish",
+        "moduleData": {
+          "id": "mod_daily_sleep_punish",
+          "title": "日常：惩罚入眠",
+          "type": "daily",
+          "reusable": true,
+          "description": "惩罚日入眠模式——M字开腿+跳蛋中频+阴塞肛塞双保留+口塞。在完全填满中度过整夜。",
+          "guidance": "火娘：**惩罚入眠设定**（将冷霜双腿M字分开捆在床柱两侧。「今晚——惩罚入眠。跳蛋中频、阴塞保留、肛塞保留——再加口塞。在无声的黑暗中感受身体被从三个方向同时占据。」依次佩戴完成后拍拍冷霜的头。「晚安。明天又是新的一天——新的惩戒、新的侍寝——或者新的希望。但今晚——你属于这些器具。」）\n冷霜：**惩罚入眠承受**（黑暗中三穴同时被填满——口塞阻止任何声音。只能通过鼻腔控制呼吸。跳蛋的中频振动不高不低——刚好在能感受到但不会高潮的频率。在这个频率中身体保持持续的微颤——无法入睡却又疲惫到极点。在黑暗中她计算着到天亮还有多少个时辰。）",
+          "enterWhen": "",
+          "exitCondition": "",
+          "requiredCharacters": [
+            "leng_ku_jiao_shi",
+            "leng_shuang"
+          ]
+        },
+        "triggerRule": "每次惩戒当晚自动触发"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_node_mod_stage_1_node_mod_stage_2",
+      "source": "node_mod_stage_1",
+      "target": "node_mod_stage_2"
+    },
+    {
+      "id": "edge_node_mod_stage_2_node_mod_stage_3",
+      "source": "node_mod_stage_2",
+      "target": "node_mod_stage_3"
+    },
+    {
+      "id": "edge_node_mod_stage_3_node_mod_stage_4",
+      "source": "node_mod_stage_3",
+      "target": "node_mod_stage_4"
+    },
+    {
+      "id": "edge_start_node_mod_stage_1",
+      "source": "node_start",
+      "target": "node_mod_stage_1"
+    },
+    {
+      "id": "edge_node_mod_stage_5_node_mod_stage_6",
+      "source": "node_mod_stage_5",
+      "target": "node_mod_stage_6"
+    },
+    {
+      "id": "edge_node_mod_stage_6_node_mod_stage_7",
+      "source": "node_mod_stage_6",
+      "target": "node_mod_stage_7"
+    },
+    {
+      "id": "edge_node_mod_stage_7_node_mod_stage_8",
+      "source": "node_mod_stage_7",
+      "target": "node_mod_stage_8"
+    },
+    {
+      "id": "edge_node_mod_stage_8_node_mod_stage_9",
+      "source": "node_mod_stage_8",
+      "target": "node_mod_stage_9"
+    },
+    {
+      "id": "edge_node_mod_stage_9_node_mod_stage_10",
+      "source": "node_mod_stage_9",
+      "target": "node_mod_stage_10"
+    },
+    {
+      "id": "edge_node_mod_stage_11_node_mod_stage_12",
+      "source": "node_mod_stage_11",
+      "target": "node_mod_stage_12"
+    },
+    {
+      "id": "edge_node_mod_stage_12_node_mod_stage_13",
+      "source": "node_mod_stage_12",
+      "target": "node_mod_stage_13"
+    },
+    {
+      "id": "edge_node_mod_stage_13_node_mod_stage_14",
+      "source": "node_mod_stage_13",
+      "target": "node_mod_stage_14"
+    },
+    {
+      "id": "edge_node_mod_stage_14_node_mod_stage_15",
+      "source": "node_mod_stage_14",
+      "target": "node_mod_stage_15"
+    },
+    {
+      "id": "edge_node_mod_stage_16_node_mod_stage_17",
+      "source": "node_mod_stage_16",
+      "target": "node_mod_stage_17"
+    },
+    {
+      "id": "edge_node_mod_stage_17_node_mod_stage_18",
+      "source": "node_mod_stage_17",
+      "target": "node_mod_stage_18"
+    },
+    {
+      "id": "edge_node_mod_stage_18_node_mod_stage_19",
+      "source": "node_mod_stage_18",
+      "target": "node_mod_stage_19"
+    },
+    {
+      "id": "edge_node_mod_stage_19_node_mod_stage_20",
+      "source": "node_mod_stage_19",
+      "target": "node_mod_stage_20"
+    },
+    {
+      "id": "edge_act_act1_capture_to_act2_initiation",
+      "source": "node_mod_stage_4",
+      "target": "node_mod_stage_5"
+    },
+    {
+      "id": "edge_act_act2_initiation_to_act3_punishment",
+      "source": "node_mod_stage_10",
+      "target": "node_mod_stage_11"
+    },
+    {
+      "id": "edge_act_act3_punishment_to_act4_willbreak",
+      "source": "node_mod_stage_15",
+      "target": "node_mod_stage_16"
+    },
+    {
+      "id": "edge_serve_1_event",
+      "source": "node_mod_stage_21",
+      "target": "node_event_cycle_1",
+      "label": "侍寝中"
+    },
+    {
+      "id": "edge_event_1_judge",
+      "source": "node_event_cycle_1",
+      "target": "node_judge_cycle_1"
+    },
+    {
+      "id": "edge_judge_no_1",
+      "source": "node_judge_cycle_1",
+      "target": "node_random_cycle_1",
+      "sourceHandle": "branch_1",
+      "label": "否",
+      "style": {
+        "stroke": "#ef4444"
+      }
+    },
+    {
+      "id": "edge_random_1_back",
+      "source": "node_random_cycle_1",
+      "target": "node_mod_stage_21",
+      "label": "惩戒完毕",
+      "style": {
+        "stroke": "#f97316"
+      }
+    },
+    {
+      "id": "edge_serve_2_event",
+      "source": "node_mod_stage_23",
+      "target": "node_event_cycle_2",
+      "label": "侍寝中"
+    },
+    {
+      "id": "edge_event_2_judge",
+      "source": "node_event_cycle_2",
+      "target": "node_judge_cycle_2"
+    },
+    {
+      "id": "edge_judge_no_2",
+      "source": "node_judge_cycle_2",
+      "target": "node_random_cycle_2",
+      "sourceHandle": "branch_1",
+      "label": "否",
+      "style": {
+        "stroke": "#ef4444"
+      }
+    },
+    {
+      "id": "edge_random_2_back",
+      "source": "node_random_cycle_2",
+      "target": "node_mod_stage_23",
+      "label": "惩戒完毕",
+      "style": {
+        "stroke": "#f97316"
+      }
+    },
+    {
+      "id": "edge_serve_3_event",
+      "source": "node_mod_stage_25",
+      "target": "node_event_cycle_3",
+      "label": "侍寝中"
+    },
+    {
+      "id": "edge_event_3_judge",
+      "source": "node_event_cycle_3",
+      "target": "node_judge_cycle_3"
+    },
+    {
+      "id": "edge_judge_no_3",
+      "source": "node_judge_cycle_3",
+      "target": "node_random_cycle_3",
+      "sourceHandle": "branch_1",
+      "label": "否",
+      "style": {
+        "stroke": "#ef4444"
+      }
+    },
+    {
+      "id": "edge_random_3_back",
+      "source": "node_random_cycle_3",
+      "target": "node_mod_stage_25",
+      "label": "惩戒完毕",
+      "style": {
+        "stroke": "#f97316"
+      }
+    },
+    {
+      "id": "edge_serve_4_event",
+      "source": "node_mod_stage_26",
+      "target": "node_event_cycle_4",
+      "label": "侍寝中"
+    },
+    {
+      "id": "edge_event_4_judge",
+      "source": "node_event_cycle_4",
+      "target": "node_judge_cycle_4"
+    },
+    {
+      "id": "edge_judge_no_4",
+      "source": "node_judge_cycle_4",
+      "target": "node_random_cycle_4",
+      "sourceHandle": "branch_1",
+      "label": "否",
+      "style": {
+        "stroke": "#ef4444"
+      }
+    },
+    {
+      "id": "edge_random_4_back",
+      "source": "node_random_cycle_4",
+      "target": "node_mod_stage_26",
+      "label": "惩戒完毕",
+      "style": {
+        "stroke": "#f97316"
+      }
+    },
+    {
+      "id": "edge_serve_default_event",
+      "source": "node_mod_stage_29",
+      "target": "node_event_cycle_default",
+      "label": "侍寝中"
+    },
+    {
+      "id": "edge_event_default_judge",
+      "source": "node_event_cycle_default",
+      "target": "node_judge_cycle_default"
+    },
+    {
+      "id": "edge_judge_no_default",
+      "source": "node_judge_cycle_default",
+      "target": "node_random_cycle_default",
+      "sourceHandle": "branch_1",
+      "label": "否",
+      "style": {
+        "stroke": "#ef4444"
+      }
+    },
+    {
+      "id": "edge_random_default_back",
+      "source": "node_random_cycle_default",
+      "target": "node_mod_stage_29",
+      "label": "惩戒完毕",
+      "style": {
+        "stroke": "#f97316"
+      }
+    },
+    {
+      "id": "edge_judge_yes_1",
+      "source": "node_judge_cycle_1",
+      "target": "node_mod_stage_23",
+      "sourceHandle": "branch_0",
+      "label": "是",
+      "style": {
+        "stroke": "#22c55e"
+      }
+    },
+    {
+      "id": "edge_judge_yes_2",
+      "source": "node_judge_cycle_2",
+      "target": "node_mod_stage_25",
+      "sourceHandle": "branch_0",
+      "label": "是",
+      "style": {
+        "stroke": "#22c55e"
+      }
+    },
+    {
+      "id": "edge_judge_yes_3",
+      "source": "node_judge_cycle_3",
+      "target": "node_mod_stage_26",
+      "sourceHandle": "branch_0",
+      "label": "是",
+      "style": {
+        "stroke": "#22c55e"
+      }
+    },
+    {
+      "id": "edge_judge_yes_4",
+      "source": "node_judge_cycle_4",
+      "target": "node_mod_stage_29",
+      "sourceHandle": "branch_0",
+      "label": "是",
+      "style": {
+        "stroke": "#22c55e"
+      }
+    },
+    {
+      "id": "edge_prev_to_loop",
+      "source": "node_mod_stage_20",
+      "target": "node_mod_stage_21",
+      "label": "进入侍寝循环"
+    },
+    {
+      "id": "edge_finale_1",
+      "source": "node_mod_stage_31",
+      "target": "node_mod_stage_32"
+    },
+    {
+      "id": "edge_finale_2",
+      "source": "node_mod_stage_32",
+      "target": "node_mod_stage_33"
+    },
+    {
+      "id": "edge_finale_3",
+      "source": "node_mod_stage_33",
+      "target": "node_mod_stage_34"
+    },
+    {
+      "id": "edge_finale_4",
+      "source": "node_mod_stage_34",
+      "target": "node_mod_stage_35"
+    },
+    {
+      "id": "edge_act_to_finale",
+      "source": "node_mod_stage_35",
+      "target": "node_mod_stage_31",
+      "label": "进入终幕"
+    },
+    {
+      "id": "edge_node_mod_stage_35_end",
+      "source": "node_mod_stage_35",
+      "target": "node_end"
+    },
+    {
+      "id": "edge_daily_node_group_act1_capture_daily_mod_daily_wearables",
+      "source": "node_group_act1_capture",
+      "target": "daily_mod_daily_wearables",
+      "label": "每日清晨（⑤阶段起每日触发）",
+      "style": {
+        "strokeDasharray": "5 5",
+        "stroke": "#9ca3af"
+      }
+    },
+    {
+      "id": "edge_daily_node_group_act1_capture_daily_mod_daily_morning_inspection",
+      "source": "node_group_act1_capture",
+      "target": "daily_mod_daily_morning_inspection",
+      "label": "每日晨间器具检查后（⑦阶段起每日触发）",
+      "style": {
+        "strokeDasharray": "5 5",
+        "stroke": "#9ca3af"
+      }
+    },
+    {
+      "id": "edge_daily_node_group_act1_capture_daily_mod_daily_kneel_day",
+      "source": "node_group_act1_capture",
+      "target": "daily_mod_daily_kneel_day",
+      "label": "火娘可指定每周任意一天为跪行日",
+      "style": {
+        "strokeDasharray": "5 5",
+        "stroke": "#9ca3af"
+      }
+    },
+    {
+      "id": "edge_daily_node_group_act1_capture_daily_mod_daily_silence_day",
+      "source": "node_group_act1_capture",
+      "target": "daily_mod_daily_silence_day",
+      "label": "火娘可指定任意一天为禁言日",
+      "style": {
+        "strokeDasharray": "5 5",
+        "stroke": "#9ca3af"
+      }
+    },
+    {
+      "id": "edge_daily_node_group_act1_capture_daily_mod_daily_dog_bowl",
+      "source": "node_group_act1_capture",
+      "target": "daily_mod_daily_dog_bowl",
+      "label": "每次惩戒次日自动触发",
+      "style": {
+        "strokeDasharray": "5 5",
+        "stroke": "#9ca3af"
+      }
+    },
+    {
+      "id": "edge_daily_node_group_act1_capture_daily_mod_daily_sleep_punish",
+      "source": "node_group_act1_capture",
+      "target": "daily_mod_daily_sleep_punish",
+      "label": "每次惩戒当晚自动触发",
+      "style": {
+        "strokeDasharray": "5 5",
+        "stroke": "#9ca3af"
+      }
+    }
+  ]
 }

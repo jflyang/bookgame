@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Camera, FileUp, Plus, Save, Trash2, X } from "lucide-react";
 import type { Character, CharacterId, KnowledgeDocument } from "@story-game/shared";
 import { useGameStore } from "../../../store/gameStore.js";
+import { useAudioStore } from "../../../store/audioStore.js";
 
 const AVATAR_COLORS: Record<string, string> = {
   qiaofeng: "linear-gradient(135deg, #d6c1a2, #475569)",
@@ -240,6 +241,7 @@ function RoleEditorPanel({
             />
           </label>
         </div>
+        <VoiceIdField draft={draft} onChange={onChange} />
       </div>
 
       {/* 可攻击目标 */}
@@ -449,6 +451,62 @@ function NewCharacterForm({
         </button>
       </div>
     </section>
+  );
+}
+
+/** Preset voice options for character selection */
+const VOICE_PRESETS = [
+  { id: "", label: "自动（根据性别）", gender: "" },
+  // Male voices
+  { id: "CwhRBWXzGAHq8TQ4Fs17", label: "男声 · 深沉稳重", gender: "male" },
+  { id: "TX3LPaxmHKxFdv7VOQHJ", label: "男声 · 年轻活力", gender: "male" },
+  { id: "VR6AewLTigWG4xSOukaG", label: "男声 · 沧桑老者", gender: "male" },
+  { id: "pNInz6obpgDQGcFmaJgB", label: "男声 · 浑厚有力", gender: "male" },
+  { id: "yoZ06aMxZJJ28mfd3POQ", label: "男声 · 温和儒雅", gender: "male" },
+  // Female voices
+  { id: "EXAVITQu4vr4xnSDxMaL", label: "女声 · 温柔自然", gender: "female" },
+  { id: "21m00Tcm4TlvDq8ikWAM", label: "女声 · 知性成熟", gender: "female" },
+  { id: "AZnzlk1XvdvUeBnXmlld", label: "女声 · 甜美少女", gender: "female" },
+  { id: "MF3mGyEYCl7XYWbV9V6O", label: "女声 · 冷艳高贵", gender: "female" },
+];
+
+/** Voice ID field — only shows when TTS plugin is enabled */
+function VoiceIdField({ draft, onChange }: { draft: Character; onChange: (c: Character) => void }) {
+  const serviceConfig = useAudioStore((s) => s.serviceConfig);
+  const loadConfig = useAudioStore((s) => s.loadConfig);
+  useEffect(() => { loadConfig(); }, [loadConfig]);
+  // Hide when TTS is disabled (plugin off)
+  if (!serviceConfig || !serviceConfig.enabled || serviceConfig.provider === "disabled") return null;
+
+  const currentVoiceId = draft.voiceId || "";
+  const isPreset = VOICE_PRESETS.some((p) => p.id === currentVoiceId);
+
+  return (
+    <div className="role-field" style={{ marginTop: 8 }}>
+      <span>语音音色</span>
+      <select
+        value={isPreset ? currentVoiceId : "__custom__"}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (val === "__custom__") return; // switch to custom input mode handled below
+          onChange({ ...draft, voiceId: val });
+        }}
+        style={{ fontSize: "0.85rem" }}
+      >
+        {VOICE_PRESETS.map((p) => (
+          <option key={p.id} value={p.id}>{p.label}</option>
+        ))}
+        <option value="__custom__">自定义 Voice ID...</option>
+      </select>
+      {(!isPreset && currentVoiceId) && (
+        <input
+          value={currentVoiceId}
+          onChange={(e) => onChange({ ...draft, voiceId: e.target.value })}
+          placeholder="ElevenLabs Voice ID"
+          style={{ fontFamily: "monospace", fontSize: "0.82rem", marginTop: 6 }}
+        />
+      )}
+    </div>
   );
 }
 

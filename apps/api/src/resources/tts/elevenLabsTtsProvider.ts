@@ -11,8 +11,10 @@ const logger = createModuleLogger("tts:elevenlabs");
 
 const ELEVENLABS_BASE_URL = "https://api.elevenlabs.io";
 const DEFAULT_MODEL_ID = "eleven_multilingual_v2";
-/** Default ElevenLabs voice — "Roger" (deep male, good for Chinese) */
-const DEFAULT_VOICE_ID = "CwhRBWXzGAHq8TQ4Fs17";
+/** Default ElevenLabs voice — male (deep, good for Chinese martial arts) */
+const DEFAULT_VOICE_MALE = "CwhRBWXzGAHq8TQ4Fs17";
+/** Default ElevenLabs voice — female (warm, natural Chinese) */
+const DEFAULT_VOICE_FEMALE = "EXAVITQu4vr4xnSDxMaL";
 
 /** Voice settings for game characters — expressive with good stability */
 const GAME_VOICE_SETTINGS = {
@@ -45,7 +47,7 @@ export class ElevenLabsTtsProvider implements TtsProvider {
     if (!apiKey) throw new Error("ElevenLabs API key is not configured");
 
     const modelId = config.elevenLabsModel || DEFAULT_MODEL_ID;
-    const voiceId = this.resolveVoiceId(input.voiceId);
+    const voiceId = this.resolveVoiceId(input.voiceId, input.instruct);
     const format = input.format || config.defaultFormat || "mp3";
 
     // Check cache
@@ -141,7 +143,7 @@ export class ElevenLabsTtsProvider implements TtsProvider {
     if (!apiKey) throw new Error("ElevenLabs API key is not configured");
 
     const modelId = config.elevenLabsModel || DEFAULT_MODEL_ID;
-    const voiceId = this.resolveVoiceId(input.voiceId);
+    const voiceId = this.resolveVoiceId(input.voiceId, input.instruct);
     const format = input.format || config.defaultFormat || "mp3";
     const outputFormat = this.mapOutputFormat(format);
 
@@ -201,14 +203,9 @@ export class ElevenLabsTtsProvider implements TtsProvider {
     if (!apiKey) return [];
 
     try {
-      const response = await fetch(`${ELEVENLABS_BASE_URL}/v1/voices`, {
-        headers: { "xi-api-key": apiKey },
-        signal: AbortSignal.timeout(10_000),
-      });
-      if (!response.ok) return [];
-
-      const data = (await response.json()) as { voices: ElevenLabsVoice[] };
-      return data.voices.map((v) => ({
+      const data = await this.httpsGet(`${ELEVENLABS_BASE_URL}/v1/voices`, apiKey);
+      const parsed = JSON.parse(data) as { voices: ElevenLabsVoice[] };
+      return parsed.voices.map((v) => ({
         id: v.voice_id,
         name: v.name,
         language: v.labels?.language || "en",
@@ -218,6 +215,33 @@ export class ElevenLabsTtsProvider implements TtsProvider {
       logger.warn({ err }, "failed to list ElevenLabs voices");
       return [];
     }
+  }
+
+  private httpsGet(url: string, apiKey: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const parsed = new URL(url);
+      const req = httpsRequest({
+        hostname: parsed.hostname,
+        path: parsed.pathname + parsed.search,
+        method: "GET",
+        headers: { "xi-api-key": apiKey },
+        timeout: 10000,
+      }, (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk: Buffer) => chunks.push(chunk));
+        res.on("end", () => {
+          const body = Buffer.concat(chunks).toString("utf-8");
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            resolve(body);
+          } else {
+            reject(new Error(`HTTP ${res.statusCode}: ${body.slice(0, 200)}`));
+          }
+        });
+      });
+      req.on("error", (err) => reject(err));
+      req.on("timeout", () => { req.destroy(); reject(new Error("timeout")); });
+      req.end();
+    });
   }
 
   async isAvailable(): Promise<boolean> {
@@ -244,14 +268,21 @@ export class ElevenLabsTtsProvider implements TtsProvider {
 
   /**
    * ElevenLabs voice IDs are 20-char alphanumeric strings.
-   * If the voiceId looks like a game character ID (Chinese/short), use a default voice.
+   * If the voiceId looks like a game character ID (Chinese/short), use a default voice
+   * based on gender detection from the instruct text.
    */
-  private resolveVoiceId(voiceId: string): string {
+  private resolveVoiceId(voiceId: string, instruct?: string): string {
     // ElevenLabs IDs are typically 20 chars, alphanumeric
     if (/^[a-zA-Z0-9]{15,30}$/.test(voiceId)) return voiceId;
-    // Not a valid ElevenLabs ID — use default multilingual voice
-    // "Roger" - a good default male voice for Chinese content
-    return DEFAULT_VOICE_ID;
+    // Not a valid ElevenLabs ID — detect gender and pick default
+    return this.detectGenderVoice(instruct || voiceId);
+  }
+
+  /** Detect gender from text hints and return appropriate default voice */
+  private detectGenderVoice(hint: string): string {
+    const femaleKeywords = /女|姑娘|小姐|夫人|娘|妹|姐|婆|嫂|公主|仙子|女声|female|woman|girl|lady/;
+    if (femaleKeywords.test(hint)) return DEFAULT_VOICE_FEMALE;
+    return DEFAULT_VOICE_MALE;
   }
 
   private mapOutputFormat(format: string): string {

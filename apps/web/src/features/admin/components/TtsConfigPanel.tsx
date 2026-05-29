@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Check, Mic, Play, Save, Square, Zap } from "lucide-react";
 import type { TtsConfigView } from "@story-game/shared";
 import * as ttsApi from "../../../lib/ttsApi.js";
+import { useAudioStore } from "../../../store/audioStore.js";
 
 type ServiceStatus = "stopped" | "starting" | "running" | "error";
 
@@ -9,6 +10,15 @@ export function TtsConfigPanel() {
   const [config, setConfig] = useState<TtsConfigView | null>(null);
   const [saved, setSaved] = useState(false);
   const [voices, setVoices] = useState<Array<{ id: string; name: string; characterId?: string }>>([]);
+
+  // Playback rate from audio store
+  const playbackRate = useAudioStore((s) => s.playbackRate);
+  const setPlaybackRate = useAudioStore((s) => s.setPlaybackRate);
+
+  function handlePlaybackRateChange(rate: number) {
+    setPlaybackRate(rate);
+    localStorage.setItem("play:playbackRate", String(rate));
+  }
 
   // Service process state
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus>("stopped");
@@ -273,13 +283,13 @@ export function TtsConfigPanel() {
           <label>
             Model
             <select
-              value={(config as any).elevenLabsModel || "eleven_multilingual_v2"}
+              value={(config as any).elevenLabsModel || "eleven_v3"}
               onChange={(e) => setConfig({ ...config, elevenLabsModel: e.target.value } as any)}
             >
-              <option value="eleven_multilingual_v2">Multilingual v2 (推荐，支持中文)</option>
-              <option value="eleven_turbo_v2_5">Turbo v2.5 (低延迟)</option>
-              <option value="eleven_turbo_v2">Turbo v2</option>
-              <option value="eleven_monolingual_v1">Monolingual v1 (仅英文)</option>
+              <option value="eleven_v3">Eleven v3 (最新旗舰，情感丰富)</option>
+              <option value="eleven_flash_v2_5">Flash v2.5 (低延迟，质量好)</option>
+              <option value="eleven_multilingual_v2">Multilingual v2 (稳定，长文本)</option>
+              <option value="eleven_turbo_v2_5">Turbo v2.5 (最快)</option>
             </select>
           </label>
           <p className="muted" style={{ margin: 0, fontSize: "0.78rem" }}>
@@ -325,24 +335,60 @@ export function TtsConfigPanel() {
             默认语音指令
             <input value={config.defaultInstruct} onChange={(e) => setConfig({ ...config, defaultInstruct: e.target.value })} placeholder="例如：用自然流畅的中文朗读" />
           </label>
+          <label>
+            播放语速 <span style={{ color: "#0f766e", fontWeight: 800, marginLeft: 8 }}>{playbackRate.toFixed(2)}x</span>
+            <input
+              type="range"
+              min={0.5}
+              max={2.0}
+              step={0.05}
+              value={playbackRate}
+              onChange={(e) => handlePlaybackRateChange(Number(e.target.value))}
+              style={{ width: "100%", cursor: "pointer" }}
+            />
+            <span style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", color: "#94a3b8" }}>
+              <span>0.5x 慢</span>
+              <span>1.0x 正常</span>
+              <span>2.0x 快</span>
+            </span>
+          </label>
         </div>
       </details>
 
-      {/* ===== Voices ===== */}
-      {voices.length > 0 && (
-        <details>
-          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "#334155" }}>
-            已注册音色 ({voices.length})
-          </summary>
-          <div style={{ display: "grid", gap: 4, fontSize: "0.82rem", marginTop: 8 }}>
-            {voices.map((v) => (
-              <div key={v.id} style={{ padding: "4px 8px", background: "#f8fafc", borderRadius: 4 }}>
-                <strong>{v.name}</strong> <span style={{ color: "#64748b" }}>({v.id})</span>
-                {v.characterId && <span style={{ color: "#0f766e", marginLeft: 8 }}>→ {v.characterId}</span>}
-              </div>
-            ))}
+      {/* ===== Narration Settings ===== */}
+      {config.provider !== "disabled" && (
+        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <strong style={{ fontSize: "0.88rem", color: "#334155" }}>旁白朗读</strong>
+          <div className="inline-fields">
+            <label>
+              旁白语音
+              <select
+                value={(config as any).narrateEnabled ? "true" : "false"}
+                onChange={(e) => setConfig({ ...config, narrateEnabled: e.target.value === "true" } as any)}
+              >
+                <option value="false">关闭（只读对话）</option>
+                <option value="true">开启（旁白也朗读）</option>
+              </select>
+            </label>
+            <label>
+              旁白音色
+              <select
+                value={(config as any).narrateVoiceId || ""}
+                onChange={(e) => setConfig({ ...config, narrateVoiceId: e.target.value } as any)}
+              >
+                <option value="">默认男声</option>
+                <option value="CwhRBWXzGAHq8TQ4Fs17">男声 · 深沉稳重</option>
+                <option value="TX3LPaxmHKxFdv7VOQHJ">男声 · 年轻活力</option>
+                <option value="VR6AewLTigWG4xSOukaG">男声 · 沧桑老者</option>
+                <option value="EXAVITQu4vr4xnSDxMaL">女声 · 温柔自然</option>
+                <option value="21m00Tcm4TlvDq8ikWAM">女声 · 知性成熟</option>
+              </select>
+            </label>
           </div>
-        </details>
+          <p className="muted" style={{ margin: 0, fontSize: "0.75rem" }}>
+            开启后，旁白文字也会被朗读。旁白使用独立音色，与角色对话区分。
+          </p>
+        </div>
       )}
 
       {/* ===== Actions ===== */}
@@ -354,5 +400,106 @@ export function TtsConfigPanel() {
 
       {saved && <p className="feedback-toast"><Check size={16} /> 配置已保存</p>}
     </section>
+  );
+}
+
+/** Inline editor for character → ElevenLabs voice ID mapping */
+function VoiceMappingEditor({ onUpdate }: { onUpdate: () => void }) {
+  const [profiles, setProfiles] = useState<Array<{ characterId: string; voiceId: string; name: string; instruct: string }>>([]);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editVoiceId, setEditVoiceId] = useState("");
+
+  useEffect(() => {
+    void loadProfiles();
+  }, []);
+
+  async function loadProfiles() {
+    try {
+      const result = await ttsApi.listVoices();
+      const registered = (result as any).registeredProfiles || result.voices?.map((v: any) => ({
+        characterId: v.characterId || v.id,
+        voiceId: v.id,
+        name: v.name,
+        instruct: v.instruct || "",
+      })) || [];
+      setProfiles(registered);
+    } catch {
+      // ignore
+    }
+  }
+
+  async function handleSaveVoiceId(characterId: string) {
+    if (!editVoiceId.trim()) return;
+    try {
+      const profile = profiles.find((p) => p.characterId === characterId);
+      await ttsApi.registerVoice({
+        characterId,
+        voiceId: editVoiceId.trim(),
+        name: profile?.name || characterId,
+        instruct: profile?.instruct || "",
+        language: "zh",
+      });
+      setEditing(null);
+      setEditVoiceId("");
+      await loadProfiles();
+      onUpdate();
+    } catch (err) {
+      console.error("Failed to save voice mapping:", err);
+    }
+  }
+
+  if (profiles.length === 0) return null;
+
+  return (
+    <details open>
+      <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: "0.88rem", color: "#334155" }}>
+        角色音色映射
+      </summary>
+      <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+        <p className="muted" style={{ margin: 0, fontSize: "0.75rem" }}>
+          为每个角色指定 ElevenLabs Voice ID。在 <a href="https://elevenlabs.io/voice-library" target="_blank" rel="noreferrer">Voice Library</a> 中找到喜欢的音色，复制其 Voice ID 填入。
+        </p>
+        {profiles.map((p) => (
+          <div key={p.characterId} style={{
+            display: "grid",
+            gridTemplateColumns: "80px 1fr auto",
+            gap: 8,
+            alignItems: "center",
+            padding: "6px 10px",
+            background: "#f8fafc",
+            borderRadius: 6,
+            border: "1px solid #e2e8f0",
+            fontSize: "0.82rem",
+          }}>
+            <strong style={{ color: "#334155" }}>{p.name}</strong>
+            {editing === p.characterId ? (
+              <>
+                <input
+                  value={editVoiceId}
+                  onChange={(e) => setEditVoiceId(e.target.value)}
+                  placeholder="ElevenLabs Voice ID"
+                  style={{ fontSize: "0.78rem", padding: "4px 8px", fontFamily: "monospace" }}
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === "Enter") handleSaveVoiceId(p.characterId); if (e.key === "Escape") setEditing(null); }}
+                />
+                <div style={{ display: "flex", gap: 4 }}>
+                  <button onClick={() => handleSaveVoiceId(p.characterId)} style={{ fontSize: "0.72rem", padding: "3px 8px", background: "#0f766e", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer", minHeight: "auto" }}>保存</button>
+                  <button onClick={() => setEditing(null)} style={{ fontSize: "0.72rem", padding: "3px 8px", background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: 4, cursor: "pointer", minHeight: "auto" }}>取消</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <code style={{ color: /^[a-zA-Z0-9]{15,30}$/.test(p.voiceId) ? "#0f766e" : "#94a3b8", fontSize: "0.75rem" }}>
+                  {/^[a-zA-Z0-9]{15,30}$/.test(p.voiceId) ? p.voiceId : "(使用默认音色)"}
+                </code>
+                <button onClick={() => { setEditing(p.characterId); setEditVoiceId(p.voiceId === p.characterId ? "" : p.voiceId); }} style={{ fontSize: "0.72rem", padding: "3px 8px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 4, cursor: "pointer", minHeight: "auto" }}>
+                  编辑
+                </button>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </details>
   );
 }

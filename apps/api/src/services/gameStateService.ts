@@ -128,8 +128,8 @@ export class GameStateService {
 
     state.round += 1;
 
-    // Auto-advance: if stuck in the same stage for 20+ rounds, force advance to next stage
-    const MAX_ROUNDS_PER_STAGE = 20;
+    // Auto-advance: if stuck in the same stage for 15+ rounds, force advance to next stage
+    const MAX_ROUNDS_PER_STAGE = 15;
     if (!stageChanged && (state.round - (state.stageEnteredAtRound ?? 0)) >= MAX_ROUNDS_PER_STAGE) {
       const currentIdx = state.scenario.stages.indexOf(state.scenario.currentStage);
       if (currentIdx >= 0 && currentIdx < state.scenario.stages.length - 1) {
@@ -138,7 +138,7 @@ export class GameStateService {
         state.scenario.currentStage = nextStage;
         state.stageEnteredAtRound = state.round;
         stageChanged = true;
-        logger.info({ sessionId, prevStage, nextStage, round: state.round }, "auto-advanced stage (20 rounds limit)");
+        logger.info({ sessionId, prevStage, nextStage, round: state.round }, "auto-advanced stage (15 rounds limit)");
       }
     }
 
@@ -152,6 +152,16 @@ export class GameStateService {
     state.status = state.characters.some((item) => item.isDefeated)
       ? "completed"
       : "active";
+
+    // Story-end lock: if at the last stage and no progression happened this turn,
+    // mark the story as naturally completed (finale reached)
+    if (state.status === "active" && !stageChanged) {
+      const currentIdx = state.scenario.stages.indexOf(state.scenario.currentStage);
+      if (currentIdx >= 0 && currentIdx === state.scenario.stages.length - 1) {
+        state.status = "completed";
+        logger.info({ sessionId, stage: state.scenario.currentStage, round: state.round }, "story completed (final stage reached)");
+      }
+    }
     logger.debug({ sessionId, speakerId, round: state.round, delta }, "turn applied");
     return { state, delta };
   }

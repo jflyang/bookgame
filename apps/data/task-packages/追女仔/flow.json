@@ -1,35 +1,263 @@
 {
   "nodes": [
-    { "id": "node_start", "type": "start", "position": { "x": 400, "y": -80 }, "data": { "label": "开始：追女仔" } },
-    { "id": "node_1", "type": "module", "position": { "x": 400, "y": 40 }, "data": { "label": "① 美云余韵", "moduleRef": "mod_1", "colorKey": "training" } },
-    { "id": "node_2", "type": "module", "position": { "x": 400, "y": 160 }, "data": { "label": "② 媚药清洗", "moduleRef": "mod_2", "colorKey": "punishment" } },
-    { "id": "node_choice_1", "type": "choice", "position": { "x": 400, "y": 280 }, "data": { "label": "⚡ 征服之道", "branches": [
-      { "targetStage": "mod_3a", "choiceText": "温柔征服", "description": "以温柔和耐心瓦解丽云的心理防线，让她自愿臣服。" },
-      { "targetStage": "mod_3b", "choiceText": "强势支配", "description": "以绝对的支配力压制丽云的反抗，用身体征服意志。" },
-      { "targetStage": "mod_3c", "choiceText": "仪式驯服", "description": "通过完整的媚药仪式逐步驯服，大姐全程主导调教。" }
-    ] } },
-    { "id": "node_3a", "type": "module", "position": { "x": 50, "y": 400 }, "data": { "label": "③A 温柔征服", "moduleRef": "mod_3a", "colorKey": "serving" } },
-    { "id": "node_4a", "type": "module", "position": { "x": 50, "y": 520 }, "data": { "label": "④A 身心沦陷", "moduleRef": "mod_4a", "colorKey": "daily" } },
-    { "id": "node_3b", "type": "module", "position": { "x": 400, "y": 400 }, "data": { "label": "③B 强势支配", "moduleRef": "mod_3b", "colorKey": "punishment" } },
-    { "id": "node_4b", "type": "module", "position": { "x": 400, "y": 520 }, "data": { "label": "④B 彻底臣服", "moduleRef": "mod_4b", "colorKey": "punishment" } },
-    { "id": "node_3c", "type": "module", "position": { "x": 750, "y": 400 }, "data": { "label": "③C 仪式驯服", "moduleRef": "mod_3c", "colorKey": "serving" } },
-    { "id": "node_4c", "type": "module", "position": { "x": 750, "y": 520 }, "data": { "label": "④C 归属确立", "moduleRef": "mod_4c", "colorKey": "event" } },
-    { "id": "node_5", "type": "module", "position": { "x": 400, "y": 660 }, "data": { "label": "⑤ 仪式巩固", "moduleRef": "mod_5", "colorKey": "event" } },
-    { "id": "node_end", "type": "end", "position": { "x": 400, "y": 780 }, "data": { "label": "后宫征服完成" } }
+    {
+      "id": "node_start",
+      "type": "start",
+      "position": {
+        "x": 400,
+        "y": -80
+      },
+      "data": {
+        "label": "开始：追女仔"
+      }
+    },
+    {
+      "id": "node_1",
+      "type": "module",
+      "position": {
+        "x": 400,
+        "y": 40
+      },
+      "data": {
+        "label": "① 美云余韵",
+        "moduleRef": "mod_1",
+        "colorKey": "training"
+      }
+    },
+    {
+      "id": "node_2",
+      "type": "module",
+      "position": {
+        "x": 400,
+        "y": 160
+      },
+      "data": {
+        "label": "② 媚药清洗",
+        "moduleRef": "mod_2",
+        "colorKey": "punishment"
+      }
+    },
+    {
+      "id": "node_choice_1",
+      "type": "choice",
+      "position": {
+        "x": 400,
+        "y": 280
+      },
+      "data": {
+        "label": "⚡ 征服之道",
+        "branches": [
+          {
+            "targetStage": "mod_3a",
+            "choiceText": "温柔征服",
+            "description": "以温柔和耐心瓦解丽云的心理防线，让她自愿臣服。"
+          },
+          {
+            "targetStage": "mod_3b",
+            "choiceText": "强势支配",
+            "description": "以绝对的支配力压制丽云的反抗，用身体征服意志。"
+          },
+          {
+            "targetStage": "mod_3c",
+            "choiceText": "仪式驯服",
+            "description": "通过完整的媚药仪式逐步驯服，大姐全程主导调教。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "node_3a",
+      "type": "module",
+      "position": {
+        "x": 50,
+        "y": 400
+      },
+      "data": {
+        "label": "③A 温柔征服",
+        "moduleRef": "mod_3a",
+        "colorKey": "serving"
+      }
+    },
+    {
+      "id": "node_4a",
+      "type": "module",
+      "position": {
+        "x": 50,
+        "y": 520
+      },
+      "data": {
+        "label": "④A 身心沦陷",
+        "moduleRef": "mod_4a",
+        "colorKey": "daily"
+      }
+    },
+    {
+      "id": "node_3b",
+      "type": "module",
+      "position": {
+        "x": 400,
+        "y": 400
+      },
+      "data": {
+        "label": "③B 强势支配",
+        "moduleRef": "mod_3b",
+        "colorKey": "punishment"
+      }
+    },
+    {
+      "id": "node_4b",
+      "type": "module",
+      "position": {
+        "x": 400,
+        "y": 520
+      },
+      "data": {
+        "label": "④B 彻底臣服",
+        "moduleRef": "mod_4b",
+        "colorKey": "punishment"
+      }
+    },
+    {
+      "id": "node_3c",
+      "type": "module",
+      "position": {
+        "x": 750,
+        "y": 400
+      },
+      "data": {
+        "label": "③C 仪式驯服",
+        "moduleRef": "mod_3c",
+        "colorKey": "serving"
+      }
+    },
+    {
+      "id": "node_4c",
+      "type": "module",
+      "position": {
+        "x": 750,
+        "y": 520
+      },
+      "data": {
+        "label": "④C 归属确立",
+        "moduleRef": "mod_4c",
+        "colorKey": "event"
+      }
+    },
+    {
+      "id": "node_5",
+      "type": "module",
+      "position": {
+        "x": 400,
+        "y": 660
+      },
+      "data": {
+        "label": "⑤ 仪式巩固",
+        "moduleRef": "mod_5",
+        "colorKey": "event"
+      }
+    },
+    {
+      "id": "node_end",
+      "type": "end",
+      "position": {
+        "x": 400,
+        "y": 780
+      },
+      "data": {
+        "label": "后宫征服完成"
+      }
+    }
   ],
   "edges": [
-    { "id": "e_start_1", "source": "node_start", "target": "node_1" },
-    { "id": "e_1_2", "source": "node_1", "target": "node_2" },
-    { "id": "e_2_choice1", "source": "node_2", "target": "node_choice_1" },
-    { "id": "e_choice1_3a", "source": "node_choice_1", "target": "node_3a", "sourceHandle": "branch_0" },
-    { "id": "e_3a_4a", "source": "node_3a", "target": "node_4a" },
-    { "id": "e_4a_5", "source": "node_4a", "target": "node_5" },
-    { "id": "e_choice1_3b", "source": "node_choice_1", "target": "node_3b", "sourceHandle": "branch_1" },
-    { "id": "e_3b_4b", "source": "node_3b", "target": "node_4b" },
-    { "id": "e_4b_5", "source": "node_4b", "target": "node_5" },
-    { "id": "e_choice1_3c", "source": "node_choice_1", "target": "node_3c", "sourceHandle": "branch_2" },
-    { "id": "e_3c_4c", "source": "node_3c", "target": "node_4c" },
-    { "id": "e_4c_5", "source": "node_4c", "target": "node_5" },
-    { "id": "e_5_end", "source": "node_5", "target": "node_end" }
-  ]
+    {
+      "id": "e_start_1",
+      "source": "node_start",
+      "target": "node_1"
+    },
+    {
+      "id": "e_1_2",
+      "source": "node_1",
+      "target": "node_2"
+    },
+    {
+      "id": "e_2_choice1",
+      "source": "node_2",
+      "target": "node_choice_1"
+    },
+    {
+      "id": "e_choice1_3a",
+      "source": "node_choice_1",
+      "target": "node_3a",
+      "sourceHandle": "branch_0"
+    },
+    {
+      "id": "e_3a_4a",
+      "source": "node_3a",
+      "target": "node_4a"
+    },
+    {
+      "id": "e_4a_5",
+      "source": "node_4a",
+      "target": "node_5"
+    },
+    {
+      "id": "e_choice1_3b",
+      "source": "node_choice_1",
+      "target": "node_3b",
+      "sourceHandle": "branch_1"
+    },
+    {
+      "id": "e_3b_4b",
+      "source": "node_3b",
+      "target": "node_4b"
+    },
+    {
+      "id": "e_4b_5",
+      "source": "node_4b",
+      "target": "node_5"
+    },
+    {
+      "id": "e_choice1_3c",
+      "source": "node_choice_1",
+      "target": "node_3c",
+      "sourceHandle": "branch_2"
+    },
+    {
+      "id": "e_3c_4c",
+      "source": "node_3c",
+      "target": "node_4c"
+    },
+    {
+      "id": "e_4c_5",
+      "source": "node_4c",
+      "target": "node_5"
+    },
+    {
+      "id": "e_5_end",
+      "source": "node_5",
+      "target": "node_end"
+    }
+  ],
+  "linearPhases": {
+    "act1_capture": {
+      "title": "第一幕：美云余韵",
+      "sequence": [
+        "mod_1",
+        "mod_2"
+      ],
+      "afterAll": "act2_serve"
+    },
+    "act2_serve": {
+      "title": "第二幕：A 温柔征服 → 仪式巩固",
+      "sequence": [
+        "mod_3a",
+        "mod_4a",
+        "mod_3b",
+        "mod_4b",
+        "mod_3c",
+        "mod_4c",
+        "mod_5"
+      ]
+    }
+  }
 }

@@ -1,9 +1,27 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { ttsConfigService, ttsProvider, voiceRegistry, ttsProcessManager } from "../modules/container.js";
+import { ttsConfigService, ttsProvider, voiceRegistry, ttsProcessManager, characterService } from "../modules/container.js";
 import { createModuleLogger } from "../utils/logger.js";
 
 const logger = createModuleLogger("tts:routes");
+
+/** Resolve voice ID: character.voiceId (from story package) > voiceRegistry > characterId */
+function resolveCharacterVoiceId(characterId: string): string {
+  // Special case: narrator voice
+  if (characterId === "__narrator__") {
+    const config = ttsConfigService.getConfig();
+    return config.narrateVoiceId || "CwhRBWXzGAHq8TQ4Fs17"; // default male narrator
+  }
+  // Priority 1: character's own voiceId field (set in story package editor)
+  try {
+    const character = characterService.get(characterId);
+    if (character?.voiceId?.trim()) return character.voiceId.trim();
+  } catch {
+    // Character not found — fall through
+  }
+  // Priority 2: voice registry (default profiles)
+  return voiceRegistry.getVoiceId(characterId);
+}
 
 const synthesizeRequestSchema = z.object({
   text: z.string().min(1).max(2000),
@@ -24,6 +42,8 @@ const ttsConfigUpdateSchema = z.object({
   sampleRate: z.number().int().positive().optional(),
   elevenLabsApiKey: z.string().optional(),
   elevenLabsModel: z.string().optional(),
+  narrateEnabled: z.boolean().optional(),
+  narrateVoiceId: z.string().optional(),
 });
 
 export async function ttsRoutes(app: FastifyInstance) {
@@ -44,7 +64,7 @@ export async function ttsRoutes(app: FastifyInstance) {
         text = sentenceEnd > 50 ? cutoff.slice(0, sentenceEnd + 1) : cutoff.slice(0, 150);
       }
 
-      const voiceId = voiceRegistry.getVoiceId(characterId);
+      const voiceId = resolveCharacterVoiceId(characterId);
       const instruct = voiceRegistry.getInstruct(characterId, emotion);
 
       const result = await ttsProvider.synthesize({
@@ -76,7 +96,7 @@ export async function ttsRoutes(app: FastifyInstance) {
     try {
       const { text, characterId, emotion, format } = synthesizeRequestSchema.parse(request.body);
 
-      const voiceId = voiceRegistry.getVoiceId(characterId);
+      const voiceId = resolveCharacterVoiceId(characterId);
       const instruct = voiceRegistry.getInstruct(characterId, emotion);
       const outputFormat = format || config.defaultFormat;
 

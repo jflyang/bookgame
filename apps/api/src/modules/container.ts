@@ -42,6 +42,7 @@ import { TtsProcessManager } from "../resources/tts/ttsProcessManager.js";
 const auditLogService = new AuditLogService();
 export { auditLogService };
 const characterService = new CharacterService(characters);
+export { characterService };
 const knowledgeBaseService = new KnowledgeBaseService(knowledgeDocuments);
 const scenarioService = new ScenarioService(scenarios);
 const skillIndex = new SkillIndex();

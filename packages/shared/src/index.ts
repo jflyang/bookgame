@@ -16,8 +16,10 @@ export const characterSchema = z.object({
   rules: z.array(z.string()).default([]),
   knowledgeBaseIds: z.array(safeIdSchema).default([]),
   attackableTargetIds: z.array(z.string()).default([]),
-  sourceNote: z.string().optional()
-});
+  sourceNote: z.string().optional(),
+  /** TTS voice ID (e.g. ElevenLabs voice_id). If empty, uses default voice. */
+  voiceId: z.string().optional(),
+}).passthrough();
 export type Character = z.infer<typeof characterSchema>;
 
 export const skillSchema = z.object({

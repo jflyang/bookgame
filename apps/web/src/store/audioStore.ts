@@ -20,11 +20,15 @@ interface AudioState {
   /** Error message */
   error: string | null;
 
+  /** Playback speed (1.0 = normal, 1.2 = slightly faster) */
+  playbackRate: number;
+
   // Actions
   loadConfig: () => Promise<void>;
   setEnabled: (enabled: boolean) => void;
   setAutoPlay: (enabled: boolean) => void;
   setVolume: (volume: number) => void;
+  setPlaybackRate: (rate: number) => void;
   playMessage: (messageId: string, text: string, characterId: string, emotion?: string) => Promise<void>;
   stopPlaying: () => void;
   setCurrentPlaying: (id: string | null) => void;
@@ -34,6 +38,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   ttsEnabled: false,
   autoPlay: false,
   volume: 0.8,
+  playbackRate: parseFloat(localStorage.getItem("play:playbackRate") || "1.15"),
   currentPlayingId: null,
   loadingIds: new Set(),
   audioCache: new Map(),
@@ -65,6 +70,10 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     set({ volume: Math.max(0, Math.min(1, volume)) });
   },
 
+  setPlaybackRate(rate) {
+    set({ playbackRate: Math.max(0.5, Math.min(2.0, rate)) });
+  },
+
   async playMessage(messageId, text, characterId, emotion) {
     const { loadingIds, audioCache, ttsEnabled } = get();
     if (!ttsEnabled) return;
@@ -79,10 +88,10 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       return;
     }
 
-    // Start loading
+    // Start loading — use synthesize (which caches on server for replay)
     const nextLoading = new Set(loadingIds);
     nextLoading.add(messageId);
-    set({ loadingIds: nextLoading, error: null });
+    set({ loadingIds: nextLoading, error: null, currentPlayingId: messageId });
 
     try {
       const result = await ttsApi.synthesize(text, characterId, emotion);
@@ -97,7 +106,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       set({
         audioCache: nextCache,
         loadingIds: doneLoading,
-        currentPlayingId: messageId,
+      });
       });
     } catch (err) {
       const doneLoading = new Set(get().loadingIds);

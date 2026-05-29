@@ -44,7 +44,8 @@ export function Composer({ icon }: { icon: ReactNode }) {
   const [mentionStart, setMentionStart] = useState(-1);
   const [mentionIndex, setMentionIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { send, isSending, selectedCharacterId, characters } = useGameStore();
+  const { send, isSending, selectedCharacterId, characters, gameState } = useGameStore();
+  const isCompleted = gameState?.status === "completed";
   const labels = useLabels();
   const selected = characters.find((item) => item.id === selectedCharacterId);
 
@@ -121,7 +122,8 @@ export function Composer({ icon }: { icon: ReactNode }) {
             onChange={(event) => handleChange(event.target.value)}
             onKeyDown={handleKeyDown}
             aria-label={selected ? `指定 ${selected.name} 发言` : "输入行动或剧情指令"}
-            placeholder={selected ? `输入给 ${selected.name} 的剧情指令...` : "输入 @角色 或继续剧情..."}
+            placeholder={isCompleted ? "故事已结束" : (selected ? `输入给 ${selected.name} 的剧情指令...` : "输入 @角色 或继续剧情...")}
+            disabled={isCompleted}
           />
           {mentionOpen && filteredCharacters.length > 0 && (
             <div className="mention-dropdown">
@@ -142,7 +144,7 @@ export function Composer({ icon }: { icon: ReactNode }) {
             </div>
           )}
         </div>
-        <button disabled={isSending || !text.trim()}>{icon} {labels.send}</button>
+        <button disabled={isSending || isCompleted || !text.trim()}>{isCompleted ? "故事已结束" : `${icon} ${labels.send}`}</button>
       </div>
     </form>
   );

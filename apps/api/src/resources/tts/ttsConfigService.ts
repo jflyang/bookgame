@@ -19,6 +19,10 @@ export interface TtsConfig {
   elevenLabsApiKey?: string;
   /** ElevenLabs model ID (default: eleven_multilingual_v2) */
   elevenLabsModel?: string;
+  /** Whether to also read narration aloud (not just dialogue) */
+  narrateEnabled?: boolean;
+  /** Voice ID for narration (narrator voice) */
+  narrateVoiceId?: string;
 }
 
 export interface TtsConfigView {
@@ -32,9 +36,10 @@ export interface TtsConfigView {
   defaultFormat: string;
   sampleRate: number;
   serviceAvailable?: boolean;
-  /** Whether an ElevenLabs API key is configured (never exposes the actual key) */
   hasElevenLabsKey?: boolean;
   elevenLabsModel?: string;
+  narrateEnabled?: boolean;
+  narrateVoiceId?: string;
 }
 
 const defaultConfig: TtsConfig = {

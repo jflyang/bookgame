@@ -5,6 +5,7 @@ import { useStoryAssets } from "../contexts/StoryAssetsContext.js";
 import { useGameStore } from "../../../store/gameStore.js";
 import { ChoiceCards } from "./ChoiceCards.js";
 import { MessageAudioButton } from "./MessageAudioButton.js";
+import { NarrationAudioButton } from "./NarrationAudioButton.js";
 
 export function MessageList({ characters }: { characters: Character[] }) {
   const messages = useGameStore((state) => state.messages);
@@ -165,7 +166,10 @@ export function MessageList({ characters }: { characters: Character[] }) {
             return (
               <article key={message.id} className={`story-entry ${message.role}`}>
                 {narration && (
-                  <p className="narration-line">{renderInlineMarkdown(narration)}</p>
+                  <div style={{ position: "relative" }}>
+                    <p className="narration-line">{renderInlineMarkdown(narration)}</p>
+                    <NarrationAudioButton messageId={message.id} text={narration} />
+                  </div>
                 )}
                 {dialogue && (
                   <div className={`dialogue-card speaker-${message.speakerId ?? "unknown"}`}>
