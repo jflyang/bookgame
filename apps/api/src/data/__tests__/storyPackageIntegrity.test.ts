@@ -19,7 +19,7 @@ function getPackageDirs(): string[] {
     .filter((d) => {
       // Only include directories that have an entry file
       const dir = join(dataDir, d.name);
-      return existsSync(join(dir, "story.json")) || existsSync(join(dir, "task-package.json"));
+      return existsSync(join(dir, "story.json"));
     })
     .map((d) => d.name);
 }
@@ -46,14 +46,11 @@ describe("Story Package Integrity", () => {
   describe.each(packageDirs)("package: %s", (dirName) => {
     const pkgDir = join(dataDir, dirName);
 
-    it("has a valid entry file (story.json or task-package.json)", () => {
+    it("has a valid entry file (story.json)", () => {
       const storyPath = join(pkgDir, "story.json");
-      const taskPath = join(pkgDir, "task-package.json");
-      const hasEntry = existsSync(storyPath) || existsSync(taskPath);
-      expect(hasEntry).toBe(true);
+      expect(existsSync(storyPath)).toBe(true);
 
-      const entryPath = existsSync(storyPath) ? storyPath : taskPath;
-      const result = tryParseJson(entryPath);
+      const result = tryParseJson(storyPath);
       expect(result.ok, `${dirName}/entry: ${result.error}`).toBe(true);
     });
 

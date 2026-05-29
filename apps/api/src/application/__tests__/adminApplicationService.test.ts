@@ -161,7 +161,7 @@ describe("AdminApplicationService", () => {
     mockSP.createExportZip.mockReturnValue(buffer);
     const result = service.exportStoryPackage("pkg_001");
     expect(result.buffer).toBe(buffer);
-    expect(result.filename).toBe("Test Package.task-package.zip");
+    expect(result.filename).toBe("Test Package.story-package.zip");
     expect(mockSP.get).toHaveBeenCalledWith("pkg_001");
     expect(mockSP.createExportZip).toHaveBeenCalledWith("pkg_001");
   });

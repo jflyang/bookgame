@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronsLeft, ChevronsRight, CircleHelp, FolderOpen, MoreVertical, RefreshCw, RotateCcw, Save, ScrollText, Send, Settings, X } from "lucide-react";
 import { CharacterRail } from "./components/CharacterRail.js";
 import { Composer } from "./components/Composer.js";
@@ -139,9 +139,23 @@ export function PlayApp() {
   const ttsAutoPlay = useAudioStore((s) => s.autoPlay);
   const ttsAutoReadDone = useAudioStore((s) => s.autoReadDone);
   const ttsEnabled = useAudioStore((s) => s.ttsEnabled);
+  const autoContinueCount = useRef(0);
+  const AUTO_CONTINUE_LIMIT = 20;
+
+  // Reset counter when user manually toggles auto-play
+  useEffect(() => {
+    if (isAutoPlaying) {
+      autoContinueCount.current = 0;
+    }
+  }, [isAutoPlaying]);
 
   useEffect(() => {
     if (!isAutoPlaying || isSending || gameState?.status === "completed") return;
+    // Stop if exceeded limit
+    if (autoContinueCount.current >= AUTO_CONTINUE_LIMIT) {
+      setAutoPlay(false);
+      return;
+    }
     // Only block auto-continue if TTS is actually enabled AND auto-play is on AND reading not done
     const ttsBlocking = ttsAutoPlay && ttsEnabled && !ttsAutoReadDone;
     if (ttsBlocking) {
@@ -153,10 +167,11 @@ export function PlayApp() {
     }
     const delay = (ttsAutoPlay && ttsEnabled) ? 1000 : 3000;
     const timer = window.setTimeout(() => {
+      autoContinueCount.current += 1;
       void continueStory();
     }, delay);
     return () => window.clearTimeout(timer);
-  }, [continueStory, gameState?.round, gameState?.status, isAutoPlaying, isSending, ttsAutoPlay, ttsAutoReadDone, ttsEnabled]);
+  }, [continueStory, gameState?.round, gameState?.status, isAutoPlaying, isSending, setAutoPlay, ttsAutoPlay, ttsAutoReadDone, ttsEnabled]);
 
   const isCompleted = gameState?.status === "completed";
 

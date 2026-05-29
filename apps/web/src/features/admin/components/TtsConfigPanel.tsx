@@ -17,7 +17,6 @@ export function TtsConfigPanel() {
 
   function handlePlaybackRateChange(rate: number) {
     setPlaybackRate(rate);
-    localStorage.setItem("play:playbackRate", String(rate));
   }
 
   // Service process state

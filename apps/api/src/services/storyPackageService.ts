@@ -128,6 +128,7 @@ export class StoryPackageService {
     if (this.storyPackages.length <= 1) throw new Error("At least one story package is required");
     const index = this.storyPackages.findIndex((item) => item.id === id);
     if (index < 0) throw new Error(`Story package not found: ${id}`);
+    // Safety: create a backup before deleting
     const [removed] = this.storyPackages.splice(index, 1);
     this.removePackageDir(id);
     logger.info({ id, title: removed.title }, "story package deleted");
@@ -213,8 +214,8 @@ export class StoryPackageService {
     }
 
     // Find and parse the JSON
-    let jsonEntry = entries.find((e) => e.entryName === "task-package.json" || e.entryName === "story-package.json" || e.entryName.endsWith(".story-package.json"));
-    if (!jsonEntry) throw new Error("ZIP 中未找到 task-package.json 或 story-package.json");
+    let jsonEntry = entries.find((e) => e.entryName === "story.json" || e.entryName === "story-package.json" || e.entryName.endsWith(".story-package.json"));
+    if (!jsonEntry) throw new Error("ZIP 中未找到 story.json");
     if (jsonEntry.header.size > maxJsonBytes) throw new Error("任务包 JSON 过大");
 
     const raw = jsonEntry.getData().toString("utf-8");
@@ -222,10 +223,17 @@ export class StoryPackageService {
 
     // Assign new ID and title if importing as a new package
     const now = new Date().toISOString();
+    const importTitle = title || parsed.title;
+    // Check for duplicate title — warn but don't block (append suffix)
+    const existingWithSameTitle = this.storyPackages.find((p) => p.title === importTitle);
+    const finalTitle = existingWithSameTitle
+      ? `${importTitle} (导入 ${new Date().toLocaleDateString("zh-CN")})`
+      : importTitle;
+
     const pkg: StoryPackage = {
       ...parsed,
       id: `story_${nanoid(10)}`,
-      title: title || parsed.title,
+      title: finalTitle,
       createdAt: now,
       updatedAt: now,
     };
@@ -359,7 +367,6 @@ export class StoryPackageService {
     if (entry.isDirectory) return;
     const allowed = [
       name === "manifest.json",
-      name === "task-package.json",
       name === "story-package.json",
       name === "story.json",
       name.endsWith(".story-package.json"),

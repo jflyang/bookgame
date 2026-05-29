@@ -42,9 +42,9 @@ export function AudioManagerProvider({
 }) {
   const bgmRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolumeState] = useState(0.5);
+  const [volume, setVolumeState] = useState(() => parseFloat(localStorage.getItem("play:bgmVolume") || "0.5"));
   const [muted, setMutedState] = useState(() => localStorage.getItem("play:audioMuted") === "true");
-  const volumeRef = useRef(0.5);
+  const volumeRef = useRef(parseFloat(localStorage.getItem("play:bgmVolume") || "0.5"));
   const mutedRef = useRef(muted);
 
   const getUrl = useCallback(
@@ -98,6 +98,7 @@ export function AudioManagerProvider({
   const setVolume = useCallback((v: number) => {
     volumeRef.current = v;
     setVolumeState(v);
+    localStorage.setItem("play:bgmVolume", String(v));
     if (bgmRef.current) bgmRef.current.volume = v;
   }, []);
 

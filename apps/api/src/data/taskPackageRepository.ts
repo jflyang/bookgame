@@ -17,17 +17,6 @@ import { createModuleLogger } from "../utils/logger.js";
 
 const logger = createModuleLogger("taskPackageRepo");
 
-export interface TaskPackageManifest {
-  id: string;
-  type: "task-package";
-  schemaVersion: "1";
-  title: string;
-  description: string;
-  entry: "task-package.json";
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface TaskPackageRepositoryOptions {
   legacyDir?: string;
 }
@@ -49,9 +38,7 @@ export class TaskPackageRepository {
     if (this.listCache) return this.listCache;
     this.listCache = this.packageDirs().map((dir) => {
       const id = basename(dir);
-      // Try v2 entry first, fall back to v1
-      const v2Entry = resolveInside(dir, "story.json");
-      const entryFile = existsSync(v2Entry) ? v2Entry : resolveInside(dir, "task-package.json");
+      const entryFile = resolveInside(dir, "story.json");
       const pkg = storyPackageSchema.parse(JSON.parse(readFileSync(entryFile, "utf-8")));
       // Override id with directory name — the directory IS the primary key
       pkg.id = id;
@@ -147,10 +134,7 @@ export class TaskPackageRepository {
   }
 
   taskFile(id: string) {
-    const dir = this.packageDir(id);
-    const v2 = resolveInside(dir, "story.json");
-    if (existsSync(v2)) return v2;
-    return resolveInside(dir, "task-package.json");
+    return resolveInside(this.packageDir(id), "story.json");
   }
 
   manifestFile(id: string) {
@@ -215,11 +199,7 @@ export class TaskPackageRepository {
     return readdirSync(this.rootDir, { withFileTypes: true })
       .filter((entry) => entry.isDirectory() && safeDirectoryName(entry.name))
       .map((entry) => resolveInside(this.rootDir, entry.name, ""))
-      .filter((dir) => {
-        // Must have at least one recognizable entry file
-        return existsSync(resolveInside(dir, "task-package.json")) ||
-               existsSync(resolveInside(dir, "story.json"));
-      });
+      .filter((dir) => existsSync(resolveInside(dir, "story.json")));
   }
 
   private migrateLegacyPackages() {
@@ -244,7 +224,7 @@ export class TaskPackageRepository {
     copyFileSync(join(mediaDir, legacyMedia), resolveInside(this.mediaDir(id), `thumbnail${normalizeMediaExtension(legacyMedia)}`));
   }
 
-  private toManifest(pkg: StoryPackage): TaskPackageManifest | StoryPluginManifest {
+  private toManifest(pkg: StoryPackage): StoryPluginManifest {
     // Disk is the authoritative source — always prefer what's on disk
     // over the in-memory cache to prevent stale data from overwriting
     // hand-authored manifest content (performances, audio config, etc.).
@@ -263,7 +243,7 @@ export class TaskPackageRepository {
 
     throw new Error(
       `Story package "${pkg.id}" has no plugin manifest and no v2 manifest.json on disk. ` +
-      "V1 task-package format has been retired. Create a v2 manifest.json with at minimum: " +
+      "No plugin manifest found. Create a manifest.json with at minimum: " +
       '{ "type": "story-plugin", "schemaVersion": "2", "capabilities": {}, "performances": {} }'
     );
   }

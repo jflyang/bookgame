@@ -137,7 +137,7 @@ describe("StoryPackageService", () => {
   it("rejects zip entries outside the task package contract", () => {
     const pkg = structuredClone(svc.list()[0]);
     const zip = new AdmZip();
-    zip.addFile("task-package.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
+    zip.addFile("story.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
     zip.addFile("scripts/run.js", Buffer.from("alert(1)", "utf-8"));
 
     expect(() => svc.importZip(zip.toBuffer())).toThrow(/不被允许/);
@@ -147,7 +147,7 @@ describe("StoryPackageService", () => {
     const pkg = structuredClone(svc.list()[0]);
     delete (pkg as any).promptRules;
     const zip = new AdmZip();
-    zip.addFile("task-package.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
+    zip.addFile("story.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
     const imported = svc.importZip(zip.toBuffer());
     expect(imported.promptRules).toBeDefined();
     expect(imported.promptRules.length).toBeGreaterThanOrEqual(1);
@@ -157,7 +157,7 @@ describe("StoryPackageService", () => {
     const pkg = structuredClone(svc.list()[0]);
     (pkg as any).promptRules = [];
     const zip = new AdmZip();
-    zip.addFile("task-package.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
+    zip.addFile("story.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
     const imported = svc.importZip(zip.toBuffer());
     expect(imported.promptRules).toBeDefined();
     expect(imported.promptRules.length).toBeGreaterThanOrEqual(1);
@@ -183,7 +183,7 @@ describe("StoryPackageService", () => {
     const pkg = structuredClone(svc.list()[0]);
     pkg.promptRules = [{ id: "custom_1", title: "Custom", category: "custom" as any, enabled: true, content: "custom rule" }];
     const zip = new AdmZip();
-    zip.addFile("task-package.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
+    zip.addFile("story.json", Buffer.from(JSON.stringify(pkg), "utf-8"));
     const imported = svc.importZip(zip.toBuffer());
     expect(imported.promptRules).toHaveLength(1);
     expect(imported.promptRules[0].title).toBe("Custom");

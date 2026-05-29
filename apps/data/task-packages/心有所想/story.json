@@ -555,7 +555,7 @@
         }
       }
     },
-    "entry": "task-package.json",
+    "entry": "story.json",
     "createdAt": "2026-05-27T14:53:28.659Z",
     "updatedAt": "2026-05-28T00:00:00.000Z"
   },

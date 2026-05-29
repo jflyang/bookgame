@@ -69,7 +69,12 @@ export function LlmConfigPanel() {
       </label>
       <label>
         Model
-        <input value={draft.model} onChange={(event) => setDraft({ ...draft, model: event.target.value })} />
+        <select value={draft.model} onChange={(event) => setDraft({ ...draft, model: event.target.value })}>
+          <option value="deepseek-chat">deepseek-chat（V3，输出便宜）</option>
+          <option value="deepseek-v4-flash">deepseek-v4-flash（快速）</option>
+          <option value="deepseek-v4-pro">deepseek-v4-pro（高质量，贵）</option>
+          <option value="deepseek-reasoner">deepseek-reasoner（推理）</option>
+        </select>
       </label>
       <div className="inline-fields">
         <label>

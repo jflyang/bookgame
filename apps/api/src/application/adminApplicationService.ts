@@ -25,7 +25,7 @@ export class AdminApplicationService {
     const pkg = this.storyPackages.get(id);
     return {
       buffer: this.storyPackages.createExportZip(id),
-      filename: `${pkg.title || id}.task-package.zip`
+      filename: `${pkg.title || id}.story-package.zip`
     };
   }
 

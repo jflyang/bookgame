@@ -1152,7 +1152,7 @@
       }
     }
   },
-  "entry": "task-package.json",
+  "entry": "story.json",
   "createdAt": "2026-05-28T05:44:43.614Z",
   "updatedAt": "2026-05-28T00:00:00.000Z"
 }

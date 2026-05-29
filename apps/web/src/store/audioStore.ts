@@ -83,7 +83,7 @@ interface AudioState {
 export const useAudioStore = create<AudioState>((set, get) => ({
   ttsEnabled: false,
   autoPlay: localStorage.getItem("play:ttsAutoPlay") === "true",
-  volume: 0.8,
+  volume: parseFloat(localStorage.getItem("play:volume") || "0.8"),
   playbackRate: parseFloat(localStorage.getItem("play:playbackRate") || "1.15"),
   currentPlayingId: null,
   autoReadDone: true,
@@ -115,17 +115,22 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
   setAutoPlay(enabled) {
     set({ autoPlay: enabled });
+    localStorage.setItem("play:ttsAutoPlay", String(enabled));
     if (!enabled) {
       get().stopPlaying();
     }
   },
 
   setVolume(volume) {
-    set({ volume: Math.max(0, Math.min(1, volume)) });
+    const clamped = Math.max(0, Math.min(1, volume));
+    set({ volume: clamped });
+    localStorage.setItem("play:volume", String(clamped));
   },
 
   setPlaybackRate(rate) {
-    set({ playbackRate: Math.max(0.5, Math.min(2.0, rate)) });
+    const clamped = Math.max(0.5, Math.min(2.0, rate));
+    set({ playbackRate: clamped });
+    localStorage.setItem("play:playbackRate", String(clamped));
   },
 
   async playMessage(messageId, text, characterId, emotion) {
