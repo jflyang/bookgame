@@ -80,8 +80,7 @@ export class PromptService {
       `当前角色：${speaker.name}(${speakerId})`,
       `人设：${speaker.personaPrompt}`,
       compactKnowledge ? `知识库：\n${compactKnowledge}` : "",
-      `${stageContext}`,
-      ...(introNarration ? [`开场旁白：${introNarration}`] : []),
+      ...(introNarration && state.round <= 1 ? [`开场旁白：${introNarration}`] : []),
       `剧情阶段信息：\n${stageGuide}`,
       `当前状态：${compactState}`,
       `最近对话：\n${recentHistory}`
@@ -112,13 +111,23 @@ export class PromptService {
   }
 
   private buildLegacyStageGuide(state: GameState, currentDetail: GameState["scenario"]["stageDetails"][number] | undefined): string {
-    const stageDetails = state.scenario.stages.map((stageId, index) => {
+    const currentIdx = state.scenario.stages.indexOf(state.scenario.currentStage);
+
+    // Only show current stage + next stage to prevent future plot leaking
+    const visibleStages = state.scenario.stages.filter((_stageId, index) => {
+      return index <= currentIdx + 1;
+    });
+
+    const stageDetails = visibleStages.map((stageId, index) => {
       const detail = state.scenario.stageDetails.find((s) => s.id === stageId);
+      const isCurrent = stageId === state.scenario.currentStage;
+      const prefix = isCurrent ? "▸" : `${index + 1}.`;
       return [
-        `${index + 1}. ${stageId}${detail?.title ? `（${detail.title}）` : ""}`,
+        `${prefix} ${stageId}${detail?.title ? `（${detail.title}）` : ""}`,
         detail?.description ? `   含义：${detail.description}` : "",
+        // Only show enterWhen and guidance for current and next stage
         detail?.enterWhen ? `   进入条件：${detail.enterWhen}` : "",
-        detail?.guidance ? `   推进建议：${detail.guidance}` : ""
+        isCurrent && detail?.guidance ? `   推进建议：${detail.guidance}` : ""
       ].filter(Boolean).join("\n");
     }).join("\n");
 
@@ -129,7 +138,7 @@ export class PromptService {
 
     return [
       `当前剧情阶段：${state.scenario.currentStage}`,
-      `可用剧情阶段：${state.scenario.stages.join(" -> ")}`,
+      `可用剧情阶段：${visibleStages.join(" -> ")}${currentIdx < state.scenario.stages.length - 1 ? " -> ..." : ""}`,
       `阶段卡片说明：\n${stageDetails || "未配置阶段说明，只能参考阶段 ID。"}`,
       branchGuide,
       directiveText,
@@ -254,14 +263,14 @@ export class PromptService {
       currentModule.exitCondition ? `  退出条件：${currentModule.exitCondition}` : "",
     ];
 
-    // Show upcoming modules (next 2)
-    const upcoming = phaseInfo.sequence.slice(phaseInfo.currentIndex + 1, phaseInfo.currentIndex + 3);
+    // Show upcoming module (next 1 only, title only to avoid spoiling)
+    const upcoming = phaseInfo.sequence.slice(phaseInfo.currentIndex + 1, phaseInfo.currentIndex + 2);
     if (upcoming.length > 0) {
       const upcomingText = upcoming.map((mid) => {
         const m = moduleMap.get(mid);
-        return m ? `  → ${m.title}：${m.description || ""}` : `  → ${mid}`;
+        return m ? `  → 下一阶段：${m.title}` : `  → ${mid}`;
       }).join("\n");
-      lines.push("", "【即将到来的阶段】", upcomingText);
+      lines.push("", upcomingText);
     }
 
     // Show afterAll hint
@@ -361,20 +370,8 @@ export class PromptService {
       );
     }
 
-    // Punishment menu (available alternatives)
-    if (flow.punishmentMenu) {
-      const menu = flow.punishmentMenu;
-      const allPunishments = Object.entries(menu.allPunishmentModules)
-        .map(([key, p]) => `  - ${p.title}（严重度 ${p.severity}/10）`)
-        .join("\n");
-      lines.push(
-        "",
-        `【可用惩戒菜单 — ${menu.title}】`,
-        menu.description || "",
-        allPunishments,
-        "帝王可根据不满意的程度选择适当的惩戒方式——不限于当前循环的默认惩戒。"
-      );
-    }
+    // Punishment menu - only show current cycle's punishment, not the full menu
+    // (avoid spoiling future punishment options)
 
     // Daily system context
     if (flow.dailySystem) {
@@ -420,22 +417,23 @@ export class PromptService {
     currentModule: StoryModule
   ): string[] {
     const seq = flow.finaleSequence!;
+    const currentIdx = seq.sequence.indexOf(currentModule.id);
+
     const lines: string[] = [
-      `【${seq.title || "终幕"}】`,
+      `【${seq.title || "终幕"}】第 ${currentIdx + 1}/${seq.sequence.length} 阶段`,
       "",
       `▸ 当前模块：${currentModule.title}`,
       currentModule.description ? `  含义：${currentModule.description}` : "",
       currentModule.guidance ? `  引导：${currentModule.guidance}` : "",
       currentModule.exitCondition ? `  退出条件：${currentModule.exitCondition}` : "",
-      "",
-      "【终幕序列】",
-      seq.sequence.map((mid, i) => {
-        const m = moduleMap.get(mid);
-        const marker = mid === currentModule.id ? " ◀ 当前" : "";
-        return `  ${i + 1}. ${m?.title || mid}${marker}`;
-      }).join("\n"),
-      seq.description || "",
     ];
+
+    // Only show next module title (no spoilers for later finale steps)
+    if (currentIdx >= 0 && currentIdx < seq.sequence.length - 1) {
+      const nextId = seq.sequence[currentIdx + 1];
+      const nextModule = moduleMap.get(nextId);
+      lines.push("", `  → 下一阶段：${nextModule?.title || nextId}`);
+    }
 
     return lines;
   }
