@@ -5,34 +5,33 @@ import { useAudioStore } from "../../../store/audioStore.js";
 /**
  * Auto-reads new assistant messages when autoPlay is enabled.
  * Plays narration first (if narrateEnabled), then dialogue.
- * Shows a pulsing green dot on the message being read.
+ * Blocks auto-continue until all audio finishes.
  */
 export function useAutoReadMessage(messages: Message[], characters: Character[], isStreaming: boolean) {
   const autoPlay = useAudioStore((s) => s.autoPlay);
   const ttsEnabled = useAudioStore((s) => s.ttsEnabled);
   const serviceConfig = useAudioStore((s) => s.serviceConfig);
+  const currentPlayingId = useAudioStore((s) => s.currentPlayingId);
   const playMessage = useAudioStore((s) => s.playMessage);
   const setAutoReadDone = useAudioStore((s) => s.setAutoReadDone);
-  const currentPlayingId = useAudioStore((s) => s.currentPlayingId);
 
-  const prevMessageCountRef = useRef(messages.length);
+  const prevCountRef = useRef(messages.length);
   const queueRef = useRef<Array<{ id: string; text: string; characterId: string }>>([]);
-  const processingRef = useRef(false);
+  const activeRef = useRef(false); // true while we're in the middle of reading
 
-  // Detect NEW messages (count increased and not streaming)
+  // Detect new message arrival
   useEffect(() => {
-    const prevCount = prevMessageCountRef.current;
-    prevMessageCountRef.current = messages.length;
+    const prev = prevCountRef.current;
+    prevCountRef.current = messages.length;
 
-    // Only trigger when messages increase (new message arrived) and streaming just finished
-    if (messages.length <= prevCount) return;
-    if (isStreaming) return;
+    if (messages.length <= prev) return; // no new message
+    if (isStreaming) return; // still streaming
     if (!autoPlay || !ttsEnabled) return;
 
     const latest = messages[messages.length - 1];
     if (!latest || latest.role !== "assistant" || !latest.speakerId) return;
 
-    // Parse content
+    // Parse
     const character = characters.find((c) => c.id === latest.speakerId);
     const { narration, dialogue } = splitContent(latest.content, character?.name);
     const narrateEnabled = (serviceConfig as any)?.narrateEnabled;
@@ -45,92 +44,76 @@ export function useAutoReadMessage(messages: Message[], characters: Character[],
     if (dialogue && latest.speakerId) {
       queue.push({ id: `autodlg_${latest.id}`, text: dialogue, characterId: latest.speakerId });
     } else if (!dialogue && latest.speakerId) {
-      // Fallback: use first 200 chars
-      const fallback = latest.content.slice(0, 200);
-      if (fallback.trim()) {
+      const fallback = latest.content.slice(0, 200).trim();
+      if (fallback) {
         queue.push({ id: `autodlg_${latest.id}`, text: fallback, characterId: latest.speakerId });
       }
     }
 
-    if (queue.length === 0) {
-      setAutoReadDone(true);
-      return;
-    }
+    if (queue.length === 0) return;
 
+    // Start reading — block auto-continue
     queueRef.current = queue;
-    processingRef.current = true;
+    activeRef.current = true;
     setAutoReadDone(false);
-    playNextInQueue();
+
+    // Play first item
+    const first = queueRef.current.shift()!;
+    playMessage(first.id, first.text, first.characterId);
   }, [messages.length, isStreaming]); // eslint-disable-line
 
-  // When current audio finishes, play next in queue
+  // When audio finishes (currentPlayingId → null), play next or release
   useEffect(() => {
-    if (!processingRef.current) return;
-    if (currentPlayingId !== null) return; // still playing
+    if (!activeRef.current) return;
+    if (currentPlayingId !== null) return; // still playing, wait
 
-    // Current item finished — play next or mark done
-    const timer = setTimeout(() => {
-      if (queueRef.current.length > 0) {
-        playNextInQueue();
-      } else {
-        processingRef.current = false;
-        setAutoReadDone(true);
-      }
-    }, 200);
-    return () => clearTimeout(timer);
+    // Audio finished — play next in queue or mark done
+    if (queueRef.current.length > 0) {
+      const next = queueRef.current.shift()!;
+      // Small delay between items
+      const timer = setTimeout(() => {
+        playMessage(next.id, next.text, next.characterId);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else {
+      // All done — release auto-continue
+      activeRef.current = false;
+      setAutoReadDone(true);
+    }
   }, [currentPlayingId]); // eslint-disable-line
 
-  // Safety: if autoPlay is turned off, clear queue and release
+  // If autoPlay or ttsEnabled is turned off, abort immediately
   useEffect(() => {
     if (!autoPlay || !ttsEnabled) {
       queueRef.current = [];
-      processingRef.current = false;
+      activeRef.current = false;
       setAutoReadDone(true);
     }
-  }, [autoPlay, ttsEnabled]); // eslint-disable-line
-
-  function playNextInQueue() {
-    const next = queueRef.current.shift();
-    if (!next) {
-      processingRef.current = false;
-      setAutoReadDone(true);
-      return;
-    }
-    playMessage(next.id, next.text, next.characterId);
-  }
+  }, [autoPlay, ttsEnabled, setAutoReadDone]);
 }
 
 function splitContent(content: string, speakerName?: string): { narration: string | null; dialogue: string | null } {
   if (!speakerName) return { narration: null, dialogue: content };
-
-  // Remove combat line
   const combatIdx = content.search(/\n\n(?:⚔|\[)/);
   const text = combatIdx > -1 ? content.slice(0, combatIdx) : content;
 
-  // Try "narration\n\nName："dialogue"" pattern
   const pattern = new RegExp(
-    `^([\\s\\S]*?)\\n\\n${escapeRegex(speakerName)}[：:]\\s*["「"']([\\s\\S]*?)["」"']\\s*$`
+    `^([\\s\\S]*?)\\n\\n${esc(speakerName)}[：:]\\s*["「"']([\\s\\S]*?)["」"']\\s*$`
   );
-  const match = text.match(pattern);
-  if (match) {
-    return { narration: match[1].trim() || null, dialogue: match[2].trim() || null };
-  }
+  const m = text.match(pattern);
+  if (m) return { narration: m[1].trim() || null, dialogue: m[2].trim() || null };
 
-  // Fallback: split at first double newline
   const idx = text.indexOf("\n\n");
   if (idx > 0 && idx < text.length - 2) {
     const first = text.slice(0, idx).trim();
     const second = text.slice(idx + 2).trim();
-    const speakerRe = new RegExp(`^${escapeRegex(speakerName)}[：:]\\s*["「"']?`);
-    if (speakerRe.test(second)) {
-      return { narration: first, dialogue: second.replace(speakerRe, "").replace(/["」"']$/, "").trim() || null };
+    const re = new RegExp(`^${esc(speakerName)}[：:]\\s*["「"']?`);
+    if (re.test(second)) {
+      return { narration: first, dialogue: second.replace(re, "").replace(/["」"']$/, "").trim() || null };
     }
     return { narration: first, dialogue: second };
   }
-
   return { narration: null, dialogue: text };
 }
 
-function escapeRegex(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+function esc(s: string) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }

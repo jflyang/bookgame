@@ -4,30 +4,34 @@ import * as ttsApi from "../lib/ttsApi.js";
 
 /** Single global Audio element for TTS playback */
 let globalAudio: HTMLAudioElement | null = null;
+let playId = 0; // monotonic ID to prevent stale callbacks
 
 function playAudioElement(url: string, getState: () => AudioState) {
+  // Stop any existing playback
   if (globalAudio) {
     globalAudio.pause();
+    globalAudio.onended = null;
+    globalAudio.onerror = null;
     globalAudio.src = "";
+    globalAudio = null;
   }
+
+  const thisPlayId = ++playId;
   const audio = new Audio(url);
   globalAudio = audio;
   const state = getState();
   audio.volume = state.volume;
   audio.playbackRate = state.playbackRate;
-  audio.onended = () => {
-    globalAudio = null;
-    // Use the store's set via getState pattern
-    useAudioStore.setState({ currentPlayingId: null });
-  };
-  audio.onerror = () => {
+
+  const finish = () => {
+    if (playId !== thisPlayId) return; // stale callback, ignore
     globalAudio = null;
     useAudioStore.setState({ currentPlayingId: null });
   };
-  audio.play().catch(() => {
-    globalAudio = null;
-    useAudioStore.setState({ currentPlayingId: null });
-  });
+
+  audio.onended = finish;
+  audio.onerror = finish;
+  audio.play().catch(finish);
 }
 
 interface AudioState {
@@ -94,7 +98,6 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   setEnabled(enabled) {
     set({ ttsEnabled: enabled });
     if (!enabled) {
-      // Stop all playback and clear loading state
       get().stopPlaying();
       set({ loadingIds: new Set() });
     }
@@ -103,7 +106,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   setAutoPlay(enabled) {
     set({ autoPlay: enabled });
     if (!enabled) {
-      set({ currentPlayingId: null });
+      get().stopPlaying();
     }
   },
 
@@ -161,8 +164,11 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   },
 
   stopPlaying() {
+    playId++; // invalidate any pending onended callbacks
     if (globalAudio) {
       globalAudio.pause();
+      globalAudio.onended = null;
+      globalAudio.onerror = null;
       globalAudio.src = "";
       globalAudio = null;
     }

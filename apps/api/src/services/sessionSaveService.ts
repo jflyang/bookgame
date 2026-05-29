@@ -48,6 +48,33 @@ export class SessionSaveService {
     return resolveInside(this.savesDir(storyPackageId), `slot-${slot}.session.json`);
   }
 
+  /** Parse save metadata only — skip message object allocation via JSON reviver */
+  private readMeta(path: string): SessionSaveMeta | null {
+    try {
+      const raw = readFileSync(path, "utf-8");
+      let msgCount = 0;
+      const data = JSON.parse(raw, (_key, value) => {
+        // Skip allocating objects for every message — just count them
+        if (_key === "messages" && Array.isArray(value)) {
+          msgCount = value.length;
+          return [];
+        }
+        return value;
+      });
+      return {
+        sessionId: data.sessionId,
+        label: data.label,
+        round: data.gameState?.round ?? 0,
+        status: data.gameState?.status ?? "active",
+        messageCount: msgCount,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      };
+    } catch {
+      return null;
+    }
+  }
+
   /** Returns all slots (auto + manual) — slot number + metadata or null for empty */
   listSlots(storyPackageId: string): SaveSlot[] {
     const dir = this.savesDir(storyPackageId);
@@ -60,25 +87,8 @@ export class SessionSaveService {
     // Auto-save slot (slot 0)
     const autoPath = this.slotPath(storyPackageId, AUTO_SAVE_SLOT);
     if (existsSync(autoPath)) {
-      try {
-        const raw = readFileSync(autoPath, "utf-8");
-        const save = JSON.parse(raw) as SessionSave;
-        slots.push({
-          slot: AUTO_SAVE_SLOT,
-          save: {
-            sessionId: save.sessionId,
-            label: save.label,
-            round: save.gameState.round,
-            status: save.gameState.status,
-            messageCount: save.messages.length,
-            createdAt: save.createdAt,
-            updatedAt: save.updatedAt,
-          },
-        });
-      } catch (err) {
-        logger.warn({ err, path: autoPath, storyPackageId }, "corrupt auto-save file");
-        slots.push({ slot: AUTO_SAVE_SLOT, save: null });
-      }
+      const meta = this.readMeta(autoPath);
+      slots.push({ slot: AUTO_SAVE_SLOT, save: meta });
     } else {
       slots.push({ slot: AUTO_SAVE_SLOT, save: null });
     }
@@ -86,25 +96,8 @@ export class SessionSaveService {
     for (let slot = 1; slot <= MAX_SAVE_SLOTS; slot++) {
       const path = this.slotPath(storyPackageId, slot);
       if (existsSync(path)) {
-        try {
-          const raw = readFileSync(path, "utf-8");
-          const save = JSON.parse(raw) as SessionSave;
-          slots.push({
-            slot,
-            save: {
-              sessionId: save.sessionId,
-              label: save.label,
-              round: save.gameState.round,
-              status: save.gameState.status,
-              messageCount: save.messages.length,
-              createdAt: save.createdAt,
-              updatedAt: save.updatedAt,
-            },
-          });
-        } catch (err) {
-          logger.warn({ err, path, storyPackageId, slot }, "corrupt session save file, treating as empty slot");
-          slots.push({ slot, save: null });
-        }
+        const meta = this.readMeta(path);
+        slots.push({ slot, save: meta });
       } else {
         slots.push({ slot, save: null });
       }
