@@ -1,33 +1,18 @@
 import { useEffect, useState } from "react";
 import { useEditorStore } from "./store/editorStore.js";
 import { FileManager } from "./components/FileManager.js";
-import { CharacterGraph } from "./components/CharacterGraph.js";
-import { CharacterManager } from "./components/CharacterManager.js";
-import { SkillTree } from "./components/SkillTree.js";
-import { KnowledgeGraph } from "./components/KnowledgeGraph.js";
+import { CharacterSkills } from "./components/CharacterSkills.js";
 import { RulePipeline } from "./components/RulePipeline.js";
-import { ManifestPanel } from "./components/ManifestPanel.js";
-import { UIConfigEditor } from "./components/UIConfigEditor.js";
-import { StorySettingEditor } from "./components/StorySettingEditor.js";
-import { AiAssistant } from "./components/AiAssistant.js";
-import { MediaViewer } from "./components/MediaViewer.js";
-import { ScenarioTimeline } from "./components/ScenarioTimeline.js";
 import { FlowEditor } from "./components/flow/FlowEditor.js";
 import { PerformanceMapper } from "./components/PerformanceMapper.js";
 import { SettingsPanel } from "./components/SettingsPanel.js";
 
 const TABS: { key: string; label: string }[] = [
   { key: "flow", label: "流程编辑" },
-  { key: "scenario", label: "剧情阶段" },
-  { key: "skills", label: "技能树" },
-  { key: "characters", label: "角色关系" },
+  { key: "skills", label: "角色技能" },
   { key: "performances", label: "演出映射" },
-  { key: "knowledge", label: "知识图谱" },
   { key: "promptRules", label: "规则管线" },
-  { key: "storySetting", label: "故事设定" },
   { key: "settings", label: "高级设置" },
-  { key: "media", label: "媒体文件" },
-  { key: "ai", label: "AI 助手" },
 ];
 
 function encodeHash(path: string): string {
@@ -173,16 +158,10 @@ export function App() {
         </nav>
         <main className="tab-content">
           {activeTab === "flow" && <FlowEditor />}
-          {activeTab === "scenario" && <ScenarioTimeline />}
-          {activeTab === "characters" && <CharacterGraph />}
-          {activeTab === "skills" && <SkillTree />}
-          {activeTab === "knowledge" && <KnowledgeGraph />}
+          {activeTab === "skills" && <CharacterSkills />}
           {activeTab === "promptRules" && <RulePipeline />}
           {activeTab === "performances" && <PerformanceMapper />}
-          {activeTab === "storySetting" && <StorySettingEditor />}
           {activeTab === "settings" && <SettingsPanel />}
-          {activeTab === "media" && <MediaViewer />}
-          {activeTab === "ai" && <AiAssistant />}
         </main>
       </div>
     </div>

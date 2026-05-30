@@ -152,7 +152,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       }
       if (get().manifest) await api.saveManifest(get().manifest!);
       if (get().storySetting) await api.saveStorySetting(get().storySetting);
-      set({ dirty: false, saving: false });
+      set({ storyPackage: pkg, dirty: false, saving: false });
     } catch (err) {
       set({ error: (err as Error).message, saving: false });
     }

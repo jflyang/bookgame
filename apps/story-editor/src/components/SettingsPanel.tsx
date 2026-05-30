@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useEditorStore } from "../store/editorStore.js";
-import type { Character } from "@story-game/shared";
+import type { Character, KnowledgeDocument } from "@story-game/shared";
 
 /**
  * 高级设置面板 — 合并了角色管理、元数据、UI配置
@@ -10,12 +10,13 @@ import type { Character } from "@story-game/shared";
  * - 打开资源管理器按钮
  */
 
-type Section = "characters" | "manifest" | "uiconfig";
+type Section = "characters" | "worldbuilding" | "knowledge" | "manifest" | "uiconfig";
 
 export function SettingsPanel() {
-  const { storyPackage, updateCharacter, manifest, updateManifest } = useEditorStore();
+  const { storyPackage, updateCharacter, manifest, updateManifest, updateKnowledgeDoc, updateKnowledgeDocs, storySetting, updateStorySetting } = useEditorStore();
   const [section, setSection] = useState<Section>("characters");
   const chars = storyPackage?.characters || [];
+  const docs = storyPackage?.knowledgeDocuments || [];
 
   return (
     <div className="panel">
@@ -36,6 +37,8 @@ export function SettingsPanel() {
       <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border)", marginBottom: "var(--s4)" }}>
         {([
           { key: "characters", label: "角色话术" },
+          { key: "worldbuilding", label: "世界观" },
+          { key: "knowledge", label: "知识文档" },
           { key: "manifest", label: "项目元数据" },
           { key: "uiconfig", label: "UI配置" },
         ] as { key: Section; label: string }[]).map((t) => (
@@ -54,6 +57,8 @@ export function SettingsPanel() {
       </div>
 
       {section === "characters" && <CharacterPromptsSection chars={chars} updateCharacter={updateCharacter} />}
+      {section === "worldbuilding" && <WorldbuildingSection storySetting={storySetting} storySettingPrompt={storyPackage?.storySettingPrompt || ""} updateStorySetting={updateStorySetting} />}
+      {section === "knowledge" && <KnowledgeSection docs={docs} chars={chars} updateKnowledgeDoc={updateKnowledgeDoc} updateKnowledgeDocs={updateKnowledgeDocs} />}
       {section === "manifest" && <ManifestSection manifest={manifest} updateManifest={updateManifest} />}
       {section === "uiconfig" && <UIConfigSection />}
     </div>
@@ -154,34 +159,191 @@ function ManifestSection({ manifest, updateManifest }: { manifest: Record<string
 }
 
 function UIConfigSection() {
-  const { storyPackage } = useEditorStore();
+  const { storyPackage, updateManifest } = useEditorStore();
+  const manifest = useEditorStore.getState().manifest || {};
   const uiConfig = (storyPackage as any)?.uiConfig || {};
-  const [raw, setRaw] = useState(JSON.stringify(uiConfig, null, 2));
-  const [error, setError] = useState("");
 
-  function handleSave() {
-    try {
-      const parsed = JSON.parse(raw);
-      const pkg = useEditorStore.getState().storyPackage;
-      if (pkg) {
-        useEditorStore.setState({ storyPackage: { ...pkg, uiConfig: parsed } as any, dirty: true });
-        setError("");
-      }
-    } catch {
-      setError("JSON 格式错误");
-    }
+  const sceneName = (uiConfig.scene?.name as string) || "";
+  const introNarration = (uiConfig.scene?.introNarration as string) || (manifest as any).introNarration || "";
+  const chatBackground = (uiConfig.scene?.chatBackground as string) || "";
+
+  function updateUiConfig(path: string, value: string) {
+    const pkg = useEditorStore.getState().storyPackage;
+    if (!pkg) return;
+    const current = (pkg as any).uiConfig || {};
+    const scene = { ...(current.scene || {}), [path]: value };
+    useEditorStore.setState({
+      storyPackage: { ...pkg, uiConfig: { ...current, scene } } as any,
+      dirty: true,
+    });
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--s3)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--s4)" }}>
+      <label className="field">
+        <span>场景名称</span>
+        <input className="input" value={sceneName}
+          onChange={(e) => updateUiConfig("name", e.target.value)}
+          placeholder="如：紫禁城、少爷的密室" />
+        <span className="faint" style={{ fontSize: "var(--fs-xs)", marginTop: 4 }}>
+          显示在游戏界面顶部的场景标题
+        </span>
+      </label>
+
+      <label className="field">
+        <span>开场白</span>
+        <textarea className="input" rows={4} value={introNarration}
+          onChange={(e) => updateUiConfig("introNarration", e.target.value)}
+          placeholder="游戏开始时显示给玩家的开场白文字..." />
+        <span className="faint" style={{ fontSize: "var(--fs-xs)", marginTop: 4 }}>
+          第一轮对话前展示的旁白文字
+        </span>
+      </label>
+
+      <label className="field">
+        <span>聊天窗口背景图</span>
+        <input className="input" value={chatBackground}
+          onChange={(e) => updateUiConfig("chatBackground", e.target.value)}
+          placeholder="media/backgrounds/room.jpg" />
+        <span className="faint" style={{ fontSize: "var(--fs-xs)", marginTop: 4 }}>
+          相对于故事包目录的图片路径，用作聊天界面背景
+        </span>
+      </label>
+    </div>
+  );
+}
+
+function WorldbuildingSection({ storySetting, storySettingPrompt, updateStorySetting }: {
+  storySetting: string;
+  storySettingPrompt: string;
+  updateStorySetting: (content: string) => void;
+}) {
+  const [content, setContent] = useState(storySetting || storySettingPrompt || "");
+
+  function handleSave() { updateStorySetting(content); }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--s3)", flex: 1 }}>
       <div className="flex-between">
-        <span className="faint">直接编辑 JSON（高级用户）</span>
-        <div className="flex-center gap2">
-          {error && <span className="tag tag-red">{error}</span>}
-          <button className="btn btn-primary btn-sm" onClick={handleSave}>应用</button>
+        <span className="faint" style={{ fontSize: "var(--fs-xs)" }}>
+          LLM 收到的世界观背景文本 — 灌输世界观、核心冲突、角色关系
+        </span>
+        <button className="btn btn-primary btn-sm" onClick={handleSave}>应用修改</button>
+      </div>
+      <textarea
+        className="input mono"
+        rows={18}
+        style={{ flex: 1, minHeight: 300, resize: "vertical" }}
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        placeholder="在此编写故事世界观设定..."
+      />
+    </div>
+  );
+}
+
+function KnowledgeSection({ docs, chars, updateKnowledgeDoc, updateKnowledgeDocs }: {
+  docs: KnowledgeDocument[];
+  chars: Character[];
+  updateKnowledgeDoc: (doc: KnowledgeDocument) => void;
+  updateKnowledgeDocs: (docs: KnowledgeDocument[]) => void;
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+
+  const selected = docs.find((d) => d.id === selectedId) || null;
+
+  function handleAdd() {
+    if (!newTitle.trim()) return;
+    const id = `doc_${newTitle.trim().replace(/\s+/g, "_").toLowerCase()}_${Date.now()}`;
+    const d: KnowledgeDocument = {
+      id, title: newTitle.trim(), ownerId: null,
+      content: "", sourceType: "markdown",
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    };
+    updateKnowledgeDocs([...docs, d]);
+    setSelectedId(d.id);
+    setNewTitle("");
+    setAdding(false);
+  }
+
+  function handleDelete(id: string) {
+    updateKnowledgeDocs(docs.filter((d) => d.id !== id));
+    if (selectedId === id) setSelectedId(null);
+  }
+
+  return (
+    <div style={{ display: "flex", gap: "var(--s4)", minHeight: 300 }}>
+      {/* Left: doc list */}
+      <div style={{ width: 220, flexShrink: 0, display: "flex", flexDirection: "column", gap: "var(--s2)" }}>
+        <div className="flex-between">
+          <span className="faint" style={{ fontSize: "var(--fs-xs)" }}>{docs.length} 文档</span>
+          <button className="btn btn-sm" onClick={() => setAdding(true)}>+ 新文档</button>
+        </div>
+        {adding && (
+          <div className="flex-center gap1">
+            <input className="input" value={newTitle} onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") setAdding(false); }}
+              placeholder="文档标题..." autoFocus style={{ flex: 1 }} />
+            <button className="btn btn-primary btn-xs" onClick={handleAdd} disabled={!newTitle.trim()}>✓</button>
+          </div>
+        )}
+        <div style={{ flex: 1, overflow: "auto" }}>
+          {docs.map((d) => (
+            <button key={d.id} onClick={() => setSelectedId(selectedId === d.id ? null : d.id)}
+              style={{
+                display: "block", width: "100%", textAlign: "left", padding: "var(--s2) var(--s3)",
+                background: selectedId === d.id ? "var(--accent-bg)" : "transparent",
+                border: "none", borderRadius: "var(--r-sm)", cursor: "pointer",
+                fontFamily: "var(--font)", fontSize: "var(--fs-sm)",
+                fontWeight: selectedId === d.id ? 600 : 400,
+                color: selectedId === d.id ? "var(--text)" : "var(--text-muted)", marginBottom: 2,
+              }}>
+              {d.title}
+              <span className="faint" style={{ fontSize: 9, marginLeft: "var(--s1)" }}>
+                {d.ownerId ? chars.find(c => c.id === d.ownerId)?.name || d.ownerId : "共享"}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
-      <textarea className="input mono" rows={12} value={raw} onChange={(e) => setRaw(e.target.value)} />
+
+      {/* Right: editor */}
+      {selected ? (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "var(--s3)" }}>
+          <div className="flex-between">
+            <h4 style={{ margin: 0 }}>{selected.title}</h4>
+            <button className="btn btn-danger btn-xs" onClick={() => handleDelete(selected.id)}>删除</button>
+          </div>
+          <div className="form-grid cols-2">
+            <label className="field"><span>标题</span>
+              <input className="input" value={selected.title}
+                onChange={(e) => updateKnowledgeDoc({ ...selected, title: e.target.value })} />
+            </label>
+            <label className="field"><span>所属角色</span>
+              <select className="input" value={selected.ownerId || ""}
+                onChange={(e) => updateKnowledgeDoc({ ...selected, ownerId: e.target.value || null })}>
+                <option value="">共享</option>
+                {chars.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </label>
+          </div>
+          <label className="field" style={{ flex: 1 }}>
+            <span>内容 (Markdown)</span>
+            <textarea className="input mono" rows={10} style={{ minHeight: 200, resize: "vertical" }}
+              value={selected.content}
+              onChange={(e) => updateKnowledgeDoc({ ...selected, content: e.target.value })} />
+          </label>
+          <p className="faint" style={{ fontSize: "var(--fs-xs)", margin: 0 }}>
+            💡 知识文档用于 LLM 检索增强。内容会根据玩家输入关键词匹配后注入提示词。
+          </p>
+        </div>
+      ) : (
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <p className="faint">选择一个文档编辑，或创建新文档</p>
+        </div>
+      )}
     </div>
   );
 }

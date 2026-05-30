@@ -79,7 +79,20 @@ export function openDirectory(packageDir: string): PackageState {
       linearPhases: flowRaw.linearPhases, servingLoop: flowRaw.servingLoop,
       finaleSequence: flowRaw.finaleSequence, dailySystem: flowRaw.dailySystem,
     };
-    if (flowRaw.modules) storyPackage.modules = flowRaw.modules;
+    if (flowRaw.modules) {
+      storyPackage.modules = flowRaw.modules;
+    } else if (flowNodes) {
+      // Extract modules from node.data.moduleData when modules array is missing
+      const extracted: any[] = [];
+      const seen = new Set<string>();
+      for (const n of flowNodes as any[]) {
+        if (n.data?.moduleData && n.data.moduleRef && !seen.has(n.data.moduleRef)) {
+          seen.add(n.data.moduleRef);
+          extracted.push(n.data.moduleData);
+        }
+      }
+      if (extracted.length > 0) storyPackage.modules = extracted;
+    }
   }
 
   // actions.json, reactions.json, knowledge.json, rules.json
