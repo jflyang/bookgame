@@ -675,9 +675,12 @@ function FlowEditorInner() {
       {selectedModuleId && (
         <ModuleDetailPanel
           moduleId={selectedModuleId}
+          edges={edges}
+          onEdgesChange={setEdges}
           onClose={() => {
             setSelectedModuleId(null);
             setNodes(store.nodes as unknown as RFNode[]);
+            setEdges(store.edges as unknown as Edge[]);
           }}
         />
       )}

@@ -265,7 +265,7 @@ export class TurnProcessor {
   }
 
   private prepareTurn(sessionId: string, input: SendMessageRequest) {
-    const userMessage = this.createMessage(sessionId, "user", null, input.text, [], {});
+    const userMessage = this.createMessage(sessionId, "user", null, input.text, {});
     this.memory.append(userMessage);
 
     const storyPackage = this.getStoryPackageForSession(sessionId);
@@ -292,7 +292,6 @@ export class TurnProcessor {
     const output = this.rules.validateOutput(speakerId, rawOutput, rosterIds);
     const effectiveSpeakerId = output.speakerId;
     const speaker = this.characters.get(effectiveSpeakerId);
-    const usedSkill = this.resolveSkillDamage(effectiveSpeakerId, output);
 
     logger.info({
       sessionId,
@@ -300,8 +299,6 @@ export class TurnProcessor {
       speakerName: speaker.name,
       selectedSpeakerId: speakerId !== effectiveSpeakerId ? speakerId : undefined,
       actionType: output.action.type,
-      skillId: usedSkill?.id ?? null,
-      deltaSuggestion: output.stateDeltaSuggestion,
       narrationPreview: output.narration.slice(0, 80),
       dialoguePreview: output.dialogue.slice(0, 80),
       stageSuggestion: output.stageSuggestion
@@ -328,10 +325,8 @@ export class TurnProcessor {
       this.auditLog.append({ type: "session_completed", sessionId, summary: "Session completed" });
     }
 
-    const combatLine = this.formatCombatLine(speaker, usedSkill, output);
-    const content = `${output.narration}\n\n${speaker.name}："${output.dialogue}"${combatLine}`;
-    const usedSkillIds = usedSkill ? [usedSkill.id] : [];
-    const message = this.createMessage(sessionId, "assistant", effectiveSpeakerId, content, usedSkillIds, delta);
+    const content = `${output.narration}\n\n${speaker.name}："${output.dialogue}"`;
+    const message = this.createMessage(sessionId, "assistant", effectiveSpeakerId, content, delta);
     this.memory.append(message);
 
     return {
@@ -341,57 +336,10 @@ export class TurnProcessor {
         selectedSpeakerId: speakerId,
         effectiveSpeakerId,
         speakerOverridden: speakerId !== effectiveSpeakerId,
-        usedSkill: usedSkill?.name ?? null,
         promptLayers: ["system", "groupRules", "persona", "scenario", "state", "history"],
         validation: "passed"
       }
     };
-  }
-
-  private resolveSkillDamage(speakerId: CharacterId, output: { action: { type: string; skillId?: string | null; targetIds: string[] }; stateDeltaSuggestion: Record<string, number> }) {
-    if (output.action.type !== "skill" || !output.action.skillId) return undefined;
-    const skill = this.skills.get(output.action.skillId);
-    if (!skill) {
-      logger.warn({ speakerId, unknownSkillId: output.action.skillId, availableIds: this.skills.list().map(s => s.id) }, "LLM used unknown skillId — no damage applied");
-      return undefined;
-    }
-
-    const dmg = skill.damage
-      ? Math.floor(Math.random() * (skill.damage.max - skill.damage.min + 1)) + skill.damage.min
-      : 0;
-    const mpCost = skill.cost.mp;
-
-    if (mpCost > 0 && mpCost < 999) {
-      output.stateDeltaSuggestion[`${speakerId}_mp`] = -mpCost;
-    }
-
-    // Remove any self-HP the LLM incorrectly set on the speaker
-    const selfHpKey = `${speakerId}_hp`;
-    if (output.stateDeltaSuggestion[selfHpKey] !== undefined && !output.action.targetIds.includes(speakerId)) {
-      delete output.stateDeltaSuggestion[selfHpKey];
-    }
-
-    // If the LLM forgot to specify targets for a damage skill, use character's attackable targets
-    let targetIds = output.action.targetIds;
-    if (targetIds.length === 0 && skill.damage && dmg > 0) {
-      const allChars = this.characters.list();
-      const speakerChar = allChars.find((c) => c.id === speakerId);
-      const attackableIds = speakerChar?.attackableTargetIds ?? [];
-      const enemy = allChars.find((c) => attackableIds.includes(c.id) && c.id !== speakerId)
-        ?? allChars.find((c) => c.id !== speakerId);
-      if (enemy) {
-        targetIds = [enemy.id];
-        logger.warn({ speakerId, skillId: skill.id, fallbackTarget: enemy.id, source: "attackableTargetIds" }, "LLM omitted targetIds, falling back to character's attackable target");
-      }
-    }
-
-    for (const targetId of targetIds) {
-      if (skill.damage) {
-        output.stateDeltaSuggestion[`${targetId}_hp`] = -dmg;
-      }
-    }
-
-    return skill;
   }
 
   private createMessage(
@@ -399,7 +347,6 @@ export class TurnProcessor {
     role: Message["role"],
     speakerId: CharacterId | null,
     content: string,
-    usedSkills: string[],
     stateDelta: Message["stateDelta"]
   ): Message {
     return {
@@ -408,43 +355,10 @@ export class TurnProcessor {
       role,
       speakerId,
       content,
-      usedSkills,
+      usedSkills: [],
       stateDelta,
       createdAt: new Date().toISOString()
     };
-  }
-
-  private formatCombatLine(
-    speaker: { name: string },
-    skill: { name: string; cost: { mp: number }; damage?: { min: number; max: number } } | undefined,
-    output: { action: { type: string; targetIds: string[] }; stateDeltaSuggestion: Record<string, number> }
-  ): string {
-    const roster = this.characters.list();
-    const parts: string[] = [];
-
-    if (skill) {
-      parts.push(`⚔ ${speaker.name} 施展【${skill.name}】`);
-
-      // Show target and HP damage
-      for (const targetId of output.action.targetIds) {
-        const targetName = roster.find((c) => c.id === targetId)?.name ?? targetId;
-        const hpDelta = output.stateDeltaSuggestion[`${targetId}_hp`];
-        if (hpDelta !== undefined && hpDelta < 0) {
-          parts.push(`→ ${targetName} 气血${hpDelta}`);
-        }
-      }
-
-      // Show MP cost
-      const speakerId = roster.find((c) => c.name === speaker.name)?.id;
-      if (speakerId) {
-        const mpDelta = output.stateDeltaSuggestion[`${speakerId}_mp`];
-        if (mpDelta !== undefined && mpDelta < 0) {
-          parts.push(`｜ ${speaker.name} 内力${mpDelta}`);
-        }
-      }
-    }
-
-    return parts.length > 0 ? `\n\n${parts.join(" ")}` : "";
   }
 
   private formatStatusLine(gameState: { characters: Array<{ characterId: CharacterId; hp: number; mp: number }> }) {

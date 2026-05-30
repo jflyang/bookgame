@@ -37,47 +37,20 @@ export class TaskPackageRepository {
     return this.packageDirs().flatMap((dir) => {
       const id = basename(dir);
       try {
-        const entryFile = resolveInside(dir, "story.json");
-        const pkg = storyPackageSchema.parse(JSON.parse(readFileSync(entryFile, "utf-8")));
-        pkg.id = id;
-        // Prefer split scenario.json (may have newer fields like directive)
-        const scenarioFile = resolveInside(dir, "scenario.json");
-        if (existsSync(scenarioFile)) {
-          try {
-            const scenarioRaw = JSON.parse(readFileSync(scenarioFile, "utf-8"));
-            if (scenarioRaw.id && scenarioRaw.stages) {
-              pkg.scenario = scenarioRaw;
-            }
-          } catch { /* ignore, use embedded */ }
+        const pkgFile = resolveInside(dir, "package.json");
+        if (!existsSync(pkgFile)) {
+          logger.warn({ id }, "V2 package detected (story.json) — no longer supported, skipping");
+          return [];
         }
-        // Prefer split characters.json — authoritative source for character data (includes voiceId etc.)
-        const charactersFile = resolveInside(dir, "characters.json");
-        if (existsSync(charactersFile)) {
-          try {
-            const charsRaw = JSON.parse(readFileSync(charactersFile, "utf-8"));
-            if (Array.isArray(charsRaw) && charsRaw.length > 0) {
-              pkg.characters = charsRaw;
-            }
-          } catch { /* ignore, use embedded */ }
+        const pkgRaw = JSON.parse(readFileSync(pkgFile, "utf-8"));
+        if (pkgRaw.schemaVersion !== "3") {
+          logger.warn({ id, version: pkgRaw.schemaVersion }, "unsupported schema version, skipping");
+          return [];
         }
-        // Merge split ui/config.json
-        const uiConfigFile = resolveInside(dir, "ui/config.json");
-        if (existsSync(uiConfigFile)) {
-          try {
-            const uiRaw = JSON.parse(readFileSync(uiConfigFile, "utf-8"));
-            if (uiRaw && Object.keys(uiRaw).length > 0) {
-              pkg.uiConfig = { ...pkg.uiConfig, ...uiRaw } as any;
-            }
-          } catch { /* ignore, use embedded */ }
-        }
-        // Fix thumbnail URL to match directory-based id
-        if (pkg.thumbnail && pkg.thumbnail.startsWith("/api/admin/media/")) {
-          pkg.thumbnail = `/api/admin/media/${id}`;
-        }
-        // Attach plugin manifest if v2
+        const pkg = buildStoryPackageFromV3(dir, id, pkgRaw);
         const manifest = this.tryReadPluginManifest(id);
         if (manifest) {
-          return [{ ...pkg, pluginManifest: manifest }];
+          (pkg as any).pluginManifest = manifest;
         }
         return [pkg];
       } catch (err) {
@@ -106,15 +79,17 @@ export class TaskPackageRepository {
     }
 
     ensureDir(this.packageDir(parsed.id));
-    // Always write story.json as the canonical entry file (v2 format).
-    // toManifest() below will throw if no v2 manifest exists — v1 has been retired.
-    const entryFile = "story.json";
-    writeFileSync(resolveInside(this.packageDir(parsed.id), entryFile), JSON.stringify(parsed, null, 2), "utf-8");
-    // Remove stale task-package.json if it exists (legacy v1 entry file)
-    const legacyEntry = resolveInside(this.packageDir(parsed.id), "task-package.json");
-    if (existsSync(legacyEntry)) {
-      try { unlinkSync(legacyEntry); } catch { /* non-critical */ }
-    }
+    // V3: write package.json as the entry file
+    const pkgDir = this.packageDir(parsed.id);
+    const packageJson = {
+      schemaVersion: "3",
+      id: parsed.id,
+      title: parsed.title,
+      description: parsed.description || "",
+      createdAt: parsed.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    writeFileSync(resolveInside(pkgDir, "package.json"), JSON.stringify(packageJson, null, 2), "utf-8");
     writeFileSync(this.manifestFile(parsed.id), JSON.stringify(this.toManifest(parsed), null, 2), "utf-8");
     this.writeSplitFiles(parsed);
     // Rebuild plugin index
@@ -130,7 +105,7 @@ export class TaskPackageRepository {
   }
 
   taskFile(id: string) {
-    return resolveInside(this.packageDir(id), "story.json");
+    return resolveInside(this.packageDir(id), "package.json");
   }
 
   manifestFile(id: string) {
@@ -195,7 +170,7 @@ export class TaskPackageRepository {
     return readdirSync(this.rootDir, { withFileTypes: true })
       .filter((entry) => entry.isDirectory() && safeDirectoryName(entry.name))
       .map((entry) => resolveInside(this.rootDir, entry.name, ""))
-      .filter((dir) => existsSync(resolveInside(dir, "story.json")));
+      .filter((dir) => existsSync(resolveInside(dir, "package.json")));
   }
 
   private migrateLegacyPackages() {
@@ -239,7 +214,7 @@ export class TaskPackageRepository {
     return {
       id: pkg.id,
       type: "story-plugin",
-      schemaVersion: "2",
+      schemaVersion: "3",
       title: pkg.title,
       description: pkg.description,
       version: "1.0.0",
@@ -257,25 +232,21 @@ export class TaskPackageRepository {
 
   private writeSplitFiles(pkg: StoryPackage) {
     const packageDir = this.packageDir(pkg.id);
+    const storyPkg = pkg as any;
+
     writeFileSync(resolveInside(packageDir, "scenario.json"), JSON.stringify(pkg.scenario, null, 2), "utf-8");
     writeFileSync(resolveInside(packageDir, "characters.json"), JSON.stringify(pkg.characters, null, 2), "utf-8");
-    writeFileSync(resolveInside(packageDir, "skills.json"), JSON.stringify(pkg.skills, null, 2), "utf-8");
+    writeFileSync(resolveInside(packageDir, "setting.md"), pkg.storySettingPrompt ?? "", "utf-8");
+    writeFileSync(resolveInside(packageDir, "rules.json"), JSON.stringify(pkg.promptRules, null, 2), "utf-8");
+    writeFileSync(resolveInside(packageDir, "knowledge.json"), JSON.stringify(pkg.knowledgeDocuments, null, 2), "utf-8");
 
-    const knowledgeDir = ensureDir(resolveInside(packageDir, "knowledge"));
-    writeFileSync(resolveInside(knowledgeDir, "documents.json"), JSON.stringify(pkg.knowledgeDocuments, null, 2), "utf-8");
-
-    const promptsDir = ensureDir(resolveInside(packageDir, "prompts"));
-    writeFileSync(resolveInside(promptsDir, "story-setting.md"), pkg.storySettingPrompt ?? "", "utf-8");
-    writeFileSync(resolveInside(promptsDir, "rules.json"), JSON.stringify(pkg.promptRules, null, 2), "utf-8");
-
-    const uiDir = ensureDir(resolveInside(packageDir, "ui"));
-    writeFileSync(resolveInside(uiDir, "config.json"), JSON.stringify(pkg.uiConfig ?? {}, null, 2), "utf-8");
-
-    if (pkg.modules) {
-      writeFileSync(resolveInside(packageDir, "modules.json"), JSON.stringify(pkg.modules, null, 2), "utf-8");
+    if (storyPkg.actions) {
+      writeFileSync(resolveInside(packageDir, "actions.json"), JSON.stringify(storyPkg.actions, null, 2), "utf-8");
     }
-    // Note: flow.json is NOT written here — it may contain ReactFlow node positions
-    // that are managed by the story editor. Only the editor should write flow.json.
+    if (storyPkg.reactions) {
+      writeFileSync(resolveInside(packageDir, "reactions.json"), JSON.stringify(storyPkg.reactions, null, 2), "utf-8");
+    }
+    // Flow/modules are managed by the story editor, not rewritten here
   }
 }
 
@@ -298,6 +269,96 @@ function safeDirectoryName(name: string) {
     logger.debug({ err, name }, "skipping directory with invalid name");
     return false;
   }
+}
+
+function buildStoryPackageFromV3(
+  dir: string,
+  id: string,
+  pkgRaw: { id?: string; title?: string; description?: string; createdAt?: string; updatedAt?: string }
+): StoryPackage {
+  const pkg: any = {
+    id: pkgRaw.id || id,
+    title: pkgRaw.title || "",
+    description: pkgRaw.description || "",
+    createdAt: pkgRaw.createdAt || new Date().toISOString(),
+    updatedAt: pkgRaw.updatedAt || new Date().toISOString(),
+    storySettingPrompt: "",
+    scenario: null,
+    characters: [],
+    skills: [],
+    actions: [],
+    reactions: [],
+    knowledgeDocuments: [],
+    promptRules: [],
+    modules: [],
+    flow: undefined,
+    debugConfig: { showPromptLayers: false, showRawOutput: false, showValidation: false },
+    uiConfig: {},
+  };
+
+  // scenario.json
+  const scenarioPath = resolveInside(dir, "scenario.json");
+  if (existsSync(scenarioPath)) {
+    try { pkg.scenario = JSON.parse(readFileSync(scenarioPath, "utf-8")); } catch {}
+  }
+
+  // characters.json
+  const charsPath = resolveInside(dir, "characters.json");
+  if (existsSync(charsPath)) {
+    try { pkg.characters = JSON.parse(readFileSync(charsPath, "utf-8")); } catch {}
+  }
+
+  // flow.json (ReactFlow + FlowDefinition + modules)
+  const flowPath = resolveInside(dir, "flow.json");
+  if (existsSync(flowPath)) {
+    try {
+      const flowRaw = JSON.parse(readFileSync(flowPath, "utf-8"));
+      if (flowRaw.linearPhases) {
+        pkg.flow = {
+          id: flowRaw.id || "flow_default",
+          title: flowRaw.title || "",
+          description: flowRaw.description || "",
+          linearPhases: flowRaw.linearPhases,
+          servingLoop: flowRaw.servingLoop,
+          finaleSequence: flowRaw.finaleSequence,
+          dailySystem: flowRaw.dailySystem,
+        };
+      }
+      if (flowRaw.modules) pkg.modules = flowRaw.modules;
+    } catch {}
+  }
+
+  // actions.json
+  const actionsPath = resolveInside(dir, "actions.json");
+  if (existsSync(actionsPath)) {
+    try { pkg.actions = JSON.parse(readFileSync(actionsPath, "utf-8")); } catch {}
+  }
+
+  // reactions.json
+  const reactionsPath = resolveInside(dir, "reactions.json");
+  if (existsSync(reactionsPath)) {
+    try { pkg.reactions = JSON.parse(readFileSync(reactionsPath, "utf-8")); } catch {}
+  }
+
+  // knowledge.json
+  const knowledgePath = resolveInside(dir, "knowledge.json");
+  if (existsSync(knowledgePath)) {
+    try { pkg.knowledgeDocuments = JSON.parse(readFileSync(knowledgePath, "utf-8")); } catch {}
+  }
+
+  // rules.json
+  const rulesPath = resolveInside(dir, "rules.json");
+  if (existsSync(rulesPath)) {
+    try { pkg.promptRules = JSON.parse(readFileSync(rulesPath, "utf-8")); } catch {}
+  }
+
+  // setting.md
+  const settingPath = resolveInside(dir, "setting.md");
+  if (existsSync(settingPath)) {
+    try { pkg.storySettingPrompt = readFileSync(settingPath, "utf-8"); } catch {}
+  }
+
+  return storyPackageSchema.parse(pkg);
 }
 
 function walkFiles(dir: string): string[] {

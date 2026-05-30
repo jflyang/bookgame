@@ -1,0 +1,789 @@
+{
+  "title": "小薇日记",
+  "description": "大学生小薇被少爷和大姐逐步调教，从处女反抗到彻底屈服，最后进入捆绑调教的日常",
+  "version": "2.0.0",
+  "performances": {
+    "xiaowei_img_stage_1": {
+      "name": "① 囚鸟入笼",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_1"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/初次困住.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_10b": {
+      "name": "⑩B 极限紧缚",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_10b"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/阴绳惩罚.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_11b": {
+      "name": "⑪B 高举捆腿",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_11b"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/捆绑放置.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_13a": {
+      "name": "⑬A 口舌教学",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_13a"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/口交.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_14a": {
+      "name": "⑭A 边缘交付",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_14a"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/甜男人.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_18b": {
+      "name": "⑱B 悬吊惩戒",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_18b"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/戴上口塞.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_19b": {
+      "name": "⑲B 慢速抽插",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_19b"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/按摩棒.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_20b": {
+      "name": "⑳B 边缘地狱",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_20b"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/整夜捆绑.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_21": {
+      "name": "㉑ 初次征服",
+      "renderer": "image",
+      "durationMs": 7000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_21"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/初次做爱.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_23b": {
+      "name": "㉓B 臣服交付",
+      "renderer": "image",
+      "durationMs": 7000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_23b"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/强制做爱.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_24b": {
+      "name": "㉔B 幸福哭泣",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_24b"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/背后插入.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_24": {
+      "name": "㉔ 日常之始",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_24"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/日常做爱.jpg"
+      },
+      "audio": {}
+    },
+    "xiaowei_img_stage_26": {
+      "name": "㉖ 余韵新生",
+      "renderer": "image",
+      "durationMs": 7000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_26"
+      },
+      "playOnce": "perStage",
+      "layers": {
+        "main": "assets/performances/xiaowei_stage_images/images/调教完成.jpg"
+      },
+      "audio": {}
+    },
+    "xw_orgasm": {
+      "name": "小薇高潮",
+      "renderer": "audio",
+      "durationMs": 5000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "高潮",
+          "去了",
+          "到了",
+          "绝顶",
+          "决堤",
+          "连续高潮",
+          "又去了"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "xw_intense_moan": {
+      "name": "小薇强烈呻吟",
+      "renderer": "audio",
+      "durationMs": 3500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "强烈呻吟",
+          "失控",
+          "大声",
+          "尖叫",
+          "惊叫",
+          "失声"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/舒服激情呻吟.wav"
+        ]
+      }
+    },
+    "xw_short_moan": {
+      "name": "小薇短促呻吟",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "短促",
+          "一颤",
+          "猝不及防",
+          "触电",
+          "惊叫一声"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/短呻吟.wav"
+        ]
+      }
+    },
+    "xw_soft_moan": {
+      "name": "小薇轻声呻吟",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "轻声呻吟",
+          "轻哼",
+          "低吟",
+          "细微",
+          "闷哼"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "xw_pleasure": {
+      "name": "小薇愉悦反应",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "舒服",
+          "快感",
+          "身体背叛",
+          "不由自主",
+          "迎合",
+          "想要",
+          "渴望"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/舒服激情呻吟.wav"
+        ]
+      }
+    },
+    "xw_panting": {
+      "name": "小薇喘息",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "喘息",
+          "呼吸急促",
+          "喘气",
+          "急促喘息",
+          "气息不稳"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "xw_kiss": {
+      "name": "接吻",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "接吻",
+          "亲吻",
+          "深吻",
+          "吻了",
+          "吻上",
+          "含住嘴唇"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "xw_cry": {
+      "name": "小薇哭泣",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "哭泣",
+          "哭出来",
+          "流泪",
+          "泪流满面",
+          "大哭",
+          "泪水"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "xw_beg": {
+      "name": "小薇求饶",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "求饶",
+          "饶了我",
+          "不行了",
+          "受不了",
+          "放过我",
+          "求求"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "xw_resist": {
+      "name": "小薇反抗",
+      "renderer": "audio",
+      "durationMs": 2500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "反抗",
+          "不要",
+          "放开",
+          "滚开",
+          "挣扎",
+          "拼命"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/短呻吟.wav"
+        ]
+      }
+    },
+    "xw_collapse": {
+      "name": "小薇崩溃",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "崩溃",
+          "坏掉了",
+          "承受不住",
+          "意志瓦解",
+          "精神崩溃"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "xw_edge": {
+      "name": "小薇边缘",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "高潮边缘",
+          "要去了",
+          "让我去",
+          "就要到了",
+          "快到",
+          "忍不住"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "xw_drug": {
+      "name": "小薇药物反应",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "媚药",
+          "春药",
+          "好热",
+          "身体好烫",
+          "药效"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/按摩棒呻吟.wav"
+        ]
+      }
+    },
+    "xw_training": {
+      "name": "小薇调教反应",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "调教",
+          "束缚",
+          "捆绑",
+          "蒙眼",
+          "口塞",
+          "绑住"
+        ],
+        "matchBoldOnly": true
+      },
+      "playOnce": "never",
+      "layers": {},
+      "audio": {
+        "main": "assets/performances/xw_training/audio/audio.wav"
+      }
+    },
+    "xw_insert": {
+      "name": "小薇被进入",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "进入",
+          "插入",
+          "挺入",
+          "贯穿",
+          "占有",
+          "抽送"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "xw_intense_sex": {
+      "name": "激烈性爱",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "激烈",
+          "猛力",
+          "冲刺",
+          "猛烈",
+          "撞击",
+          "狂暴"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/激烈性爱.wav"
+        ]
+      }
+    },
+    "xw_vibe": {
+      "name": "按摩棒",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "按摩棒",
+          "跳蛋",
+          "震动",
+          "器具",
+          "玩具"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/按摩棒.wav"
+        ]
+      }
+    },
+    "xw_oral": {
+      "name": "口交",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "口交",
+          "含住",
+          "深喉",
+          "吞吐",
+          "舔舐"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/口交.wav"
+        ]
+      }
+    },
+    "xw_submit": {
+      "name": "小薇屈服",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "屈服",
+          "服从",
+          "是少爷的",
+          "什么都愿意",
+          "我愿意"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "xw_undress": {
+      "name": "脱衣",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "脱衣",
+          "褪去",
+          "衣衫滑落",
+          "赤裸",
+          "脱下"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/脱衣服.wav"
+        ]
+      }
+    },
+    "xw_massage": {
+      "name": "按摩",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "xiao_wei",
+        "keywords": [
+          "精油",
+          "按摩",
+          "涂抹",
+          "润滑"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/按摩下体.mp3"
+        ]
+      }
+    },
+    "xw_bed": {
+      "name": "床响",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "keywords": [
+          "床架",
+          "床响",
+          "吱呀",
+          "床垫",
+          "哐哐"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/xiaowei_voice/audio/激烈性爱.wav"
+        ]
+      }
+    }
+  }
+}

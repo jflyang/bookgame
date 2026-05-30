@@ -28,101 +28,86 @@ export function getPackageState(): PackageState | null {
   return currentPackage;
 }
 
-/** Open a story package directory. */
+/** Open a V3 story package directory. */
 export function openDirectory(packageDir: string): PackageState {
   if (!existsSync(packageDir)) throw new Error(`目录不存在: ${packageDir}`);
 
-  let storyPath = join(packageDir, "story.json");
-  if (!existsSync(storyPath)) {
-    storyPath = join(packageDir, "task-package.json");
-  }
-  if (!existsSync(storyPath)) throw new Error(`目录中未找到 story.json 或 task-package.json`);
-
-  const raw = readFileSync(storyPath, "utf-8");
-  const storyPackage = JSON.parse(raw) as StoryPackage;
-
-  // Prefer split scenario.json over the embedded one in story.json (split file may be newer)
-  const scenarioPath = join(packageDir, "scenario.json");
-  if (existsSync(scenarioPath)) {
-    try {
-      const scenarioRaw = JSON.parse(readFileSync(scenarioPath, "utf-8"));
-      if (scenarioRaw.id && scenarioRaw.stages) {
-        storyPackage.scenario = scenarioRaw;
-      }
-    } catch { /* ignore parse errors, use embedded */ }
+  // V3: read package.json
+  const pkgPath = join(packageDir, "package.json");
+  if (!existsSync(pkgPath)) {
+    if (existsSync(join(packageDir, "story.json"))) {
+      throw new Error(`此故事包为 V2 格式，已不再支持。请使用迁移脚本升级到 V3。`);
+    }
+    throw new Error(`目录中未找到 package.json（需要 V3 格式的故事包）`);
   }
 
-  // Merge split ui/config.json — authoritative source for UI config (fixes split-brain)
-  const uiConfigPath = join(packageDir, "ui", "config.json");
-  if (existsSync(uiConfigPath)) {
-    try {
-      const uiRaw = JSON.parse(readFileSync(uiConfigPath, "utf-8"));
-      if (uiRaw && Object.keys(uiRaw).length > 0) {
-        storyPackage.uiConfig = { ...storyPackage.uiConfig, ...uiRaw };
-      }
-    } catch { /* ignore, use embedded */ }
+  const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+  if (pkg.schemaVersion !== "3") throw new Error(`不支持的故事包版本: ${pkg.schemaVersion || "未知"}`);
+
+  const storyPackage: any = {
+    id: pkg.id, title: pkg.title, description: pkg.description || "",
+    createdAt: pkg.createdAt || new Date().toISOString(),
+    updatedAt: pkg.updatedAt || new Date().toISOString(),
+    storySettingPrompt: "", scenario: null as any, characters: [], skills: [],
+    actions: [], reactions: [], knowledgeDocuments: [], promptRules: [],
+    modules: [], flow: undefined,
+    debugConfig: { showPromptLayers: false, showRawOutput: false, showValidation: false },
+    uiConfig: {},
+  };
+
+  // scenario.json
+  const sPath = join(packageDir, "scenario.json");
+  if (existsSync(sPath)) storyPackage.scenario = JSON.parse(readFileSync(sPath, "utf-8"));
+
+  // characters.json
+  const charsPath = join(packageDir, "characters.json");
+  if (existsSync(charsPath)) storyPackage.characters = JSON.parse(readFileSync(charsPath, "utf-8"));
+
+  // flow.json
+  let flowNodes: unknown[] | undefined;
+  let flowEdges: unknown[] | undefined;
+  const flowPath = join(packageDir, "flow.json");
+  if (existsSync(flowPath)) {
+    const flowRaw = JSON.parse(readFileSync(flowPath, "utf-8"));
+    if (flowRaw.nodes && Array.isArray(flowRaw.nodes)) { flowNodes = flowRaw.nodes; flowEdges = flowRaw.edges || []; }
+    if (flowRaw.linearPhases) storyPackage.flow = {
+      id: flowRaw.id || "flow_default", title: flowRaw.title || "", description: flowRaw.description || "",
+      linearPhases: flowRaw.linearPhases, servingLoop: flowRaw.servingLoop,
+      finaleSequence: flowRaw.finaleSequence, dailySystem: flowRaw.dailySystem,
+    };
+    if (flowRaw.modules) storyPackage.modules = flowRaw.modules;
   }
+
+  // actions.json, reactions.json, knowledge.json, rules.json
+  for (const [file, key] of [["actions.json","actions"],["reactions.json","reactions"],["knowledge.json","knowledgeDocuments"],["rules.json","promptRules"]] as const) {
+    const fp = join(packageDir, file);
+    if (existsSync(fp)) storyPackage[key] = JSON.parse(readFileSync(fp, "utf-8"));
+  }
+
+  // setting.md, ui-config.json
+  const sp = join(packageDir, "setting.md");
+  if (existsSync(sp)) storyPackage.storySettingPrompt = readFileSync(sp, "utf-8");
+  const uiPath = join(packageDir, "ui-config.json");
+  if (existsSync(uiPath)) storyPackage.uiConfig = JSON.parse(readFileSync(uiPath, "utf-8"));
 
   const hasManifest = existsSync(join(packageDir, "manifest.json"));
   const manifest = hasManifest ? JSON.parse(readFileSync(join(packageDir, "manifest.json"), "utf-8")) : null;
-  const hasCharacters = existsSync(join(packageDir, "characters.json"));
-  const hasSkills = existsSync(join(packageDir, "skills.json"));
-  const hasKnowledge = existsSync(join(packageDir, "knowledge", "documents.json"));
-  const hasPromptRules = existsSync(join(packageDir, "prompts", "rules.json"));
-  const hasStorySetting = existsSync(join(packageDir, "prompts", "story-setting.md"));
-
-  // Load v2 flow/modules split files
-  // flow.json may contain ReactFlow format (nodes+edges) or FlowDefinition format
-  let flowNodes: unknown[] | undefined;
-  let flowEdges: unknown[] | undefined;
-  if (existsSync(join(packageDir, "flow.json"))) {
-    const flowRaw = JSON.parse(readFileSync(join(packageDir, "flow.json"), "utf-8"));
-    if (flowRaw.nodes && Array.isArray(flowRaw.nodes)) {
-      // ReactFlow format — preserve exact node positions and edges
-      flowNodes = flowRaw.nodes;
-      flowEdges = flowRaw.edges || [];
-    }
-    // Also extract runtime FlowDefinition from merged file (can have both nodes + linearPhases)
-    if (!storyPackage.flow && flowRaw.linearPhases) {
-      storyPackage.flow = {
-        id: flowRaw.id,
-        title: flowRaw.title,
-        description: flowRaw.description,
-        linearPhases: flowRaw.linearPhases,
-        servingLoop: flowRaw.servingLoop,
-        finaleSequence: flowRaw.finaleSequence,
-        dailySystem: flowRaw.dailySystem,
-      };
-    } else if (!storyPackage.flow) {
-      // FlowDefinition format — only use if story.json doesn't already have flow
-      storyPackage.flow = flowRaw;
-    }
-  }
-  if (existsSync(join(packageDir, "modules.json"))) {
-    if (!storyPackage.modules) {
-      storyPackage.modules = JSON.parse(readFileSync(join(packageDir, "modules.json"), "utf-8"));
-    }
-  }
 
   const mediaFiles: string[] = [];
-  const assetsDir = join(packageDir, "assets", "performances");
-  if (existsSync(assetsDir)) {
-    scanDir(assetsDir, mediaFiles);
+  const mediaDir = join(packageDir, "media");
+  if (existsSync(mediaDir)) {
+    scanDir(mediaDir, mediaFiles);
   }
 
   currentPackage = {
-    dir: packageDir,
-    storyPackage,
-    hasManifest,
-    manifest,
-    hasCharacters,
-    hasSkills,
-    hasKnowledge,
-    hasPromptRules,
-    hasStorySetting,
-    flowNodes,
-    flowEdges,
-    mediaFiles,
+    dir: packageDir, storyPackage: storyPackage as StoryPackage,
+    hasManifest, manifest,
+    hasCharacters: existsSync(charsPath),
+    hasSkills: false,
+    hasKnowledge: existsSync(join(packageDir, "knowledge.json")),
+    hasPromptRules: existsSync(join(packageDir, "rules.json")),
+    hasStorySetting: existsSync(sp),
+    flowNodes, flowEdges, mediaFiles,
   };
 
   return currentPackage;
@@ -157,43 +142,40 @@ export async function openZip(zipPath: string): Promise<PackageState> {
   return openDirectory(finalDir);
 }
 
-/** Save the full story package back to disk. */
+/** Save the full story package back to disk (V3 format). */
 export function saveStoryPackage(storyPackage: StoryPackage): void {
   if (!currentPackage) throw new Error("未打开任何故事包");
 
   const dir = currentPackage.dir;
-  const sorted = sortStoryPackageKeys(storyPackage);
-  writeFileSync(join(dir, "story.json"), JSON.stringify(sorted, null, 2), "utf-8");
+  const pkg = storyPackage as any;
 
-  // Sync to split files
-  if (currentPackage.hasCharacters) {
-    writeFileSync(join(dir, "characters.json"), JSON.stringify(sorted.characters, null, 2), "utf-8");
-  }
-  if (currentPackage.hasSkills) {
-    writeFileSync(join(dir, "skills.json"), JSON.stringify(sorted.skills, null, 2), "utf-8");
-  }
-  if (currentPackage.hasKnowledge) {
-    writeFileSync(join(dir, "knowledge", "documents.json"), JSON.stringify(sorted.knowledgeDocuments, null, 2), "utf-8");
-  }
-  if (currentPackage.hasPromptRules) {
-    writeFileSync(join(dir, "prompts", "rules.json"), JSON.stringify(sorted.promptRules, null, 2), "utf-8");
-  }
+  // package.json
+  writeFileSync(join(dir, "package.json"), JSON.stringify({
+    schemaVersion: "3", id: pkg.id, title: pkg.title, description: pkg.description || "",
+    createdAt: pkg.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString(),
+  }, null, 2), "utf-8");
 
-  // v2: sync modules.json only (flow.json is saved separately with ReactFlow format)
-  if (sorted.modules) {
-    writeFileSync(join(dir, "modules.json"), JSON.stringify(sorted.modules, null, 2), "utf-8");
-  }
+  // scenario.json, characters.json, actions.json, reactions.json, knowledge.json, rules.json
+  if (pkg.scenario) writeFileSync(join(dir, "scenario.json"), JSON.stringify(pkg.scenario, null, 2), "utf-8");
+  if (pkg.characters) writeFileSync(join(dir, "characters.json"), JSON.stringify(pkg.characters, null, 2), "utf-8");
+  if (pkg.actions) writeFileSync(join(dir, "actions.json"), JSON.stringify(pkg.actions, null, 2), "utf-8");
+  if (pkg.reactions) writeFileSync(join(dir, "reactions.json"), JSON.stringify(pkg.reactions, null, 2), "utf-8");
+  if (pkg.knowledgeDocuments) writeFileSync(join(dir, "knowledge.json"), JSON.stringify(pkg.knowledgeDocuments, null, 2), "utf-8");
+  if (pkg.promptRules) writeFileSync(join(dir, "rules.json"), JSON.stringify(pkg.promptRules, null, 2), "utf-8");
 
-  // Sync ui/config.json — authoritative split file for UI config
-  if (sorted.uiConfig && Object.keys(sorted.uiConfig).length > 0) {
-    const uiDir = join(dir, "ui");
-    if (!existsSync(uiDir)) mkdirSync(uiDir, { recursive: true });
-    writeFileSync(join(uiDir, "config.json"), JSON.stringify(sorted.uiConfig, null, 2), "utf-8");
-  }
+  // ui-config.json
+  if (pkg.uiConfig) writeFileSync(join(dir, "ui-config.json"), JSON.stringify(pkg.uiConfig, null, 2), "utf-8");
 
-  currentPackage.storyPackage = sorted;
+  currentPackage.storyPackage = storyPackage;
 }
 
+function scanDir(dir: string, files: string[], prefix = "") {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) scanDir(join(dir, entry.name), files, relPath);
+    else files.push(relPath);
+  }
+}
 /** Save only flow.json and modules.json. */
 export function saveFlowAndModules(flow: unknown, modules: unknown): void {
   if (!currentPackage) throw new Error("未打开任何故事包");
@@ -283,13 +265,3 @@ function sortStoryPackageKeys(pkg: StoryPackage): StoryPackage {
   return sorted as StoryPackage;
 }
 
-function scanDir(dir: string, files: string[], prefix = "") {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) {
-      scanDir(join(dir, entry.name), files, relPath);
-    } else {
-      files.push(relPath);
-    }
-  }
-}

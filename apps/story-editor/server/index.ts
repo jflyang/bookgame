@@ -153,8 +153,8 @@ export async function createApp() {
         for (const entry of readdirSync(taskPackagesDir, { withFileTypes: true })) {
           if (!entry.isDirectory() || entry.name.includes("_backup")) continue;
           const dir = join(taskPackagesDir, entry.name);
-          // Only include dirs that have story.json or task-package.json
-          if (!existsSync(join(dir, "story.json")) && !existsSync(join(dir, "task-package.json"))) continue;
+          // V3: only include dirs that have package.json
+          if (!existsSync(join(dir, "package.json"))) continue;
           const manifestPath = join(dir, "manifest.json");
           if (existsSync(manifestPath)) {
             try {
@@ -194,7 +194,7 @@ export async function createApp() {
     // Production: serve built files
     const distPath = resolve(__dirname, "../dist");
     app.use(express.static(distPath));
-    app.get("*", (_req, res) => {
+    app.use((_req, res) => {
       res.sendFile(join(distPath, "index.html"));
     });
   }

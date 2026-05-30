@@ -1,4 +1,4 @@
-import type { CharacterId, FlowDefinition, GameState, Message, StoryModule, StoryPackage, StoryPromptRule } from "@story-game/shared";
+import type { CharacterId, GameState, Message, StoryPackage, StoryPromptRule } from "@story-game/shared";
 import { CharacterService } from "./characterService.js";
 import { AgentService } from "./agentService.js";
 import type { SkillIndex } from "./skillIndex.js";
@@ -22,20 +22,48 @@ export class PromptService {
     const introNarration = storyPackage?.uiConfig?.scene?.introNarration;
     const stageGuide = this.buildStageGuide(state, storyPackage);
 
-    // --- Skills (stable within a session) ---
-    const allSkills = this.skills.list();
-    const speakerSkills = allSkills.filter((s) => s.ownerId === speakerId);
-    const skillsToShow = speakerSkills.length > 0 ? speakerSkills : allSkills;
-    const skillListText = skillsToShow.length > 0
-      ? `当前角色可用技能：\n${skillsToShow.map((s) => `- ${s.id} (内力:${s.cost.mp}${s.damage ? `, 伤害:${s.damage.min}~${s.damage.max}` : ""})${s.effect ? `: ${s.effect}` : ""}`).join("\n")}`
+    // --- Actions & Reactions (v2 — narrative-driven) ---
+    const allActions = this.skills.listActions();
+    const allReactions = this.skills.listReactions();
+
+    // Build action list grouped by character
+    const actionByOwner = new Map<string, typeof allActions>();
+    for (const a of allActions) {
+      const list = actionByOwner.get(a.ownerId) || [];
+      list.push(a);
+      actionByOwner.set(a.ownerId, list);
+    }
+    const actionLines: string[] = [];
+    for (const [ownerId, actions] of actionByOwner) {
+      const owner = roster.find((c) => c.id === ownerId);
+      const ownerName = owner?.name || ownerId;
+      actionLines.push(`${ownerName} 可执行：`);
+      for (const a of actions) {
+        actionLines.push(`  - ${a.name}：${a.description}`);
+      }
+    }
+    const actionListText = actionLines.length > 0
+      ? `【角色可用行动】\n${actionLines.join("\n")}`
       : "";
 
-    const attackableIds = speaker.attackableTargetIds ?? [];
-    const attackableNames = attackableIds
-      .map((tid) => roster.find((c) => c.id === tid)?.name)
-      .filter((n): n is string => !!n);
-    const attackTargetsText = attackableNames.length > 0
-      ? `可攻击目标：${attackableNames.join("、")}。`
+    // Build reaction list grouped by character
+    const reactionByOwner = new Map<string, typeof allReactions>();
+    for (const r of allReactions) {
+      const list = reactionByOwner.get(r.ownerId) || [];
+      list.push(r);
+      reactionByOwner.set(r.ownerId, list);
+    }
+    const reactionLines: string[] = [];
+    for (const [ownerId, reactions] of reactionByOwner) {
+      const owner = roster.find((c) => c.id === ownerId);
+      const ownerName = owner?.name || ownerId;
+      reactionLines.push(`${ownerName} 被动：`);
+      for (const r of reactions) {
+        reactionLines.push(`  被${r.trigger}时 → ${r.description}`);
+      }
+    }
+    const reactionListText = reactionLines.length > 0
+      ? `【被动反应】\n${reactionLines.join("\n")}`
       : "";
 
     // Knowledge hits for system prompt (stable context from persona)
@@ -55,10 +83,10 @@ export class PromptService {
     return [
       "你正在驱动一个多人角色互动故事游戏。每次只有一个角色发言。",
       "当前发言者只能扮演自己，不能替其他角色说话、行动或描写心理。",
-      "输出严格 JSON（不要 Markdown 代码块）：{\"speakerId\":\"角色ID\",\"narration\":\"场景叙述(非空)\",\"dialogue\":\"角色对话(非空)\",\"action\":{\"type\":\"skill|observe|command|defend|escape\",\"skillId?\":\"技能ID\",\"targetIds\":[\"目标ID\"]},\"stateDeltaSuggestion\":{\"角色ID_hp\":-数值,\"角色ID_mp\":-数值},\"stageSuggestion?\":\"阶段ID\"}",
-      "若叙事中宣告攻击伤害，stateDeltaSuggestion 必须包含目标 HP 减少条目。使用知识库招式时用 **粗体** 标出。",
-      skillListText,
-      attackTargetsText,
+      "输出严格 JSON（不要 Markdown 代码块）：{\"speakerId\":\"角色ID\",\"narration\":\"场景叙述(非空)\",\"dialogue\":\"角色对话(非空)\",\"action\":{\"type\":\"observe|command|defend|escape\",\"targetIds\":[\"目标ID\"]},\"stateDeltaSuggestion\":{},\"stageSuggestion?\":\"阶段ID\"}",
+      "在 narration 中融入角色的主动行动和被动反应。使用行动名称时用 **粗体** 标出。",
+      actionListText,
+      reactionListText,
       ...this.renderRules(enabledRules, {
         currentCharacterName: speaker.name,
         otherCharacterNames,
@@ -140,16 +168,12 @@ export class PromptService {
     });
   }
 
-  // ===== Flow-Aware Stage Guidance (v2) =====
+  // ===== Stage Guidance (scenario-driven only) =====
+  // Note: Flow/modules are purely an editor visualization tool.
+  // The runtime reads ONLY scenario.stageDetails for building the AI prompt.
 
-  private buildStageGuide(state: GameState, storyPackage?: StoryPackage): string {
+  private buildStageGuide(state: GameState, _storyPackage?: StoryPackage): string {
     const currentDetail = state.scenario.stageDetails.find((s) => s.id === state.scenario.currentStage);
-
-    if (storyPackage?.flow && storyPackage?.modules) {
-      const guide = this.buildFlowGuide(state, storyPackage.flow, storyPackage.modules, currentDetail);
-      if (guide) return guide;
-    }
-
     return this.buildLegacyStageGuide(state, currentDetail);
   }
 
@@ -205,186 +229,4 @@ export class PromptService {
     ].join("\n");
   }
 
-  private buildFlowGuide(
-    state: GameState,
-    flow: FlowDefinition,
-    modules: StoryModule[],
-    currentDetail: GameState["scenario"]["stageDetails"][number] | undefined
-  ): string | null {
-    const currentModule = modules.find((m) => m.sourceStage === state.scenario.currentStage);
-    const moduleId = currentModule?.id;
-    if (!moduleId) return null;
-
-    const moduleMap = new Map(modules.map((m) => [m.id, m]));
-    const phaseInfo = this.determinePhase(moduleId, flow);
-
-    if (!phaseInfo) return null;
-
-    const branchGuide = this.buildBranchGuide(currentDetail);
-    const lines: string[] = [
-      `当前剧情阶段：${state.scenario.currentStage}${currentModule ? `（${currentModule.title}）` : ""}`,
-      `当前剧情目标：${state.scenario.currentGoal}`,
-    ];
-
-    switch (phaseInfo.phase) {
-      case "linear":
-        lines.push(...this.buildLinearGuide(phaseInfo, moduleMap, currentModule!));
-        break;
-      case "serving":
-        lines.push(...this.buildServingGuide(state, flow, moduleMap, currentModule!));
-        break;
-      case "finale":
-        lines.push(...this.buildFinaleGuide(flow, moduleMap, currentModule!));
-        break;
-    }
-
-    if (branchGuide) lines.push(branchGuide);
-
-    const directiveText = currentDetail?.directive
-      ? `【阶段指令·必须推动】${currentDetail.directive}\n你必须在本阶段的叙述中自然地引导到这个方向发生，可以用1-2回合铺垫过渡，不要生硬插入。`
-      : "";
-    if (directiveText) lines.push(directiveText);
-
-    lines.push(
-      currentDetail?.isChoicePoint
-        ? "当前阶段是抉择点——不要填写 stageSuggestion，让叙述自然引出玩家选择。"
-        : "如果剧情需要推进，只能在 stageSuggestion 中填入上面可用剧情阶段之一；不确定时沿用当前阶段。"
-    );
-
-    return lines.filter(Boolean).join("\n");
-  }
-
-  private determinePhase(moduleId: string, flow: FlowDefinition) {
-    for (const [phaseId, phase] of Object.entries(flow.linearPhases)) {
-      const idx = phase.sequence.indexOf(moduleId);
-      if (idx !== -1) {
-        return {
-          phase: "linear" as const,
-          phaseId,
-          phaseTitle: phase.title,
-          currentIndex: idx,
-          totalInPhase: phase.sequence.length,
-          sequence: phase.sequence,
-          afterAll: phase.afterAll,
-        };
-      }
-    }
-
-    if (flow.servingLoop) {
-      const serveIds = Object.values(flow.servingLoop.serveModuleByCycle);
-      const punishIds = Object.values(flow.servingLoop.punishModuleByCycle);
-      if (serveIds.includes(moduleId) || punishIds.includes(moduleId)) {
-        return { phase: "serving" as const };
-      }
-    }
-
-    if (flow.finaleSequence?.sequence.includes(moduleId)) {
-      const idx = flow.finaleSequence.sequence.indexOf(moduleId);
-      return {
-        phase: "finale" as const,
-        currentIndex: idx,
-        total: flow.finaleSequence.sequence.length,
-        sequence: flow.finaleSequence.sequence,
-      };
-    }
-
-    return null;
-  }
-
-  private buildLinearGuide(
-    phaseInfo: ReturnType<typeof this.determinePhase> & { phase: "linear" },
-    moduleMap: Map<string, StoryModule>,
-    currentModule: StoryModule
-  ): string[] {
-    const lines: string[] = [
-      `【${phaseInfo.phaseTitle}】第 ${phaseInfo.currentIndex + 1}/${phaseInfo.totalInPhase} 阶段`,
-      "",
-      `▸ 当前模块：${currentModule.title}`,
-      currentModule.description ? `  含义：${currentModule.description}` : "",
-      currentModule.guidance ? `  引导：${currentModule.guidance}` : "",
-      currentModule.enterWhen ? `  进入条件：${currentModule.enterWhen}` : "",
-      currentModule.exitCondition ? `  退出条件：${currentModule.exitCondition}` : "",
-    ];
-
-    // Show upcoming module (next 1 only, title only to avoid spoiling)
-    const upcoming = phaseInfo.sequence.slice(phaseInfo.currentIndex + 1, phaseInfo.currentIndex + 2);
-    if (upcoming.length > 0) {
-      const upcomingText = upcoming.map((mid) => {
-        const m = moduleMap.get(mid);
-        return m ? `  → 下一阶段：${m.title}` : `  → ${mid}`;
-      }).join("\n");
-      lines.push("", upcomingText);
-    }
-
-    // Show afterAll hint
-    if (phaseInfo.afterAll && phaseInfo.currentIndex === phaseInfo.totalInPhase - 1) {
-      lines.push("", `⚠️ 本幕完成后的下一阶段：${phaseInfo.afterAll}`);
-    }
-
-    // Also include current module's consumesSkills if present
-    if (currentModule.consumesSkills?.length) {
-      lines.push("", `本模块相关技能：${currentModule.consumesSkills.join("、")}`);
-    }
-
-    return lines;
-  }
-
-  private buildServingGuide(
-    state: GameState,
-    flow: FlowDefinition,
-    moduleMap: Map<string, StoryModule>,
-    currentModule: StoryModule
-  ): string[] {
-    const loop = flow.servingLoop!;
-    const cycle = state.currentCycle ?? 1;
-
-    const lines: string[] = [
-      `【${loop.title}】第 ${cycle} 次侍寝`,
-      "",
-      `▸ 当前模块：${currentModule.title}`,
-      currentModule.description ? `  含义：${currentModule.description}` : "",
-      currentModule.guidance ? `  引导：${currentModule.guidance}` : "",
-      currentModule.enterWhen ? `  进入条件：${currentModule.enterWhen}` : "",
-      currentModule.exitCondition ? `  退出条件：${currentModule.exitCondition}` : "",
-    ];
-
-    // Brief judgment reference — detailed scoring is handled by the game engine
-    if (loop.judgmentNode) {
-      lines.push("", "本模块完成后将进行侍寝评定（满意→推进，不满意→惩戒后重新侍寝）。");
-    }
-
-    // Module-specific consumed skills
-    if (currentModule.consumesSkills?.length) {
-      lines.push("", `本模块相关技能：${currentModule.consumesSkills.join("、")}`);
-    }
-
-    return lines;
-  }
-
-  private buildFinaleGuide(
-    flow: FlowDefinition,
-    moduleMap: Map<string, StoryModule>,
-    currentModule: StoryModule
-  ): string[] {
-    const seq = flow.finaleSequence!;
-    const currentIdx = seq.sequence.indexOf(currentModule.id);
-
-    const lines: string[] = [
-      `【${seq.title || "终幕"}】第 ${currentIdx + 1}/${seq.sequence.length} 阶段`,
-      "",
-      `▸ 当前模块：${currentModule.title}`,
-      currentModule.description ? `  含义：${currentModule.description}` : "",
-      currentModule.guidance ? `  引导：${currentModule.guidance}` : "",
-      currentModule.exitCondition ? `  退出条件：${currentModule.exitCondition}` : "",
-    ];
-
-    // Only show next module title (no spoilers for later finale steps)
-    if (currentIdx >= 0 && currentIdx < seq.sequence.length - 1) {
-      const nextId = seq.sequence[currentIdx + 1];
-      const nextModule = moduleMap.get(nextId);
-      lines.push("", `  → 下一阶段：${nextModule?.title || nextId}`);
-    }
-
-    return lines;
-  }
 }

@@ -155,3 +155,40 @@ export async function fetchPackages(): Promise<StoryPackageInfo[]> {
 export function mediaUrl(relativePath: string): string {
   return `${BASE}/media?path=${encodeURIComponent(relativePath)}`;
 }
+
+export async function uploadMedia(dataUrl: string, filename: string): Promise<{ ok: boolean; path?: string; error?: string }> {
+  const r = await fetch(`${BASE}/media/upload`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data: dataUrl, filename }),
+  });
+  return r.json();
+}
+
+export interface FlowAIContext {
+  storyTitle: string; storyDescription: string; storySetting: string;
+  characters: { id: string; name: string; role: string; personaPrompt?: string }[];
+  flow: unknown; modules: unknown[];
+  nodes: { id: string; type: string; data: Record<string, unknown>; parentId?: string; position: { x: number; y: number } }[];
+  edges: { id: string; source: string; target: string; sourceHandle?: string; targetHandle?: string; label?: string }[];
+  existingScenario?: unknown;
+}
+
+export interface FlowAnalysisReport {
+  issues: { severity: "error"|"warn"|"info"; category: string; title: string; description: string; affectedModules: string[]; suggestion: string }[];
+  summary: string;
+}
+
+export async function analyzeFlow(ctx: FlowAIContext): Promise<{ ok: boolean; report?: FlowAnalysisReport; error?: string }> {
+  const r = await fetch(`${BASE}/ai/flow/analyze`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(ctx) });
+  return r.json();
+}
+
+export async function generateScenario(ctx: FlowAIContext, options?: { mode: "full" | "incremental" }): Promise<{ ok: boolean; result?: { scenario: unknown; rawText: string }; error?: string }> {
+  const r = await fetch(`${BASE}/ai/flow/generate-scenario`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ctx, options }) });
+  return r.json();
+}
+
+export async function refineStage(ctx: FlowAIContext, targetModuleId: string, instruction: string): Promise<{ ok: boolean; result?: { stageDetail: unknown; rawText: string }; error?: string }> {
+  const r = await fetch(`${BASE}/ai/flow/refine-stage`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ctx, targetModuleId, instruction }) });
+  return r.json();
+}

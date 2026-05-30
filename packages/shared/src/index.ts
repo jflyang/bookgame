@@ -34,6 +34,25 @@ export const skillSchema = z.object({
 });
 export type Skill = z.infer<typeof skillSchema>;
 
+// v2: Narrative actions — what a character can DO (replaces combat skills)
+export const actionSchema = z.object({
+  id: safeIdSchema,
+  name: z.string(),
+  ownerId: safeIdSchema,
+  description: z.string(),
+});
+export type Action = z.infer<typeof actionSchema>;
+
+// v2: Passive reactions — what happens TO a character when a specific action targets them
+export const reactionSchema = z.object({
+  id: safeIdSchema,
+  ownerId: safeIdSchema,
+  name: z.string(),
+  trigger: z.string(),       // matches action.name (e.g. "亲吻")
+  description: z.string(),   // how this character reacts when triggered
+});
+export type Reaction = z.infer<typeof reactionSchema>;
+
 export const knowledgeDocumentSchema = z.object({
   id: safeIdSchema,
   title: z.string(),
@@ -71,7 +90,9 @@ export const scenarioStageDetailSchema = z.object({
   guidance: z.string().default(""),
   directive: z.string().optional().default(""),
   branches: z.array(stageBranchSchema).optional(),
-  isChoicePoint: z.boolean().optional()
+  isChoicePoint: z.boolean().optional(),
+  sortKey: z.number().int().nonnegative().optional(),
+  stageType: z.enum(["training", "serving", "punishment", "daily", "finale", "choice", "event", "combat"]).optional(),
 });
 export type ScenarioStageDetail = z.infer<typeof scenarioStageDetailSchema>;
 
@@ -367,6 +388,8 @@ export const storyPackageSchema = z.object({
   scenario: scenarioSchema,
   characters: z.array(characterSchema),
   skills: z.array(skillSchema).default([]),
+  actions: z.array(actionSchema).default([]),
+  reactions: z.array(reactionSchema).default([]),
   knowledgeDocuments: z.array(knowledgeDocumentSchema).default([]),
   promptRules: z.array(storyPromptRuleSchema).default([]),
   debugConfig: z.object({

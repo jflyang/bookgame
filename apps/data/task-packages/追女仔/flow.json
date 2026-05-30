@@ -1,263 +1,136 @@
 {
-  "nodes": [
-    {
-      "id": "node_start",
-      "type": "start",
-      "position": {
-        "x": 400,
-        "y": -80
-      },
-      "data": {
-        "label": "开始：追女仔"
-      }
-    },
-    {
-      "id": "node_1",
-      "type": "module",
-      "position": {
-        "x": 400,
-        "y": 40
-      },
-      "data": {
-        "label": "① 美云余韵",
-        "moduleRef": "mod_1",
-        "colorKey": "training"
-      }
-    },
-    {
-      "id": "node_2",
-      "type": "module",
-      "position": {
-        "x": 400,
-        "y": 160
-      },
-      "data": {
-        "label": "② 媚药清洗",
-        "moduleRef": "mod_2",
-        "colorKey": "punishment"
-      }
-    },
-    {
-      "id": "node_choice_1",
-      "type": "choice",
-      "position": {
-        "x": 400,
-        "y": 280
-      },
-      "data": {
-        "label": "⚡ 征服之道",
-        "branches": [
-          {
-            "targetStage": "mod_3a",
-            "choiceText": "温柔征服",
-            "description": "以温柔和耐心瓦解丽云的心理防线，让她自愿臣服。"
-          },
-          {
-            "targetStage": "mod_3b",
-            "choiceText": "强势支配",
-            "description": "以绝对的支配力压制丽云的反抗，用身体征服意志。"
-          },
-          {
-            "targetStage": "mod_3c",
-            "choiceText": "仪式驯服",
-            "description": "通过完整的媚药仪式逐步驯服，大姐全程主导调教。"
-          }
-        ]
-      }
-    },
-    {
-      "id": "node_3a",
-      "type": "module",
-      "position": {
-        "x": 50,
-        "y": 400
-      },
-      "data": {
-        "label": "③A 温柔征服",
-        "moduleRef": "mod_3a",
-        "colorKey": "serving"
-      }
-    },
-    {
-      "id": "node_4a",
-      "type": "module",
-      "position": {
-        "x": 50,
-        "y": 520
-      },
-      "data": {
-        "label": "④A 身心沦陷",
-        "moduleRef": "mod_4a",
-        "colorKey": "daily"
-      }
-    },
-    {
-      "id": "node_3b",
-      "type": "module",
-      "position": {
-        "x": 400,
-        "y": 400
-      },
-      "data": {
-        "label": "③B 强势支配",
-        "moduleRef": "mod_3b",
-        "colorKey": "punishment"
-      }
-    },
-    {
-      "id": "node_4b",
-      "type": "module",
-      "position": {
-        "x": 400,
-        "y": 520
-      },
-      "data": {
-        "label": "④B 彻底臣服",
-        "moduleRef": "mod_4b",
-        "colorKey": "punishment"
-      }
-    },
-    {
-      "id": "node_3c",
-      "type": "module",
-      "position": {
-        "x": 750,
-        "y": 400
-      },
-      "data": {
-        "label": "③C 仪式驯服",
-        "moduleRef": "mod_3c",
-        "colorKey": "serving"
-      }
-    },
-    {
-      "id": "node_4c",
-      "type": "module",
-      "position": {
-        "x": 750,
-        "y": 520
-      },
-      "data": {
-        "label": "④C 归属确立",
-        "moduleRef": "mod_4c",
-        "colorKey": "event"
-      }
-    },
-    {
-      "id": "node_5",
-      "type": "module",
-      "position": {
-        "x": 400,
-        "y": 660
-      },
-      "data": {
-        "label": "⑤ 仪式巩固",
-        "moduleRef": "mod_5",
-        "colorKey": "event"
-      }
-    },
-    {
-      "id": "node_end",
-      "type": "end",
-      "position": {
-        "x": 400,
-        "y": 780
-      },
-      "data": {
-        "label": "后宫征服完成"
-      }
-    }
-  ],
-  "edges": [
-    {
-      "id": "e_start_1",
-      "source": "node_start",
-      "target": "node_1"
-    },
-    {
-      "id": "e_1_2",
-      "source": "node_1",
-      "target": "node_2"
-    },
-    {
-      "id": "e_2_choice1",
-      "source": "node_2",
-      "target": "node_choice_1"
-    },
-    {
-      "id": "e_choice1_3a",
-      "source": "node_choice_1",
-      "target": "node_3a",
-      "sourceHandle": "branch_0"
-    },
-    {
-      "id": "e_3a_4a",
-      "source": "node_3a",
-      "target": "node_4a"
-    },
-    {
-      "id": "e_4a_5",
-      "source": "node_4a",
-      "target": "node_5"
-    },
-    {
-      "id": "e_choice1_3b",
-      "source": "node_choice_1",
-      "target": "node_3b",
-      "sourceHandle": "branch_1"
-    },
-    {
-      "id": "e_3b_4b",
-      "source": "node_3b",
-      "target": "node_4b"
-    },
-    {
-      "id": "e_4b_5",
-      "source": "node_4b",
-      "target": "node_5"
-    },
-    {
-      "id": "e_choice1_3c",
-      "source": "node_choice_1",
-      "target": "node_3c",
-      "sourceHandle": "branch_2"
-    },
-    {
-      "id": "e_3c_4c",
-      "source": "node_3c",
-      "target": "node_4c"
-    },
-    {
-      "id": "e_4c_5",
-      "source": "node_4c",
-      "target": "node_5"
-    },
-    {
-      "id": "e_5_end",
-      "source": "node_5",
-      "target": "node_end"
-    }
-  ],
   "linearPhases": {
-    "act1_capture": {
-      "title": "第一幕：美云余韵",
+    "capture": {
+      "title": "捕获调教",
       "sequence": [
-        "mod_1",
-        "mod_2"
+        "mod_1"
       ],
-      "afterAll": "act2_serve"
+      "afterAll": "branch_resist"
     },
-    "act2_serve": {
-      "title": "第二幕：A 温柔征服 → 仪式巩固",
+    "branch_resist": {
+      "title": "分支B · 抵抗路线",
+      "sequence": [
+        "mod_2"
+      ]
+    },
+    "branch_obey": {
+      "title": "分支A · 服从路线",
       "sequence": [
         "mod_3a",
-        "mod_4a",
         "mod_3b",
-        "mod_4b",
-        "mod_3c",
-        "mod_4c",
-        "mod_5"
+        "mod_3c"
       ]
     }
+  },
+  "modules": [
+    {
+      "id": "mod_1",
+      "sourceStage": "stage_RUPwGykoOJ",
+      "title": "① 美云余韵",
+      "type": "training",
+      "reusable": false,
+      "description": "美云在高潮余韵中瘫软在榻上，身体仍在微微颤抖。大姐转向了丽云——下一个目标。丽云站在门边，既有紧张又有期待。",
+      "guidance": "氛围：室内暖炉烧得正旺，空气中弥漫着淡淡的媚药香气。美云蜷在榻上，双颊绯红，呼吸尚未平复。大姐的手指上还沾着刚才仪式用的香油。丽云站在门口——她刚才看到了全部过程。\n\n美云：（高潮余韵未散，闭着眼神情迷离）「啊……大姐……仲平……我……」身体还在不自主地轻轻抽搐\n大姐：**媚药洗穴术**，擦净手指转向丽云「丽云——轮到你了。过来。」声音温柔但不容拒绝\n丽云：**嘴硬抵抗**（脸上泛红但还在嘴硬）「我……我才不要像美云那样——」但双脚已经不自觉地向榻边移动\n仲平：**支配命令**「过来。跪下。」\n→ 推进：丽云虽然嘴上逞强但身体已经开始服从。大姐开始准备媚药",
+      "enterWhen": "美云征服完成，转向丽云",
+      "exitCondition": "丽云走向榻边，大姐准备媚药"
+    },
+    {
+      "id": "mod_2",
+      "sourceStage": "stage_HCWlItRkaM",
+      "title": "② 媚药清洗",
+      "type": "punishment",
+      "reusable": false,
+      "description": "大姐开始对丽云进行完整的媚药洗穴仪式——乳房刺激、阴道深度清洗、肛门按摩。每一道工序都在瓦解丽云的抵抗意志。丽云的身体在媚药作用下开始背叛她的意志。",
+      "guidance": "氛围：灯光被调到最柔和的状态。大姐的手法精准而从容——她已经做过无数次这样的仪式。丽云被丝带束缚在榻上，身体的每一寸都在媚药的作用下变得异常敏感。她的嘴还在骂，但身体已经开始迎合。\n\n大姐：**媚药洗穴术**，将温热的媚药倒在手心揉开「丽云——放松。越抵抗越难受。」手指沿着丽云的锁骨滑下\n丽云：**身体背叛**（咬紧嘴唇但身体不由自主地弓起）「你——你们——啊——不要碰那里——」声音从愤怒变成了哀求\n仲平：**心理征服**，俯身在丽云耳边低语「你的身体比你的嘴诚实。」\n美云：**姐妹示范**，从榻上撑起身体温柔地对丽云说「妹妹——别怕。让他们来——你也看到我了——不痛的。」\n→ 推进：媚药开始发挥作用。丽云的反抗越来越弱",
+      "enterWhen": "大姐开始媚药洗穴仪式",
+      "exitCondition": "丽云身体开始与意志背离"
+    },
+    {
+      "id": "mod_3a",
+      "sourceStage": "stage_uRxSXANrcL",
+      "title": "③A 温柔征服",
+      "type": "serving",
+      "reusable": false,
+      "description": "仲平选择用温柔瓦解丽云的防线。他没有急于进入，而是用细腻的爱抚和深情的耳语让她感受到被珍视——不是被征服，而是被爱。",
+      "guidance": "氛围：仲平的手指极其轻柔——像在抚摸一件易碎的瓷器。他的唇贴在丽云耳边说着只有她能听到的话。丽云的眼泪不是因为痛苦——是因为这种温柔是她从未体验过的。大姐和美云安静地退到一旁，把空间留给两人。\n\n仲平：**温柔安抚**，轻轻吻去丽云眼角的泪「不着急——等你准备好了再说。今晚不做也可以。」\n丽云：（愣住）「你——你不是要——」她以为等待她的是粗暴的征服，没想到是克制\n仲平：「我确实想要你。但我要你自愿。」\n丽云：（沉默了很久——然后自己解开了丝带）「……你这个人——真狡猾。」主动抓住了仲平的手\n→ 推进：温柔比任何力量都更强大。丽云第一次主动靠近",
+      "enterWhen": "选择「温柔征服」路线",
+      "exitCondition": "丽云主动解开了丝带"
+    },
+    {
+      "id": "mod_4a",
+      "sourceStage": "stage_OBdQJe9WUJ",
+      "title": "④A 身心沦陷",
+      "type": "daily",
+      "reusable": false,
+      "description": "丽云在温柔的攻势下彻底放下防备。这不是征服——是她自愿的沦陷。仲平的每一下动作都带着克制和温柔，让她第一次感受到了什么是被珍惜的爱。",
+      "guidance": "氛围：榻上只有两人。仲平和丽云以最温柔的方式结合在一起。没有粗暴没有强迫——只有缓慢而深入的交流。丽云的指甲不再抓人而是紧紧抱着他的背。她的呻吟不是痛苦——是终于被爱的释放。\n\n丽云：**崩溃求饶**——但这一次不是求饶，是求更多「不要停——求你不要停——」\n仲平：**温柔安抚**，动作克制而深入「你是我的了——从今天起——没有人能伤害你。」\n美云：（在一旁握住大姐的手）「她终于——」\n大姐：（点头）「这个方式——确实比我想的好。」\n→ 推进：身心双重沦陷。丽云完全接受了仲平的温柔",
+      "enterWhen": "温柔攻势成功",
+      "exitCondition": "丽云身心完全接受"
+    },
+    {
+      "id": "mod_3b",
+      "sourceStage": "stage_uRxSXANrcL",
+      "title": "③B 强势支配",
+      "type": "punishment",
+      "reusable": false,
+      "description": "仲平选择以绝对的支配力粉碎丽云的抵抗。他用强力的身体控制和不容抗拒的命令让她在最短时间内认识到自己的归属。",
+      "guidance": "氛围：仲平的气势完全释放——他是这个房间的绝对主人。他的每一个动作都带着不容置疑的力量。丽云的抵抗像玻璃一样被碾碎——她发现自己越是挣扎就越被牢牢掌控。这是一种让人恐惧又让人兴奋的力量。\n\n仲平：**支配命令**「看着我——不许移开目光——」双手扣住丽云的腰\n丽云：**嘴硬抵抗**「不要——你放开我——」挣扎但对方的力量是她无法撼动的\n仲平：**强力插入**——没有任何犹豫也没有任何犹豫的余地。一记深顶让丽云的嘴硬变成了惊叫\n丽云：从骂变成喘息——再到配合——不过是一盏茶的时间\n→ 推进：强势的力量碾碎了所有抵抗。丽云的嘴再也硬不起来了",
+      "enterWhen": "选择「强势支配」路线",
+      "exitCondition": "丽云的抵抗被彻底碾碎"
+    },
+    {
+      "id": "mod_4b",
+      "sourceStage": "stage_OBdQJe9WUJ",
+      "title": "④B 彻底臣服",
+      "type": "punishment",
+      "reusable": false,
+      "description": "丽云在高强度的支配下达到了臣服的顶点。她的意志被身体背叛了无数次之后终于放弃抵抗——不是被迫的，是自愿的臣服。",
+      "guidance": "氛围：房间里回荡着丽云的声音——从最初的尖叫变成了柔顺的呻吟。她的身体完全跟随仲平的节奏。大姐满意地点了点头——这才是她想要的征服。\n\n丽云：**崩溃求饶**「我——我认输了——仲平——主人——让我做什么都可以——」\n仲平：**支配命令**「说——你是我的。」\n丽云：「我是你的——全部都是你的——」这句话说出来之后，她整个人都软了——不是身体瘫软，是一种终于卸下所有防备的轻松\n→ 推进：彻底臣服。丽云的精神防线完全瓦解",
+      "enterWhen": "强势支配成功",
+      "exitCondition": "丽云精神防线完全瓦解"
+    },
+    {
+      "id": "mod_3c",
+      "sourceStage": "stage_uRxSXANrcL",
+      "title": "③C 仪式驯服",
+      "type": "serving",
+      "reusable": false,
+      "description": "大姐主导了一场完整的媚药驯服仪式。每一道工序都有其象征意义——从束缚到清洗再到引导。丽云在这个仪式中不是被强迫，而是被一步一步引导着走向臣服。",
+      "guidance": "氛围：房间里燃起了仪式用的熏香。大姐作为调教师主导整个流程——仲平是仪式的核心执行者，美云是示范者。丽云被放在三人中间——她既是仪式的主角也是仪式的对象。每完成一个步骤，大姐都会在丽云耳边轻声解释这一步的意义。\n\n大姐：**丝带束缚**，用红丝带将丽云的双腕缚在头顶「这不是束缚——是信任。信我们不会伤害你。」\n大姐：**媚药洗穴术**——比刚才更加完整和深入「这是净化——让你准备好接受新身份。」\n丽云：**身体背叛**——在仪式的神圣感中，她的反抗变成了顺从「我——我愿意——」\n仲平：**心理征服**，双手放在丽云肩上「从今天起——你是后宫的一员。」\n→ 推进：仪式感的魔力让丽云从内到外接受了身份的转变",
+      "enterWhen": "选择「仪式驯服」路线",
+      "exitCondition": "丽云在仪式中接受新身份"
+    },
+    {
+      "id": "mod_4c",
+      "sourceStage": "stage_OBdQJe9WUJ",
+      "title": "④C 归属确立",
+      "type": "event",
+      "reusable": false,
+      "description": "仪式进入最后阶段——仲平与丽云完成最终的结合。这不仅仅是身体的结合，是仪式的完成，是归属的确立。所有人在这个时刻都感受到了仪式带来的超越性体验。",
+      "guidance": "氛围：熏香的烟雾在空中盘旋。四人以仪式规定的位置围在榻上——这是后宫接纳新成员的正式典礼。丽云的眼睛里没有了恐惧只有期待——她已经在这个仪式中找到了自己的位置。\n\n仲平：**强力插入**——带着仪式性的庄重和力量。每一下都像在刻下一个印记\n大姐：（在丽云耳边引导）「感受他——接受他——从今天起他就是你的主人。」\n美云：**高潮余韵展示**——她用自己的状态向丽云展示什么是被征服后的幸福\n丽云：在仪式感、媚药和仲平的三重作用下达到了前所未有的高潮——那是灵魂都被征服的体验\n→ 推进：仪式完成。丽云的归属正式确立——不是被强迫的，是被仪式赋予的",
+      "enterWhen": "仪式驯服进入最后阶段",
+      "exitCondition": "归属仪式完成"
+    },
+    {
+      "id": "mod_5",
+      "sourceStage": "stage_3JWNBoh0hT",
+      "title": "⑤ 仪式巩固",
+      "type": "event",
+      "reusable": false,
+      "description": "三条路线汇聚。丽云被正式宣布为后宫的新成员。仲平、大姐、美云和丽云四人在仪式结束后共同完成了最后的巩固环节——确认每个人的角色和位置。后宫又增添了一位姐妹。",
+      "guidance": "氛围：仪式结束后的房间沉浸在温暖的静谧中。四条身影或躺或靠在榻上——美云依偎在丽云身侧，大姐在仲平怀中梳理着散落的长发。空气中残留着麝香和熏香混合的气息。窗外月光如水。\n\n大姐：「丽云——从现在起，你是我们家的一员了。从今晚开始——你不必再一个人。」\n丽云：（第一次露出了柔和的微笑——不再嘴硬）「大姐——仲平——美云——谢谢你们。」\n美云：**姐妹示范**，握住丽云的手「妹妹——以后我们就是真正的姐妹了。」\n仲平：（望着这三人——心中是满足和更大的野心）「这只是开始。」\n→ 后宫征服完成。征服线在此结束",
+      "enterWhen": "三条路线汇聚",
+      "exitCondition": "丽云正式成为后宫成员"
+    }
+  ],
+  "finaleSequence": {
+    "title": "终幕",
+    "sequence": [
+      "mod_4a",
+      "mod_4b",
+      "mod_4c",
+      "mod_5"
+    ],
+    "description": ""
   }
 }

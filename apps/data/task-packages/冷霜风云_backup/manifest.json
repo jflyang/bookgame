@@ -1,0 +1,2776 @@
+{
+  "title": "欲燃冷霜",
+  "description": "冷傲女侠冷霜被抓入乌托邦帝国。采用模块-流控制分离架构：35阶段拆分为41个独立模块（训练20+侍寝5+惩戒5+日常6+终章5），由流控制图驱动侍寝循环判断分支。故事核心：训练→侍寝循环（判断→惩戒→换方式再侍寝→直到帝王满意）→新生侍女→日常。",
+  "version": "1.0.0",
+  "performances": {
+    "lengshuang_pleasure_moan": {
+      "name": "冷霜舒服激情呻吟",
+      "renderer": "audio",
+      "durationMs": 5000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "舒服",
+          "快感",
+          "背叛",
+          "觉醒",
+          "松口",
+          "乞求",
+          "渴望",
+          "想要",
+          "身体",
+          "不由自主",
+          "迎合"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/舒服激情呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_short_moan": {
+      "name": "冷霜短促呻吟",
+      "renderer": "audio",
+      "durationMs": 2000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "短促呻吟",
+          "突然",
+          "一颤",
+          "惊叫",
+          "急促",
+          "猝不及防",
+          "触电般"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/短呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_undress": {
+      "name": "冷霜脱衣",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "脱衣",
+          "换装",
+          "褪去",
+          "衣衫滑落",
+          "侍女服",
+          "换上",
+          "更衣"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/脱衣服.wav"
+        ]
+      }
+    },
+    "lengshuang_soft_moan": {
+      "name": "冷霜轻声呻吟",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "轻声呻吟",
+          "轻哼",
+          "低吟",
+          "闷哼",
+          "初次触碰",
+          "颤抖着声音",
+          "细微呻吟"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_medium_moan": {
+      "name": "冷霜中度呻吟",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "中度呻吟",
+          "酥麻",
+          "乳推",
+          "精油",
+          "涂抹",
+          "敏感",
+          "揉捏",
+          "抹遍"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/中度呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_oral": {
+      "name": "冷霜口交",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "口交",
+          "含住",
+          "深喉",
+          "吞吐",
+          "口侍",
+          "舔舐",
+          "含入",
+          "喉间",
+          "小嘴"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/口交.wav"
+        ]
+      }
+    },
+    "lengshuang_training_moan": {
+      "name": "冷霜调教呻吟",
+      "renderer": "audio",
+      "durationMs": 3500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "调教",
+          "蒙眼",
+          "束缚",
+          "捆绑",
+          "拘束",
+          "绑住",
+          "捆缚",
+          "束缚带",
+          "皮具"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_massage": {
+      "name": "冷霜按摩下体",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "精油",
+          "按摩",
+          "下体",
+          "花穴",
+          "蜜穴",
+          "私处",
+          "抹油",
+          "润滑"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩下体.mp3"
+        ]
+      }
+    },
+    "lengshuang_vibe": {
+      "name": "冷霜按摩棒",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "按摩棒",
+          "跳蛋",
+          "震动",
+          "嗡嗡",
+          "器具",
+          "玩具",
+          "入体"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒.wav"
+        ]
+      }
+    },
+    "lengshuang_vibe_moan": {
+      "name": "冷霜按摩棒呻吟",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "按摩棒呻吟",
+          "震动呻吟",
+          "跳蛋呻吟",
+          "器具刺激",
+          "震动频率",
+          "开到最大"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_vibe_gasp": {
+      "name": "冷霜按摩棒喘息",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "按摩棒喘息",
+          "边缘",
+          "即将高潮",
+          "临界",
+          "快要",
+          "忍住",
+          "不许高潮"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "lengshuang_suspended_moan": {
+      "name": "冷霜放置呻吟",
+      "renderer": "audio",
+      "durationMs": 5000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "放置",
+          "悬吊",
+          "吊起",
+          "悬挂",
+          "孤独",
+          "无人",
+          "独自",
+          "等待",
+          "漫长"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/放置呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_punish_moan": {
+      "name": "冷霜受刑呻吟",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "受刑",
+          "惩戒",
+          "惩罚",
+          "责罚",
+          "教训",
+          "三塞",
+          "双龙",
+          "媚药",
+          "具强制",
+          "套餐"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_dual_attack": {
+      "name": "冷霜前后夹击",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "前后夹击",
+          "双头龙",
+          "夹击",
+          "双龙",
+          "同时进入",
+          "前后同时",
+          "双穴"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/前后夹击.wav"
+        ]
+      }
+    },
+    "lengshuang_fast_insert": {
+      "name": "冷霜快速插入",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "快速插入",
+          "帝王临幸",
+          "侍寝",
+          "临幸",
+          "抽送",
+          "进入",
+          "挺入",
+          "贯穿",
+          "占有"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "lengshuang_intense_sex": {
+      "name": "冷霜激烈性爱",
+      "renderer": "audio",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "激烈",
+          "猛力",
+          "冲刺",
+          "狂暴",
+          "撞击",
+          "开腿",
+          "杆缚",
+          "M字",
+          "猛烈抽送"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/激烈性爱.wav"
+        ]
+      }
+    },
+    "lengshuang_final_orgasm": {
+      "name": "冷霜最终高潮",
+      "renderer": "audio",
+      "durationMs": 5000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "高潮",
+          "释放",
+          "去了",
+          "到了",
+          "不行了",
+          "满足",
+          "满意",
+          "终于",
+          "允许高潮",
+          "尽情释放"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_oil": {
+      "name": "精油调教",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩下体.mp3"
+        ]
+      }
+    },
+    "lengshuang_skill_deepthroat": {
+      "name": "深喉训练",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/口交.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_vibe": {
+      "name": "跳蛋刺激",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_edge": {
+      "name": "边缘控制",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_dual": {
+      "name": "双龙夹击",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/前后夹击.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_punish": {
+      "name": "惩戒执行",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_serve": {
+      "name": "帝王临幸",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "lengshuang_skill_orgasm": {
+      "name": "高潮释放",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "skillUse"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "lengshuang_pain_endure": {
+      "name": "痛苦忍耐",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "痛苦忍耐",
+          "忍住",
+          "咬牙",
+          "忍痛",
+          "疼痛",
+          "痛呼"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_shame_struggle": {
+      "name": "羞耻挣扎",
+      "renderer": "audio",
+      "durationMs": 2500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "羞耻挣扎",
+          "羞耻",
+          "挣扎",
+          "不要看",
+          "别看",
+          "羞红"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_forced_obey": {
+      "name": "被迫服从",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "被迫服从",
+          "服从",
+          "听话",
+          "遵命",
+          "是",
+          "奴婢遵命"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_despair": {
+      "name": "绝望崩溃",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "绝望崩溃",
+          "绝望",
+          "崩溃",
+          "承受不住",
+          "坏掉了"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/舒服激情呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_oil_tremble": {
+      "name": "精油颤栗",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "精油颤栗",
+          "颤栗",
+          "全身发抖",
+          "酥麻难忍"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "lengshuang_blindfold": {
+      "name": "蒙眼颤栗",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "蒙眼颤栗",
+          "蒙眼",
+          "看不见",
+          "黑暗中",
+          "眼罩"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_helpless_wait": {
+      "name": "无助等待",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "无助等待",
+          "无助",
+          "孤独",
+          "等待",
+          "独自"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/放置呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_edge_struggle": {
+      "name": "边缘挣扎",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "边缘挣扎",
+          "快要",
+          "就要",
+          "不行了",
+          "要去了",
+          "忍不住"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "lengshuang_body_betrayal": {
+      "name": "身体觉醒",
+      "renderer": "audio",
+      "durationMs": 3500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "身体觉醒",
+          "身体背叛",
+          "不由自主",
+          "迎合",
+          "主动"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/舒服激情呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_begging": {
+      "name": "屈辱乞求",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "屈辱乞求",
+          "乞求",
+          "求您",
+          "饶了",
+          "求求"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_aphrodisiac": {
+      "name": "媚药煎熬",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "媚药煎熬",
+          "媚药",
+          "灼烧",
+          "药效",
+          "好热",
+          "身体好烫"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_ice_fire": {
+      "name": "冰火颤栗",
+      "renderer": "audio",
+      "durationMs": 3500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "冰火颤栗",
+          "冰火",
+          "滴蜡",
+          "冰块",
+          "冷热交替"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_shock": {
+      "name": "电击麻痹",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "电击麻痹",
+          "电击",
+          "电流",
+          "麻痹",
+          "触电"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_inverted": {
+      "name": "倒吊眩晕",
+      "renderer": "audio",
+      "durationMs": 3500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "倒吊眩晕",
+          "倒吊",
+          "倒挂",
+          "头晕",
+          "眩晕"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/放置呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_public_shame": {
+      "name": "公开羞耻",
+      "renderer": "audio",
+      "durationMs": 3500,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "公开羞耻",
+          "公开",
+          "众人",
+          "围观",
+          "暴露"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_awakened_serve": {
+      "name": "觉悟侍奉",
+      "renderer": "audio",
+      "durationMs": 4000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "觉悟侍奉",
+          "觉悟",
+          "心甘情愿",
+          "主动侍奉",
+          "自愿"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_5": {
+      "name": "进入侍女初妆",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_5"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/脱衣服.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_6": {
+      "name": "进入精油悬吊",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_6"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩下体.mp3"
+        ]
+      }
+    },
+    "stage_enter_stage_8": {
+      "name": "进入乳推训练",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_8"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/中度呻吟.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_9": {
+      "name": "进入口侍深喉",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_9"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/口交.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_10": {
+      "name": "进入蒙眼调教台",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_10"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_11": {
+      "name": "进入三口惩罚",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_11"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_13": {
+      "name": "进入跳蛋入体",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_13"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_14": {
+      "name": "进入边缘地狱",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_14"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_15": {
+      "name": "进入双头龙夹击",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_15"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/前后夹击.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_21": {
+      "name": "进入侍寝·全副束缚",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_21"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_22": {
+      "name": "进入惩戒·三塞悬吊",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_22"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_23": {
+      "name": "进入侍寝·悬吊式",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_23"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/激烈性爱.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_24": {
+      "name": "进入惩戒·双龙边缘",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_24"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/前后夹击.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_25": {
+      "name": "进入侍寝·M字开腿",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_25"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_26": {
+      "name": "进入侍寝·杆缚媚药",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_26"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒呻吟.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_29": {
+      "name": "进入侍寝·帝王自选",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_29"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/激烈性爱.wav"
+        ]
+      }
+    },
+    "stage_enter_stage_31": {
+      "name": "进入帝王满意",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_31"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_resist": {
+      "name": "武者反抗",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "武者反抗",
+          "武者"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_shame_endure": {
+      "name": "羞耻忍耐",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "羞耻忍耐",
+          "羞耻"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_deepthroat_choke": {
+      "name": "深喉窒息",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "深喉窒息",
+          "深喉"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/口交.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_triple_stuffed": {
+      "name": "三穴闷绝",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "三穴闷绝",
+          "三穴"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_sensitive_tremble": {
+      "name": "敏感颤抖",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "敏感颤抖",
+          "敏感"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_dual_collapse": {
+      "name": "夹击崩溃",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "夹击崩溃",
+          "夹击"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/前后夹击.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_wet_sleep": {
+      "name": "湿梦难眠",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "湿梦难眠",
+          "湿梦"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_inner_wavering": {
+      "name": "内心动摇",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "内心动摇",
+          "内心"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_first_begging": {
+      "name": "首次乞求",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "首次乞求",
+          "首次"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_first_serve": {
+      "name": "初次侍寝",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "初次侍寝",
+          "初次"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_punish_endure": {
+      "name": "惩戒忍耐",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "惩戒忍耐",
+          "惩戒"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_suspension_serve": {
+      "name": "悬吊侍奉",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "悬吊侍奉",
+          "悬吊"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/放置呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_edge_breakdown": {
+      "name": "边缘崩溃",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "边缘崩溃",
+          "边缘"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_final_serve": {
+      "name": "终极侍奉",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "终极侍奉",
+          "终极"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/激烈性爱.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_ultimate_breakdown": {
+      "name": "终极崩溃",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "终极崩溃",
+          "终极"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_orgasm_release": {
+      "name": "高潮释放",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "高潮释放",
+          "高潮"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_after_peace": {
+      "name": "事后安宁",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "事后安宁",
+          "事后"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_servant_declaration": {
+      "name": "侍女宣言",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "侍女宣言",
+          "侍女"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_eternal_belonging": {
+      "name": "永恒归属",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "永恒归属",
+          "永恒"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_pole_wait": {
+      "name": "杆缚等待",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "杆缚等待",
+          "杆缚"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/放置呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_aphrodisiac_burn": {
+      "name": "媚药灼烧",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "媚药灼烧",
+          "媚药"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_four_trials": {
+      "name": "四重考验",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "四重考验",
+          "四重"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_dog_tie_suffocate": {
+      "name": "犬缚窒息",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "犬缚窒息",
+          "犬缚"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_forced_orgasm_denied": {
+      "name": "强制高潮后禁止",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "强制高潮后禁止",
+          "强制"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "ls_skill_skill_daily_routine": {
+      "name": "侍女日常",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "侍女日常",
+          "侍女"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "skill_shensui_zhixi_v2": {
+      "name": "深喉窒息",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "深喉窒息",
+          "深喉",
+          "窒息"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/口交.wav"
+        ]
+      }
+    },
+    "skill_sanxue_menjue_v2": {
+      "name": "三穴闷绝",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "三穴闷绝",
+          "三穴",
+          "口塞",
+          "肛塞",
+          "阴塞"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "skill_jiaji_bengkui_v2": {
+      "name": "夹击崩溃",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "夹击崩溃",
+          "双头龙",
+          "前后贯穿",
+          "夹击"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/前后夹击.wav"
+        ]
+      }
+    },
+    "skill_chuci_shixin_v2": {
+      "name": "初次侍寝",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "初次侍寝",
+          "第一次侍寝",
+          "侍寝"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "skill_meiyao_v2": {
+      "name": "媚药灼烧",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "媚药灼烧",
+          "媚药",
+          "灼烧"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒呻吟.wav"
+        ]
+      }
+    },
+    "skill_gaochao_v2": {
+      "name": "高潮释放",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "高潮释放",
+          "允许高潮",
+          "终于释放",
+          "高潮"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "skill_zhongji_v2": {
+      "name": "终极崩溃",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "终极崩溃",
+          "五件全副武装",
+          "最强振动"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "skill_qiangzhi_v2": {
+      "name": "强制高潮",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "强制高潮后禁止",
+          "强制高潮",
+          "继续振动"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "lengshuang_kiss_v2": {
+      "name": "亲吻",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "亲吻",
+          "接吻",
+          "吻上",
+          "深吻"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/轻声呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_orgasm_v2": {
+      "name": "高潮",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "高潮",
+          "绝顶",
+          "去了",
+          "到了"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "lengshuang_intense_moan_v2": {
+      "name": "强烈呻吟",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "强烈呻吟",
+          "失控呻吟",
+          "失声",
+          "大声"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/舒服激情呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_quiet_moan_v2": {
+      "name": "压抑呻吟",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "压抑呻吟",
+          "闷哼",
+          "咬着嘴唇"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/短呻吟.wav"
+        ]
+      }
+    },
+    "lengshuang_quick_breath_v2": {
+      "name": "急促喘息",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "急促喘息",
+          "呼吸急促",
+          "急喘"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "lengshuang_bed_creak_v2": {
+      "name": "床摇",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "床摇",
+          "床响",
+          "晃动"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/激烈性爱.wav"
+        ]
+      }
+    },
+    "lengshuang_heavy_breath_v2": {
+      "name": "沉重呼吸",
+      "renderer": "audio",
+      "durationMs": 3000,
+      "trigger": {
+        "type": "knowledgeUse",
+        "characterId": "leng_shuang",
+        "keywords": [
+          "沉重呼吸",
+          "粗重喘息",
+          "喘粗气"
+        ],
+        "matchBoldOnly": false
+      },
+      "playOnce": "never",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {},
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒喘息.wav"
+        ]
+      }
+    },
+    "ls_img_capture": {
+      "name": "落网之凤",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_1"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/初次困住.jpg"
+      },
+      "audio": {}
+    },
+    "ls_img_oil_suspend": {
+      "name": "精油悬吊",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_6"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/捆绑放置.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "ls_img_oral": {
+      "name": "口侍深喉",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_9"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/口交.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/口交.wav"
+        ]
+      }
+    },
+    "ls_img_blindfold": {
+      "name": "蒙眼调教台",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_10"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/调教完成.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/调教呻吟.wav"
+        ]
+      }
+    },
+    "ls_img_triple_punish": {
+      "name": "三口惩罚",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_11"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/戴上口塞.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "ls_img_rope_punish": {
+      "name": "暮色束缚",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_12"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/阴绳惩罚.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "ls_img_vibe": {
+      "name": "跳蛋入体",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_13"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/按摩棒.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒.wav"
+        ]
+      }
+    },
+    "ls_img_dual_dragon": {
+      "name": "双头龙夹击",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_15"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/强制做爱.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/前后夹击.wav"
+        ]
+      }
+    },
+    "ls_img_night_bind": {
+      "name": "流水入眠",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_16"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/整夜捆绑.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/放置呻吟.wav"
+        ]
+      }
+    },
+    "ls_img_serve_full": {
+      "name": "侍寝·全副束缚",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_21"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/初次做爱.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "ls_img_punish_suspend": {
+      "name": "惩戒·三塞悬吊",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_22"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/戴上口塞.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/受刑呻吟.wav"
+        ]
+      }
+    },
+    "ls_img_serve_suspend": {
+      "name": "侍寝·悬吊式",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_23"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/捆绑放置.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/激烈性爱.wav"
+        ]
+      }
+    },
+    "ls_img_punish_dual": {
+      "name": "惩戒·双龙边缘",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_24"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/强制做爱.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/前后夹击.wav"
+        ]
+      }
+    },
+    "ls_img_serve_m": {
+      "name": "侍寝·M字开腿",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_25"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/背后插入.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/快速插入.wav"
+        ]
+      }
+    },
+    "ls_img_serve_pole": {
+      "name": "侍寝·杆缚媚药",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_26"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/阴绳惩罚.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/按摩棒呻吟.wav"
+        ]
+      }
+    },
+    "ls_img_emperor_custom": {
+      "name": "侍寝·帝王自选",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_29"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/日常做爱.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/激烈性爱.wav"
+        ]
+      }
+    },
+    "ls_img_satisfied": {
+      "name": "帝王满意",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_31"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/甜男人.jpg"
+      },
+      "audio": {
+        "variants": [
+          "assets/performances/lengshuang_voice/audio/最终高潮.wav"
+        ]
+      }
+    },
+    "ls_img_daily": {
+      "name": "侍女日常",
+      "renderer": "image",
+      "durationMs": 6000,
+      "trigger": {
+        "type": "stageEnter",
+        "stageId": "stage_35"
+      },
+      "playOnce": "perStage",
+      "video": {
+        "containsAudio": false
+      },
+      "layers": {
+        "main": "assets/performances/lengshuang_images/调教完成.jpg"
+      },
+      "audio": {}
+    }
+  }
+}
