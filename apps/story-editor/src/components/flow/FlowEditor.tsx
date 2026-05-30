@@ -27,9 +27,10 @@ type RFNode = Node<FlowNodeData>;
 
 function getTypeLabel(type: string): string {
   const map: Record<string, string> = {
-    module: "故事模块", choice: "抉择点", judgment: "判定节点",
-    eventTrigger: "事件触发", randomEvent: "随机事件", randomJudgment: "随机判断",
-    loop: "循环", dailyTrigger: "日常触发",
+    module: "故事情节", choice: "玩家抉择", randomEvent: "随机事件",
+    loop: "循环", start: "开始", end: "结束",
+    judgment: "判断节点", eventTrigger: "事件触发",
+    randomJudgment: "随机判断", dailyTrigger: "日常触发",
   };
   return map[type] || "节点";
 }
@@ -527,6 +528,38 @@ function FlowEditorInner() {
           onDelete={handleDeleteNode}
           onClose={() => setCtxMenu(null)}
           onRunFromHere={runStatus === "idle" ? () => { startRun(ctxMenu!.nodeId); setCtxMenu(null); } : undefined}
+          onAiRewrite={(() => {
+            const node = nodes.find(n => n.id === ctxMenu.nodeId);
+            if (!node || (node.type !== "module" && node.type !== "choice")) return undefined;
+            return async () => {
+              const moduleRef = (node.data as any).moduleRef;
+              const mod = store.modules.find(m => m.id === moduleRef);
+              if (!mod) { alert("此节点未绑定模块"); return; }
+              const confirmed = confirm(`AI 重写「${mod.title}」的 guidance 和 directive？`);
+              if (!confirmed) return;
+              try {
+                const storyPkg = (window as any).__editorStore?.storyPackage;
+                const outline = {
+                  title: storyPkg?.title || "",
+                  premise: storyPkg?.scenario?.premise || "",
+                  setting: "",
+                  characters: (storyPkg?.characters || []).map((c: any) => ({ id: c.id, name: c.name, role: c.role, description: "" })),
+                  stages: (storyPkg?.scenario?.stageDetails || []).map((s: any) => ({ id: s.id, title: s.title, description: s.description, stageType: s.stageType || "training", enterWhen: s.enterWhen || "" })),
+                  flow: { mainLine: storyPkg?.scenario?.stages || [], finale: [] },
+                };
+                const stageId = mod.sourceStage || mod.id.replace("mod_", "");
+                const res = await fetch("/api/editor/ai/generate-stage-detail", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ outline, stageId }),
+                });
+                const data = await res.json();
+                if (!data.ok) { alert("AI 重写失败：" + data.error); return; }
+                store.updateModule(moduleRef, { guidance: data.detail.guidance, directive: data.detail.directive } as any);
+                alert(`✅ 已重写「${mod.title}」的 guidance 和 directive`);
+              } catch (err) { alert("AI 重写失败：" + (err as Error).message); }
+            };
+          })()}
         />
       )}
 

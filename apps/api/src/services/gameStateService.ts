@@ -134,10 +134,15 @@ export class GameStateService {
     state.round += 1;
 
     // Auto-advance: if stuck in the same stage for 20+ rounds, force advance to next stage
+    // Skip auto-advance for "daily" stageType (loop/repeatable stages — exit is controlled by loop logic)
     const MAX_ROUNDS_PER_STAGE = 20;
     const enteredAt = state.stageEnteredAtRound ?? 0;
-    // Only auto-advance if we've genuinely been in this stage for MAX rounds
-    if (!stageChanged && enteredAt < state.round && (state.round - enteredAt) >= MAX_ROUNDS_PER_STAGE) {
+    const currentStageDetail = state.scenario.stageDetails?.find(
+      (sd: { id: string; stageType?: string }) => sd.id === state.scenario.currentStage
+    );
+    const isLoopStage = currentStageDetail?.stageType === "daily";
+    // Only auto-advance if we've genuinely been in this stage for MAX rounds AND it's not a loop stage
+    if (!stageChanged && !isLoopStage && enteredAt < state.round && (state.round - enteredAt) >= MAX_ROUNDS_PER_STAGE) {
       const currentIdx = state.scenario.stages.indexOf(state.scenario.currentStage);
       if (currentIdx >= 0 && currentIdx < state.scenario.stages.length - 1) {
         const nextStage = state.scenario.stages[currentIdx + 1];
@@ -145,7 +150,7 @@ export class GameStateService {
         state.scenario.currentStage = nextStage;
         state.stageEnteredAtRound = state.round;
         stageChanged = true;
-        logger.info({ sessionId, prevStage, nextStage, round: state.round }, "auto-advanced stage (15 rounds limit)");
+        logger.info({ sessionId, prevStage, nextStage, round: state.round }, "auto-advanced stage (20 rounds limit)");
       }
     }
 

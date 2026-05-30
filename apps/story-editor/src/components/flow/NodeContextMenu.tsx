@@ -8,9 +8,10 @@ interface Props {
   onDelete: () => void;
   onClose: () => void;
   onRunFromHere?: () => void;
+  onAiRewrite?: () => void;
 }
 
-export function NodeContextMenu({ x, y, onEdit, onDuplicate, onDelete, onClose, onRunFromHere }: Props) {
+export function NodeContextMenu({ x, y, onEdit, onDuplicate, onDelete, onClose, onRunFromHere, onAiRewrite }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,8 +37,9 @@ export function NodeContextMenu({ x, y, onEdit, onDuplicate, onDelete, onClose, 
   const items = [
     { label: "编辑", action: onEdit, shortcut: "Enter" },
     { label: "复制", action: onDuplicate, shortcut: "Ctrl+D" },
-    { label: "删除", action: onDelete, shortcut: "Del", danger: true },
+    ...(onAiRewrite ? [{ label: "🤖 AI 重写", action: onAiRewrite, shortcut: "", accent: true }] : []),
     ...(onRunFromHere ? [{ label: "从此运行", action: onRunFromHere, shortcut: "Ctrl+R", accent: true }] : []),
+    { label: "删除", action: onDelete, shortcut: "Del", danger: true },
   ];
 
   return (

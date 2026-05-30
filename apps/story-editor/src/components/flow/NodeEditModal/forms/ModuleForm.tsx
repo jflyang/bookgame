@@ -1,7 +1,11 @@
 import type { FormProps } from "../types.js";
 import { F, TagSelect } from "../shared.js";
+import { PerformanceSection } from "./PerformanceSection.js";
 
 export function ModuleForm({ draft, setDraft, modules: allModules, groupNodes, charOptions, skillOptions, stageOptions }: FormProps) {
+  // Determine the stage ID for performance binding
+  const stageId = (draft.moduleData as any)?.sourceStage || draft.moduleRef?.replace("mod_", "") || undefined;
+
   return (
     <>
       <div className="form-grid cols-2">
@@ -84,6 +88,9 @@ export function ModuleForm({ draft, setDraft, modules: allModules, groupNodes, c
           </div>
         </>
       )}
+
+      {/* 演出绑定 */}
+      <PerformanceSection stageId={stageId} moduleLabel={draft.label || ""} />
     </>
   );
 }

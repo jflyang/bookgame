@@ -99,8 +99,8 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       const useServerTts = config.enabled && config.provider !== "disabled";
       set({
         serviceConfig: config,
-        // Keep browser fallback if server TTS is not available
-        ttsEnabled: useServerTts ? true : get().ttsEnabled,
+        // If TTS is explicitly disabled at service level, force off
+        ttsEnabled: !config.enabled ? false : useServerTts ? true : get().ttsEnabled,
         error: null,
       });
     } catch (err) {

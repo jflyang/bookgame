@@ -188,10 +188,11 @@ function ChoiceBranches({ outgoingEdges, nodeId, newBranchLabel, onNewBranchLabe
   );
 }
 
-/** Sub-component: show performances bound to this module's sourceStage */
+/** Sub-component: show performances bound to this module's sourceStage + upload new */
 function PerformanceBindings({ moduleId, sourceStage }: { moduleId: string; sourceStage?: string }) {
   const { manifest, updateManifest } = useEditorStore();
   const [bindKey, setBindKey] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   const perfs = (manifest?.performances || {}) as Record<string, any>;
   const allKeys = Object.keys(perfs);
@@ -218,6 +219,68 @@ function PerformanceBindings({ moduleId, sourceStage }: { moduleId: string; sour
     updateManifest({ ...(manifest || {}), performances: { ...perfs, [key]: updated } });
   }
 
+  function deletePerformance(key: string) {
+    if (!confirm(`确定删除演出「${perfs[key]?.name || key}」？`)) return;
+    const updated = { ...perfs };
+    delete updated[key];
+    updateManifest({ ...(manifest || {}), performances: updated });
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>, type: "image" | "audio" | "video") {
+    const file = e.target.files?.[0];
+    if (!file || !sourceStage) return;
+
+    setUploading(true);
+    try {
+      const perfKey = `stage_enter_${sourceStage}_${type}`;
+      const form = new FormData();
+      form.append("file", file);
+
+      const res = await fetch(
+        `/api/editor/upload-media?performanceId=${encodeURIComponent(perfKey)}&type=${type}`,
+        { method: "POST", body: form }
+      );
+      const data = await res.json();
+
+      if (!data.path) {
+        alert("上传失败：" + (data.error || "未知错误"));
+        return;
+      }
+
+      // Create or update performance entry
+      const existing = perfs[perfKey] || {
+        name: `${moduleId} - ${type}`,
+        renderer: type,
+        durationMs: type === "audio" ? 3000 : 5000,
+        playOnce: "session",
+        layers: {},
+        audio: {},
+        video: { containsAudio: false },
+      };
+
+      if (type === "image") {
+        existing.renderer = "image";
+        existing.layers = { ...existing.layers, main: data.path };
+      } else if (type === "audio") {
+        existing.renderer = existing.layers?.main ? "image" : "audio";
+        existing.audio = { ...existing.audio, main: data.path };
+      } else if (type === "video") {
+        existing.renderer = "video";
+        existing.video = { ...(existing.video || {}), mp4: data.path };
+      }
+
+      existing.trigger = { type: "stageEnter", stageId: sourceStage };
+
+      updateManifest({ ...(manifest || {}), performances: { ...perfs, [perfKey]: existing } });
+    } catch (err) {
+      alert("上传失败：" + (err as Error).message);
+    } finally {
+      setUploading(false);
+      // Reset input
+      e.target.value = "";
+    }
+  }
+
   function getIcon(p: any): string {
     if (p.renderer === "audio") return "🔊";
     if (p.renderer === "video") return "🎬";
@@ -234,18 +297,24 @@ function PerformanceBindings({ moduleId, sourceStage }: { moduleId: string; sour
     return null;
   }
 
-  if (!manifest?.performances) return null;
+  if (!manifest) return null;
+
+  // Auto-init performances if missing
+  if (!manifest.performances) {
+    updateManifest({ ...manifest, performances: {} });
+    return null;
+  }
 
   return (
     <div className="card mt3" style={{ padding: "var(--s3)" }}>
-      <div className="card-section-title" style={{ marginTop: 0 }}>绑定演出</div>
+      <div className="card-section-title" style={{ marginTop: 0 }}>🎬 阶段演出</div>
       {!sourceStage && (
         <p className="faint" style={{ fontSize: "var(--fs-xs)", margin: 0 }}>
-          需要先设置"来源阶段"才能绑定演出
+          需要先设置"来源阶段"才能配置演出
         </p>
       )}
       {sourceStage && boundKeys.length === 0 && (
-        <p className="faint" style={{ fontSize: "var(--fs-xs)", margin: 0 }}>暂无绑定的演出</p>
+        <p className="faint" style={{ fontSize: "var(--fs-xs)", margin: 0 }}>暂无演出，上传文件或从已有演出中绑定</p>
       )}
       {boundKeys.map((key) => {
         const p = perfs[key];
@@ -265,14 +334,37 @@ function PerformanceBindings({ moduleId, sourceStage }: { moduleId: string; sour
             )}
             <button className="btn btn-ghost btn-xs" style={{ color: "var(--danger)", fontSize: 10 }}
               onClick={() => unbindPerformance(key)}>解绑</button>
+            <button className="btn btn-ghost btn-xs" style={{ color: "var(--danger)", fontSize: 10 }}
+              onClick={() => deletePerformance(key)}>删除</button>
           </div>
         );
       })}
+
+      {/* Upload buttons */}
       {sourceStage && (
+        <div style={{ display: "flex", gap: "var(--s1)", marginTop: "var(--s2)", flexWrap: "wrap" }}>
+          <label className="btn btn-xs" style={{ cursor: "pointer" }}>
+            🖼️ 上传图片
+            <input type="file" accept="image/*" hidden onChange={(e) => handleFileUpload(e, "image")} />
+          </label>
+          <label className="btn btn-xs" style={{ cursor: "pointer" }}>
+            🔊 上传音频
+            <input type="file" accept="audio/*" hidden onChange={(e) => handleFileUpload(e, "audio")} />
+          </label>
+          <label className="btn btn-xs" style={{ cursor: "pointer" }}>
+            🎥 上传视频
+            <input type="file" accept="video/*" hidden onChange={(e) => handleFileUpload(e, "video")} />
+          </label>
+        </div>
+      )}
+      {uploading && <div style={{ fontSize: 10, color: "var(--cat-orange)", marginTop: 4 }}>上传中...</div>}
+
+      {/* Bind existing performance */}
+      {sourceStage && availableKeys.length > 0 && (
         <div style={{ display: "flex", gap: "var(--s1)", marginTop: "var(--s2)" }}>
           <select className="input" style={{ flex: 1, fontSize: "var(--fs-xs)", padding: "2px 6px" }}
             value={bindKey} onChange={(e) => setBindKey(e.target.value)}>
-            <option value="">+ 绑定演出...</option>
+            <option value="">绑定已有演出...</option>
             {availableKeys.map((k) => (
               <option key={k} value={k}>{getIcon(perfs[k])} {perfs[k].name || k}</option>
             ))}

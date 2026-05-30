@@ -2,37 +2,23 @@ import { useState, type FC, type DragEvent } from "react";
 import { useFlowStore } from "../../store/flowStore.js";
 import { useEditorStore } from "../../store/editorStore.js";
 
-interface ToolItem { type: string; label: string; color: string }
+interface ToolItem { type: string; label: string; color: string; hint: string }
 
 const TOOL_GROUPS: { label: string; items: ToolItem[] }[] = [
   {
-    label: "基础节点",
+    label: "故事节点",
     items: [
-      { type: "module", label: "故事模块", color: "var(--cat-blue)" },
-      { type: "choice", label: "多分支抉择", color: "var(--cat-purple)" },
-      { type: "judgment", label: "判断节点", color: "var(--cat-orange)" },
+      { type: "module", label: "故事情节", color: "var(--cat-blue)", hint: "一段剧情场景" },
+      { type: "choice", label: "玩家抉择", color: "var(--cat-purple)", hint: "多分支选择点" },
+      { type: "randomEvent", label: "随机事件", color: "var(--cat-orange)", hint: "随机触发一个事件" },
     ],
   },
   {
-    label: "事件节点",
+    label: "流程控制",
     items: [
-      { type: "eventTrigger", label: "事件触发", color: "var(--cat-orange)" },
-      { type: "randomEvent", label: "随机事件", color: "var(--cat-pink)" },
-      { type: "randomJudgment", label: "随机判断", color: "var(--cat-purple)" },
-    ],
-  },
-  {
-    label: "控制流",
-    items: [
-      { type: "loop", label: "循环入口", color: "var(--cat-blue)" },
-      { type: "dailyTrigger", label: "日常触发", color: "var(--cat-gray)" },
-    ],
-  },
-  {
-    label: "端点",
-    items: [
-      { type: "start", label: "开始", color: "var(--cat-green)" },
-      { type: "end", label: "结束", color: "var(--cat-red)" },
+      { type: "loop", label: "循环", color: "var(--cat-green)", hint: "重复执行直到退出" },
+      { type: "start", label: "开始", color: "var(--cat-green)", hint: "故事入口" },
+      { type: "end", label: "结束", color: "var(--cat-red)", hint: "故事出口" },
     ],
   },
 ];
@@ -99,12 +85,16 @@ export const FlowToolbar: FC<{ onRelayout: () => void; onValidate: () => void }>
                 el.style.background = "var(--surface)";
                 el.style.borderColor = "var(--border-light)";
               }}
+              title={item.hint}
             >
               <span style={{
                 width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
                 background: item.color,
               }} />
-              {item.label}
+              <span style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                <span>{item.label}</span>
+                <span style={{ fontSize: 9, color: "var(--text-faint)", fontWeight: 400 }}>{item.hint}</span>
+              </span>
             </div>
           ))}
         </div>

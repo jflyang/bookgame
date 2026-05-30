@@ -11,6 +11,9 @@ import {
   getMediaPath, type PackageState
 } from "./storyPackageIO.js";
 import { aiAssistant } from "./aiAssistant.js";
+import { aiStoryGenerator, type OutlineData, type StageDetail } from "./aiStoryGenerator.js";
+import { assemblePackage } from "./packageAssembler.js";
+import { resolveLinearPath, generateChapter, assembleMarkdown, type ExportConfig, type GenerateChapterInput } from "./storyExporter.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -124,6 +127,39 @@ export async function createApp() {
     res.sendFile(absPath);
   });
 
+  // Upload media file for performance binding
+  app.post("/api/editor/upload-media", (req, res) => {
+    const state = getPackageState();
+    if (!state) return res.status(400).json({ error: "未打开故事包" });
+
+    const performanceId = req.query.performanceId as string;
+    const type = req.query.type as string; // "image" | "audio" | "video"
+    if (!performanceId || !type) return res.status(400).json({ error: "缺少 performanceId 或 type 参数" });
+
+    const multer = require("multer");
+    const upload = multer({
+      storage: multer.diskStorage({
+        destination: (_req: any, _file: any, cb: any) => {
+          const dir = join(state.dir, "media", "performances", performanceId, type === "audio" ? "audio" : type === "video" ? "video" : "images");
+          mkdirSync(dir, { recursive: true });
+          cb(null, dir);
+        },
+        filename: (_req: any, file: any, cb: any) => {
+          cb(null, file.originalname);
+        },
+      }),
+    }).single("file");
+
+    upload(req, res, (err: any) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!req.file) return res.status(400).json({ error: "未收到文件" });
+
+      // Return relative path for manifest.json
+      const relativePath = `assets/performances/${performanceId}/${type === "audio" ? "audio" : type === "video" ? "video" : "images"}/${req.file.originalname}`;
+      res.json({ ok: true, path: relativePath, filename: req.file.originalname });
+    });
+  });
+
   app.post("/api/editor/ai/suggest", async (req, res) => {
     try {
       const { context, instruction, currentData, dataType } = req.body;
@@ -141,6 +177,124 @@ export async function createApp() {
       res.json({ ok: true });
     } catch (err) {
       res.status(400).json({ error: (err as Error).message });
+    }
+  });
+
+  // ─── AI Story Generation ───
+
+  // Get AI config (masked key)
+  app.get("/api/editor/ai/config", (_req, res) => {
+    res.json(aiStoryGenerator.getConfig());
+  });
+
+  // Save AI config
+  app.post("/api/editor/ai/save-config", (req, res) => {
+    try {
+      const { apiKey, baseUrl, model } = req.body;
+      const current = aiStoryGenerator.getConfig();
+      
+      // If no key provided and no existing key, error
+      if (!apiKey?.trim() && !current.hasKey) {
+        return res.status(400).json({ error: "请提供 API Key" });
+      }
+
+      // Use provided key, or keep existing (pass empty to saveConfig which will read from file)
+      const finalKey = apiKey?.trim() || "";
+      aiStoryGenerator.updateConfig(finalKey || undefined, baseUrl, model);
+      res.json({ ok: true, ...aiStoryGenerator.getConfig() });
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
+    }
+  });
+
+  // Step 1: Generate outline from description
+  app.post("/api/editor/ai/generate-outline", async (req, res) => {
+    try {
+      const { description, style, stageCount, branchCount, characters } = req.body;
+      if (!description) return res.status(400).json({ error: "请提供故事描述" });
+
+      const outline = await aiStoryGenerator.generateOutline({
+        description, style, stageCount, branchCount, characters,
+      });
+      res.json({ ok: true, outline });
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
+    }
+  });
+
+  // Step 2: Generate detail for a single stage
+  app.post("/api/editor/ai/generate-stage-detail", async (req, res) => {
+    try {
+      const { outline, stageId, previousGuidance } = req.body;
+      if (!outline || !stageId) return res.status(400).json({ error: "缺少 outline 或 stageId" });
+
+      const detail = await aiStoryGenerator.generateStageDetail(outline, stageId, previousGuidance);
+      res.json({ ok: true, detail });
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
+    }
+  });
+
+  // Step 3: Assemble full package from outline + details
+  app.post("/api/editor/ai/create-package", (req, res) => {
+    try {
+      const { outline, stageDetails, targetPath } = req.body;
+      if (!outline) return res.status(400).json({ error: "缺少 outline" });
+
+      // If targetPath provided, write into that existing directory
+      const result = assemblePackage({ outline, stageDetails: stageDetails || {} }, targetPath);
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
+    }
+  });
+
+  // Step 3b: Update a single stage's detail in an existing package
+  app.post("/api/editor/ai/update-stage", (req, res) => {
+    try {
+      const { packagePath, stageId, guidance, directive } = req.body;
+      if (!packagePath || !stageId) return res.status(400).json({ error: "缺少 packagePath 或 stageId" });
+
+      // Update scenario.json
+      const scenarioPath = join(packagePath, "scenario.json");
+      if (!existsSync(scenarioPath)) return res.status(404).json({ error: "故事包不存在" });
+
+      const scenario = JSON.parse(readFileSync(scenarioPath, "utf-8"));
+      const stageDetail = scenario.stageDetails?.find((s: any) => s.id === stageId);
+      if (stageDetail) {
+        if (guidance !== undefined) stageDetail.guidance = guidance;
+        if (directive !== undefined) stageDetail.directive = directive;
+        writeFileSync(scenarioPath, JSON.stringify(scenario, null, 2), "utf-8");
+      }
+
+      // Update modules.json
+      const modulesPath = join(packagePath, "modules.json");
+      if (existsSync(modulesPath)) {
+        const modules = JSON.parse(readFileSync(modulesPath, "utf-8"));
+        const mod = modules.find((m: any) => m.sourceStage === stageId || m.id === `mod_${stageId}`);
+        if (mod) {
+          if (guidance !== undefined) mod.guidance = guidance;
+          writeFileSync(modulesPath, JSON.stringify(modules, null, 2), "utf-8");
+        }
+      }
+
+      res.json({ ok: true, stageId });
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
+    }
+  });
+
+  // ─── Story Export (Novel) ───
+
+  app.post("/api/editor/export/generate-chapter", async (req, res) => {
+    try {
+      const input = req.body;
+      if (!input.stageId) return res.status(400).json({ error: "缺少 stageId" });
+
+      const result = await generateChapter(input);
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
     }
   });
 

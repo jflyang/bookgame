@@ -6,12 +6,16 @@ import { RulePipeline } from "./components/RulePipeline.js";
 import { FlowEditor } from "./components/flow/FlowEditor.js";
 import { PerformanceMapper } from "./components/PerformanceMapper.js";
 import { SettingsPanel } from "./components/SettingsPanel.js";
+import { AiCreateTab } from "./components/AiCreateTab.js";
+import { StoryExportTab } from "./components/StoryExportTab.js";
 
 const TABS: { key: string; label: string }[] = [
   { key: "flow", label: "流程编辑" },
+  { key: "aiCreate", label: "🤖 AI创作" },
   { key: "skills", label: "角色技能" },
   { key: "performances", label: "演出映射" },
   { key: "promptRules", label: "规则管线" },
+  { key: "export", label: "📖 导出小说" },
   { key: "settings", label: "高级设置" },
 ];
 
@@ -115,7 +119,7 @@ export function App() {
           <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving}>
             {saving ? "保存中..." : "保存"}
           </button>
-          <button className="btn btn-sm" onClick={exportZip}>导出</button>
+          <button className="btn btn-sm" onClick={exportZip}>导出ZIP</button>
           <input
             className="input"
             value={uploadUrl}
@@ -158,9 +162,11 @@ export function App() {
         </nav>
         <main className="tab-content">
           {activeTab === "flow" && <FlowEditor />}
+          {activeTab === "aiCreate" && <AiCreateTab />}
           {activeTab === "skills" && <CharacterSkills />}
           {activeTab === "promptRules" && <RulePipeline />}
           {activeTab === "performances" && <PerformanceMapper />}
+          {activeTab === "export" && <StoryExportTab />}
           {activeTab === "settings" && <SettingsPanel />}
         </main>
       </div>

@@ -15,6 +15,10 @@ export interface FlowNodeData {
   eventDescription?: string;
   randomPool?: { id: string; title: string }[];
   branches?: { targetStage: string; choiceText?: string; condition?: string; description?: string }[];
+  // Loop node config
+  loopMaxCycles?: number | null;
+  loopExitCondition?: string;
+  loopBodyLabel?: string;
 }
 
 export interface FlowNode {

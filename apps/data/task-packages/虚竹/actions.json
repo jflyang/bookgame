@@ -1,0 +1,158 @@
+[
+  {
+    "id": "act_xuzhu_北冥化解",
+    "name": "北冥化解",
+    "ownerId": "xuzhu",
+    "description": "虚竹运转北冥神功，周身气息如深谷回流，将毒雾一丝丝化去。招式看似笨拙，实则内力深厚，毒雾难近三尺。"
+  },
+  {
+    "id": "act_xuzhu_天山折梅",
+    "name": "天山折梅",
+    "ownerId": "xuzhu",
+    "description": "虚竹双手变化繁复，以天山折梅手拆解敌方招式。手法如穿花拂柳，每一招都精准拨开对手攻势，借力打力。"
+  },
+  {
+    "id": "act_xuzhu_天山六阳掌",
+    "name": "天山六阳掌",
+    "ownerId": "xuzhu",
+    "description": "虚竹双掌推出，掌力温厚却层层递进。至阳至刚的内力如春阳化雪，掌风所过之处毒雾消散，空气中弥漫清正之气。"
+  },
+  {
+    "id": "act_xuzhu_佛门护体",
+    "name": "佛门护体",
+    "ownerId": "xuzhu",
+    "description": "虚竹双手合十，北冥真气自体内涌出形成金色气罩。佛门正宗内力自然护身，毒雾暗器皆被挡在身外三尺。"
+  },
+  {
+    "id": "act_xuzhu_生死符施术",
+    "name": "生死符施术",
+    "ownerId": "xuzhu",
+    "description": "虚竹掌心凝聚内力，将空气中的水汽凝为薄冰。屈指一弹，生死符化作寒光无声无息没入对手经脉——此术不为杀戮，只为制恶。"
+  },
+  {
+    "id": "act_xuzhu_劝诫合十",
+    "name": "劝诫合十",
+    "ownerId": "xuzhu",
+    "description": "虚竹双手合十，以慈悲心劝诫对手回头是岸。他的声音诚恳温和，不带敌意，但字字句句都在动摇对手的心志。"
+  },
+  {
+    "id": "act_xuzhu_北冥逼毒",
+    "name": "北冥逼毒",
+    "ownerId": "xuzhu",
+    "description": "虚竹盘膝坐下，将北冥神功运转到极致。以自身为炉鼎，将毒素一丝丝从经脉中逼出，头顶冒出缕缕黑气，脸色由黑转白再转红。"
+  },
+  {
+    "id": "act_xuzhu_为弟子解毒",
+    "name": "为弟子解毒",
+    "ownerId": "xuzhu",
+    "description": "虚竹以北冥真气为前星宿弟子一一化解体内积毒。他的手掌按在弟子背上，真气缓缓输入，将数年毒功残留一一拔除。"
+  },
+  {
+    "id": "act_qiaofeng_亢龙有悔",
+    "name": "亢龙有悔",
+    "ownerId": "qiaofeng",
+    "description": "乔峰沉肩踏步，双掌齐推，降龙十八掌至刚至猛的绝招。龙吟震天，掌风如金色巨龙呼啸而出，正面压制一切毒功邪术。"
+  },
+  {
+    "id": "act_qiaofeng_擒龙牵制",
+    "name": "擒龙牵制",
+    "ownerId": "qiaofeng",
+    "description": "乔峰五指虚抓，擒龙功隔空牵动对手身形。劲力无声无息地锁住对手步法，为虚竹创造最佳出手时机。"
+  },
+  {
+    "id": "act_qiaofeng_豪气护体",
+    "name": "豪气护体",
+    "ownerId": "qiaofeng",
+    "description": "乔峰横身挡在同伴前方，真气鼓荡衣袍猎猎。他以自身为盾，将毒劲暗器硬生生震开，用行动诠释「有我在」三个字。"
+  },
+  {
+    "id": "act_qiaofeng_掌风驱毒",
+    "name": "掌风驱毒",
+    "ownerId": "qiaofeng",
+    "description": "乔峰双掌推出，以降龙十八掌的刚猛掌风震散毒雾。掌风如墙，将毒雾反卷回丁春秋方向，逼得对手仓皇后退。"
+  },
+  {
+    "id": "act_qiaofeng_战场指挥",
+    "name": "战场指挥",
+    "ownerId": "qiaofeng",
+    "description": "乔峰沉声发出简短明确的指令。他时刻观察战局变化，判断对手意图，用最直接的话指挥虚竹和段誉的行动。"
+  },
+  {
+    "id": "act_qiaofeng_飞龙打断",
+    "name": "飞龙打断",
+    "ownerId": "qiaofeng",
+    "description": "乔峰腾身而起，一掌自上而下轰落。掌影如飞龙破云，精准打断丁春秋蓄毒、施法或逃跑的企图。"
+  },
+  {
+    "id": "act_duanyu_凌波闪避",
+    "name": "凌波闪避",
+    "ownerId": "duanyu",
+    "description": "段誉脚下步法飘忽，身形如游鱼般在毒雾和攻击的间隙中穿梭。凌波微步施展开来，万花丛中过片叶不沾身。"
+  },
+  {
+    "id": "act_duanyu_少商救急",
+    "name": "少商救急",
+    "ownerId": "duanyu",
+    "description": "段誉情急之下指尖剑气破空而出。六脉神剑·少商剑直刺对手肩头，在千钧一发之际打断对手对同伴的致命攻击。"
+  },
+  {
+    "id": "act_duanyu_商阳阻退",
+    "name": "商阳阻退",
+    "ownerId": "duanyu",
+    "description": "段誉一道灵动剑气斜斜射出，精准封住对手退路。六脉神剑·商阳剑不以杀伤为目的，只求逼退对手、阻断逃跑。"
+  },
+  {
+    "id": "act_duanyu_战场观察",
+    "name": "战场观察",
+    "ownerId": "duanyu",
+    "description": "段誉凝神看去，将场中变化尽收眼底。他以旁观者的敏锐洞察战局走向，用生动的语言描述招式碰撞与局势消长。"
+  },
+  {
+    "id": "act_duanyu_招式解说",
+    "name": "招式解说",
+    "ownerId": "duanyu",
+    "description": "段誉以旁观者视角详细描述本回合的招式效果——掌风如何破空、毒雾如何翻涌、身法如何精妙，让每一招都充满画面感。"
+  },
+  {
+    "id": "act_dingchunqiu_化功大法",
+    "name": "化功大法",
+    "ownerId": "dingchunqiu",
+    "description": "丁春秋怪笑一声，毒掌贴近对手。阴寒真气如毒蛇般钻入经脉，专门腐蚀化解对手内力——正是他仗以横行的化功大法。"
+  },
+  {
+    "id": "act_dingchunqiu_星宿毒雾",
+    "name": "星宿毒雾",
+    "ownerId": "dingchunqiu",
+    "description": "丁春秋羽扇一挥，惨绿色毒雾自袖中滚滚涌出。毒雾贴着地面蔓延，所过之处草木枯萎、虫蚁毙命，空气中弥漫苦杏仁和腐烂的甜味。"
+  },
+  {
+    "id": "act_dingchunqiu_腐尸毒掌",
+    "name": "腐尸毒掌",
+    "ownerId": "dingchunqiu",
+    "description": "丁春秋掌心泛青，腥臭之气扑面而来。掌风中蕴含腐尸剧毒，一旦命中便持续侵蚀对手气血，如同附骨之疽难以摆脱。"
+  },
+  {
+    "id": "act_dingchunqiu_毒雾遁身",
+    "name": "毒雾遁身",
+    "ownerId": "dingchunqiu",
+    "description": "丁春秋袖袍一震，毒雾炸开遮蔽视线。他趁机向后急退，身形在毒雾掩护下拉开了与对手的距离。"
+  },
+  {
+    "id": "act_dingchunqiu_星宿妖风",
+    "name": "星宿妖风",
+    "ownerId": "dingchunqiu",
+    "description": "丁春秋袖袍翻卷，毒风夹着沙石扑向对手面门。妖风不仅蕴含毒性，更能扰乱对手动作，使其下一次出手失了准头。"
+  },
+  {
+    "id": "act_dingchunqiu_万毒归宗",
+    "name": "万毒归宗",
+    "ownerId": "dingchunqiu",
+    "description": "丁春秋满头白发倒扬，捏碎怀中黑色小瓶。万毒归宗——毕生毒功精华化作漫天黑雾不分敌我炸开，这是他与对手同归于尽的最后一招。"
+  },
+  {
+    "id": "act_dingchunqiu_淬毒暗器",
+    "name": "淬毒暗器",
+    "ownerId": "dingchunqiu",
+    "description": "丁春秋暗中屈指弹出淬毒银针。毒针无声无息穿过毒雾，专挑对手防御死角——明着出掌暗里施针，正是他惯用的阴毒手段。"
+  }
+]
