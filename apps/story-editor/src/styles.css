@@ -791,6 +791,20 @@ input[type="checkbox"] {
   stroke-opacity: 0.6 !important;
 }
 
+/* Controls panel buttons */
+.react-flow__controls-button {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  fill: var(--text) !important;
+  color: var(--text) !important;
+}
+.react-flow__controls-button:hover {
+  background: var(--surface2) !important;
+}
+.react-flow__controls-button svg {
+  fill: var(--text) !important;
+}
+
 .react-flow__reconnect-handle {
   width: 12px !important;
   height: 12px !important;

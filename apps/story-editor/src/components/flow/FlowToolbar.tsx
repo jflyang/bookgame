@@ -133,6 +133,60 @@ export const FlowToolbar: FC<{ onRelayout: () => void; onValidate: () => void }>
         >
           流程校验
         </button>
+        <button
+          className="btn"
+          style={{ width: "100%", fontSize: "var(--fs-sm)" }}
+          onClick={async () => {
+            try {
+              const r = await fetch("/api/editor/export-rewrite-task", { method: "POST" });
+              const data = await r.json();
+              if (data.ok) {
+                const blob = new Blob([data.content], { type: "text/markdown" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = data.filename;
+                a.click();
+                URL.revokeObjectURL(url);
+              } else {
+                alert(`导出失败：${data.error}`);
+              }
+            } catch (e) { alert("导出失败：" + (e as Error).message); }
+          }}
+        >
+          📤 导出AI重写
+        </button>
+        <button
+          className="btn"
+          style={{ width: "100%", fontSize: "var(--fs-sm)" }}
+          onClick={() => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".json";
+            input.onchange = async () => {
+              const file = input.files?.[0];
+              if (!file) return;
+              try {
+                const text = await file.text();
+                const modules = JSON.parse(text);
+                if (!Array.isArray(modules)) { alert("文件格式错误：需要 JSON 数组"); return; }
+                const r = await fetch("/api/editor/import-modules", {
+                  method: "POST", headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ modules }),
+                });
+                const data = await r.json();
+                if (data.ok) {
+                  alert(`✅ 已导入 ${data.count} 个模块（旧文件已备份）\n\n请点击"刷新"重新加载。`);
+                } else {
+                  alert(`导入失败：${data.error}`);
+                }
+              } catch (e) { alert("导入失败：" + (e as Error).message); }
+            };
+            input.click();
+          }}
+        >
+          📥 导入modules
+        </button>
       </div>
 
       <div className="faint mt3" style={{ lineHeight: 1.7 }}>

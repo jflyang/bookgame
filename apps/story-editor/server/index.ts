@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, copyFileSync } from "node:fs";
 import { join, resolve, dirname, basename, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "node:http";
@@ -141,6 +141,58 @@ export async function createApp() {
       res.json({ ok: true });
     } catch (err) {
       res.status(400).json({ error: (err as Error).message });
+    }
+  });
+
+  // Export AI rewrite task document — returns file content for download
+  app.post("/api/editor/export-rewrite-task", async (_req, res) => {
+    try {
+      const state = getPackageState();
+      if (!state) return res.status(400).json({ error: "未打开故事包" });
+
+      const dir = state.dir;
+      const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf-8"));
+      const title = pkg.title || "故事包";
+
+      const { execSync } = await import("node:child_process");
+      const scriptPath = resolve(__dirname, "../scripts/export_for_ai_rewrite.cjs");
+      execSync(`node "${scriptPath}" "${dir}"`, { encoding: "utf-8" });
+
+      const safeName = title.replace(/[\\/:*?"<>|]/g, "_");
+      const outputFile = join(dir, `${safeName}-重写任务.md`);
+      if (!existsSync(outputFile)) return res.status(500).json({ error: "导出文件未生成" });
+
+      const content = readFileSync(outputFile, "utf-8");
+      res.json({ ok: true, filename: `${safeName}-重写任务.md`, content });
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
+    }
+  });
+
+  // Import modules.json — backup old one and replace
+  app.post("/api/editor/import-modules", (req, res) => {
+    try {
+      const state = getPackageState();
+      if (!state) return res.status(400).json({ error: "未打开故事包" });
+
+      const { modules } = req.body;
+      if (!Array.isArray(modules)) return res.status(400).json({ error: "无效的 modules 数据" });
+
+      const dir = state.dir;
+      const modulesPath = join(dir, "modules.json");
+
+      // Backup existing
+      if (existsSync(modulesPath)) {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+        const backupPath = join(dir, `modules_backup_${timestamp}.json`);
+        copyFileSync(modulesPath, backupPath);
+      }
+
+      // Write new
+      writeFileSync(modulesPath, JSON.stringify(modules, null, 2), "utf-8");
+      res.json({ ok: true, count: modules.length });
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
     }
   });
 
