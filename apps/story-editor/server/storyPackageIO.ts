@@ -63,6 +63,10 @@ export function openDirectory(packageDir: string): PackageState {
   const charsPath = join(packageDir, "characters.json");
   if (existsSync(charsPath)) storyPackage.characters = JSON.parse(readFileSync(charsPath, "utf-8"));
 
+  // skills.json
+  const skillsPath = join(packageDir, "skills.json");
+  if (existsSync(skillsPath)) storyPackage.skills = JSON.parse(readFileSync(skillsPath, "utf-8"));
+
   // flow.json
   let flowNodes: unknown[] | undefined;
   let flowEdges: unknown[] | undefined;
@@ -103,7 +107,7 @@ export function openDirectory(packageDir: string): PackageState {
     dir: packageDir, storyPackage: storyPackage as StoryPackage,
     hasManifest, manifest,
     hasCharacters: existsSync(charsPath),
-    hasSkills: false,
+    hasSkills: existsSync(skillsPath),
     hasKnowledge: existsSync(join(packageDir, "knowledge.json")),
     hasPromptRules: existsSync(join(packageDir, "rules.json")),
     hasStorySetting: existsSync(sp),
@@ -158,6 +162,7 @@ export function saveStoryPackage(storyPackage: StoryPackage): void {
   // scenario.json, characters.json, actions.json, reactions.json, knowledge.json, rules.json
   if (pkg.scenario) writeFileSync(join(dir, "scenario.json"), JSON.stringify(pkg.scenario, null, 2), "utf-8");
   if (pkg.characters) writeFileSync(join(dir, "characters.json"), JSON.stringify(pkg.characters, null, 2), "utf-8");
+  if (pkg.skills && pkg.skills.length > 0) writeFileSync(join(dir, "skills.json"), JSON.stringify(pkg.skills, null, 2), "utf-8");
   if (pkg.actions) writeFileSync(join(dir, "actions.json"), JSON.stringify(pkg.actions, null, 2), "utf-8");
   if (pkg.reactions) writeFileSync(join(dir, "reactions.json"), JSON.stringify(pkg.reactions, null, 2), "utf-8");
   if (pkg.knowledgeDocuments) writeFileSync(join(dir, "knowledge.json"), JSON.stringify(pkg.knowledgeDocuments, null, 2), "utf-8");
@@ -244,7 +249,10 @@ export async function uploadToServer(serverUrl: string): Promise<{ ok: boolean; 
 /** Get a media file path. */
 export function getMediaPath(relativePath: string): string | null {
   if (!currentPackage) return null;
-  const fullPath = join(currentPackage.dir, relativePath);
+  // Resolve to absolute path, handling both forward and back slashes
+  const fullPath = resolve(currentPackage.dir, relativePath);
+  // Security: ensure resolved path is still within the package directory
+  if (!fullPath.startsWith(resolve(currentPackage.dir))) return null;
   return existsSync(fullPath) ? fullPath : null;
 }
 
@@ -257,11 +265,4 @@ export function saveStorySetting(content: string): void {
   currentPackage.hasStorySetting = true;
 }
 
-function sortStoryPackageKeys(pkg: StoryPackage): StoryPackage {
-  // Stable key ordering for clean diffs
-  const { id, title, description, storySettingPrompt, scenario, characters, skills, knowledgeDocuments, promptRules, modules, flow, debugConfig, pluginManifest, uiConfig, createdAt, updatedAt, ...rest } = pkg as any;
-  const sorted: any = { id, title, description, storySettingPrompt, scenario, characters, skills, knowledgeDocuments, promptRules, modules, flow, debugConfig, pluginManifest, uiConfig, createdAt, updatedAt, ...rest };
-  Object.keys(sorted).forEach((k) => sorted[k] === undefined && delete sorted[k]);
-  return sorted as StoryPackage;
-}
 

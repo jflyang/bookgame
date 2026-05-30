@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Protect Existing Code",
+  "description": "Before writing to any source file, remind the agent to preserve all existing functionality and only add/modify what was explicitly requested. Never remove or simplify existing code unless explicitly asked.",
+  "version": "1",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": [
+      "write"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "IMPORTANT: Before writing this file, verify that you are NOT removing any existing functionality. Only add or modify what was explicitly requested. If you are replacing file content, ensure ALL existing features, imports, and logic are preserved. Never simplify or \"clean up\" code that wasn't part of the current task."
+  }
+}

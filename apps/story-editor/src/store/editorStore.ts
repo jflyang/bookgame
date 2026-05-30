@@ -3,6 +3,7 @@ import type { StoryPackage, Character, Skill, KnowledgeDocument, StoryPromptRule
 import * as api from "../lib/api.js";
 import type { EditorState } from "../lib/api.js";
 import { useFlowStore } from "./flowStore.js";
+import { syncFromScenario } from "../lib/flowSync.js";
 
 interface EditorStore {
   // State
@@ -101,6 +102,20 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       } else if (pkg.flow && pkg.modules) {
         // Fallback: generate layout from FlowDefinition
         useFlowStore.getState().initFromData(pkg.flow, pkg.modules);
+      } else if (pkg.scenario && pkg.scenario.stages && pkg.scenario.stages.length > 0) {
+        // A1: Auto-load — generate flow from scenario when no flow.json exists
+        const modules = syncFromScenario(pkg.scenario, pkg.modules || []);
+        const flowId = pkg.flow?.id || "flow_default";
+        const flowTitle = pkg.flow?.title || pkg.title || "自动生成流程";
+        useFlowStore.getState().initFromData(
+          { id: flowId, title: flowTitle, description: "", linearPhases: {} } as any,
+          modules
+        );
+        // Update storyPackage with generated modules
+        set((s) => ({
+          storyPackage: s.storyPackage ? { ...s.storyPackage, modules } : s.storyPackage,
+          dirty: true,
+        }));
       }
     } catch (err) {
       set({ error: (err as Error).message, loaded: false });

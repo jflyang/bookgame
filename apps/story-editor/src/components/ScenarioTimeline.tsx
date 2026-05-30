@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useEditorStore } from "../store/editorStore.js";
 import type { Scenario, ScenarioStageDetail } from "@story-game/shared";
+import { generateStageId } from "../lib/idGen.js";
 
 /* ===== Act definition ===== */
 interface ActDef { key: string; label: string; color: string; range: [number, number] }
@@ -144,6 +145,17 @@ export function ScenarioTimeline() {
 
   function stageIndex(id: string) { return stages.indexOf(id); }
 
+  function addStage() {
+    if (!s) return;
+    const existingIds = new Set(stages);
+    let newId: string;
+    do { newId = generateStageId(); } while (existingIds.has(newId));
+    const newStages = [...stages, newId];
+    const newDetails = [...(s.stageDetails || []), { id: newId, title: `新阶段 ${newStages.length}`, isChoicePoint: false } as ScenarioStageDetail];
+    updateScenario({ ...s, stages: newStages, stageDetails: newDetails } as Scenario);
+    setSelectedId(newId);
+  }
+
   return (
     <div className="panel" style={{ gap: "var(--s3)", position: "relative" }}>
       {/* Header + settings in one compact row */}
@@ -151,6 +163,7 @@ export function ScenarioTimeline() {
         <div className="flex-center gap3">
           <h2>阶段时间线</h2>
           <span className="faint">{stages.length} 阶段 &middot; {choicePoints.length} 抉择</span>
+          <button className="btn btn-xs" onClick={addStage}>+ 新增阶段</button>
         </div>
         <div className="flex-center gap3" style={{ flex: 1 }}>
           <select className="input" style={{ width: 140 }}
@@ -277,6 +290,22 @@ export function ScenarioTimeline() {
                         onChange={(e) => updateStageDetail({ ...selected, enterWhen: e.target.value })}
                         placeholder="如：内力封印完成" />
                     </label>
+                  </div>
+                  <div className="form-grid cols-2">
+                    <label className="field"><span>阶段类型</span>
+                      <select className="input" value={(selected as any).stageType || ""}
+                        onChange={(e) => updateStageDetail({ ...selected, stageType: e.target.value || undefined } as any)}>
+                        <option value="">自动推断</option>
+                        <option value="training">训练 (training)</option>
+                        <option value="serving">侍寝 (serving)</option>
+                        <option value="punishment">惩罚 (punishment)</option>
+                        <option value="daily">日常 (daily)</option>
+                        <option value="event">事件 (event)</option>
+                        <option value="choice">抉择 (choice)</option>
+                        <option value="finale">终幕 (finale)</option>
+                      </select>
+                    </label>
+                    <div />
                   </div>
                   <label className="field" style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
                     <span>LLM 引导</span>

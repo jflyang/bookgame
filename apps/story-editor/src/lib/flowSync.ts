@@ -129,4 +129,5 @@ export function syncFromScenario(
 }
 
 // Re-export for convenience
-export { RebuiltFlow, rebuildFlowFromModules } from "./storyStructure.js";
+export type { RebuiltFlow } from "./storyStructure.js";
+export { rebuildFlowFromModules } from "./storyStructure.js";

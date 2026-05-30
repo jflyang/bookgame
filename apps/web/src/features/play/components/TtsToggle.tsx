@@ -17,9 +17,7 @@ export function TtsToggle() {
     loadConfig();
   }, [loadConfig]);
 
-  // Don't render if TTS service is not configured at all
-  if (serviceConfig && serviceConfig.provider === "disabled") return null;
-
+  // Always show TTS toggle — browser TTS is always available as fallback
   return (
     <>
       <button

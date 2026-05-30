@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { TtsConfigView } from "@story-game/shared";
 import * as ttsApi from "../lib/ttsApi.js";
+import { isBrowserTtsSupported, speakWithBrowserTts, stopBrowserTts } from "../lib/browserTts.js";
 
 /** Single global Audio element for TTS playback */
 let globalAudio: HTMLAudioElement | null = null;
@@ -81,7 +82,7 @@ interface AudioState {
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({
-  ttsEnabled: false,
+  ttsEnabled: localStorage.getItem("play:ttsEnabled") !== "false", // default: true (with browser fallback)
   autoPlay: localStorage.getItem("play:ttsAutoPlay") === "true",
   volume: parseFloat(localStorage.getItem("play:volume") || "0.8"),
   playbackRate: parseFloat(localStorage.getItem("play:playbackRate") || "1.15"),
@@ -95,18 +96,23 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   async loadConfig() {
     try {
       const config = await ttsApi.getTtsConfig();
+      const useServerTts = config.enabled && config.provider !== "disabled";
       set({
         serviceConfig: config,
-        ttsEnabled: config.enabled,
+        // Keep browser fallback if server TTS is not available
+        ttsEnabled: useServerTts ? true : get().ttsEnabled,
         error: null,
       });
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : "加载 TTS 配置失败" });
+      // Server unavailable — use browser TTS as fallback
+      console.log("[TTS] Server TTS unavailable, using browser TTS fallback");
+      set({ error: null });
     }
   },
 
   setEnabled(enabled) {
     set({ ttsEnabled: enabled });
+    localStorage.setItem("play:ttsEnabled", String(enabled));
     if (!enabled) {
       get().stopPlaying();
       set({ loadingIds: new Set() });
@@ -134,7 +140,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   },
 
   async playMessage(messageId, text, characterId, emotion) {
-    const { loadingIds, audioCache, ttsEnabled } = get();
+    const { loadingIds, audioCache, ttsEnabled, serviceConfig } = get();
     if (!ttsEnabled) { return; }
 
     // Already loading this message
@@ -148,33 +154,53 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       return;
     }
 
-    // Start loading
-    const nextLoading = new Set(loadingIds);
-    nextLoading.add(messageId);
-    set({ loadingIds: nextLoading, error: null });
+    // If server TTS is enabled, try it first
+    const useServer = serviceConfig?.enabled && serviceConfig.provider !== "disabled";
 
-    try {
-      const result = await ttsApi.synthesize(text, characterId, emotion);
-      const audioUrl = ttsApi.resolveAudioUrl(result.audioUrl);
+    if (useServer) {
+      // Start loading from server
+      const nextLoading = new Set(loadingIds);
+      nextLoading.add(messageId);
+      set({ loadingIds: nextLoading, error: null });
 
-      const nextCache = new Map(get().audioCache);
-      nextCache.set(messageId, audioUrl);
+      try {
+        const result = await ttsApi.synthesize(text, characterId, emotion);
+        const audioUrl = ttsApi.resolveAudioUrl(result.audioUrl);
 
-      const doneLoading = new Set(get().loadingIds);
-      doneLoading.delete(messageId);
+        const nextCache = new Map(get().audioCache);
+        nextCache.set(messageId, audioUrl);
 
-      set({ audioCache: nextCache, loadingIds: doneLoading, currentPlayingId: messageId });
+        const doneLoading = new Set(get().loadingIds);
+        doneLoading.delete(messageId);
 
-      // Play the audio
-      playAudioElement(audioUrl, get);
-    } catch (err) {
-      console.error(`[TTS] playMessage: synthesize FAILED`, err);
-      const doneLoading = new Set(get().loadingIds);
-      doneLoading.delete(messageId);
+        set({ audioCache: nextCache, loadingIds: doneLoading, currentPlayingId: messageId });
+
+        // Play the audio
+        playAudioElement(audioUrl, get);
+        return;
+      } catch (err) {
+        console.warn(`[TTS] Server synthesize failed, falling back to browser TTS:`, err);
+        const doneLoading = new Set(get().loadingIds);
+        doneLoading.delete(messageId);
+        set({ loadingIds: doneLoading });
+      }
+    }
+
+    // Fall back to browser TTS
+    if (isBrowserTtsSupported()) {
+      set({ currentPlayingId: messageId });
+      const ok = speakWithBrowserTts(text, characterId, () => {
+        useAudioStore.setState({
+          currentPlayingId: null,
+          autoReadDone: true,
+        });
+      });
+      if (!ok) {
+        set({ currentPlayingId: null });
+      }
+    } else {
       set({
-        loadingIds: doneLoading,
-        currentPlayingId: null,
-        error: err instanceof Error ? err.message : "语音合成失败",
+        error: "浏览器不支持语音播放",
       });
     }
   },
@@ -188,6 +214,8 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       globalAudio.src = "";
       globalAudio = null;
     }
+    // Also stop browser TTS
+    stopBrowserTts();
     set({ currentPlayingId: null });
   },
 

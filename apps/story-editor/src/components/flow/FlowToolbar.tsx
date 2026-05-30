@@ -1,6 +1,6 @@
 import { useState, type FC, type DragEvent } from "react";
 import { useFlowStore } from "../../store/flowStore.js";
-import { saveFlowAndModules } from "../../lib/api.js";
+import { useEditorStore } from "../../store/editorStore.js";
 
 interface ToolItem { type: string; label: string; color: string }
 
@@ -39,6 +39,7 @@ const TOOL_GROUPS: { label: string; items: ToolItem[] }[] = [
 
 export const FlowToolbar: FC<{ onRelayout: () => void; onValidate: () => void }> = ({ onRelayout, onValidate }) => {
   const store = useFlowStore();
+  const editorStore = useEditorStore();
   const [saving, setSaving] = useState(false);
 
   const onDragStart = (event: DragEvent, nodeType: string) => {
@@ -49,8 +50,7 @@ export const FlowToolbar: FC<{ onRelayout: () => void; onValidate: () => void }>
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { flow, modules } = store.getFlowData();
-      await saveFlowAndModules(flow, modules);
+      await editorStore.save();
     } catch (err) {
       alert("保存失败：" + (err as Error).message);
     } finally {
@@ -117,7 +117,7 @@ export const FlowToolbar: FC<{ onRelayout: () => void; onValidate: () => void }>
           onClick={handleSave}
           disabled={saving || !store.initialized}
         >
-          {saving ? "保存中..." : "保存到文件"}
+          {saving ? "保存中..." : "💾 统一保存"}
         </button>
         <button
           className="btn"

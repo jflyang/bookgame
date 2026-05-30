@@ -14,19 +14,18 @@ import { MediaViewer } from "./components/MediaViewer.js";
 import { ScenarioTimeline } from "./components/ScenarioTimeline.js";
 import { FlowEditor } from "./components/flow/FlowEditor.js";
 import { PerformanceMapper } from "./components/PerformanceMapper.js";
+import { SettingsPanel } from "./components/SettingsPanel.js";
 
 const TABS: { key: string; label: string }[] = [
   { key: "flow", label: "流程编辑" },
   { key: "scenario", label: "剧情阶段" },
-  { key: "characters", label: "角色关系" },
-  { key: "charManager", label: "角色管理" },
   { key: "skills", label: "技能树" },
+  { key: "characters", label: "角色关系" },
+  { key: "performances", label: "演出映射" },
   { key: "knowledge", label: "知识图谱" },
   { key: "promptRules", label: "规则管线" },
-  { key: "manifest", label: "元数据" },
-  { key: "uiconfig", label: "UI配置" },
-  { key: "performances", label: "演出映射" },
   { key: "storySetting", label: "故事设定" },
+  { key: "settings", label: "高级设置" },
   { key: "media", label: "媒体文件" },
   { key: "ai", label: "AI 助手" },
 ];
@@ -176,14 +175,12 @@ export function App() {
           {activeTab === "flow" && <FlowEditor />}
           {activeTab === "scenario" && <ScenarioTimeline />}
           {activeTab === "characters" && <CharacterGraph />}
-          {activeTab === "charManager" && <CharacterManager />}
           {activeTab === "skills" && <SkillTree />}
           {activeTab === "knowledge" && <KnowledgeGraph />}
           {activeTab === "promptRules" && <RulePipeline />}
-          {activeTab === "manifest" && <ManifestPanel />}
-          {activeTab === "uiconfig" && <UIConfigEditor />}
           {activeTab === "performances" && <PerformanceMapper />}
           {activeTab === "storySetting" && <StorySettingEditor />}
+          {activeTab === "settings" && <SettingsPanel />}
           {activeTab === "media" && <MediaViewer />}
           {activeTab === "ai" && <AiAssistant />}
         </main>

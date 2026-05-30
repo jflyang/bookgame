@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
 import {
   ReactFlow, Background, Controls, MiniMap, ReactFlowProvider,
-  useNodesState, useEdgesState, addEdge, useReactFlow,
-  type Connection, type Node, type Edge,
+  useNodesState, useEdgesState, useReactFlow,
+  type Node, type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useFlowStore } from "../../store/flowStore.js";
@@ -11,11 +11,12 @@ import { edgeTypes } from "./ColoredEdge.js";
 import { FlowToolbar } from "./FlowToolbar.js";
 import { ModuleDetailPanel } from "./ModuleDetailPanel.js";
 import { NodeContextMenu } from "./NodeContextMenu.js";
-import { NodeEditModal } from "./NodeEditModal.js";
+import { NodeEditModal } from "./NodeEditModal/index.js";
 import { GameConsole } from "./GameConsole.js";
 import { runStep, type ConsoleEntry, type ChoiceOption, type RunStatus } from "../../lib/flowRunner.js";
 import type { FlowNodeData } from "../../lib/flowTypes.js";
 import { useUndoRedo } from "./FlowEditor/hooks/useUndoRedo.js";
+import { useConnection } from "./FlowEditor/hooks/useConnection.js";
 
 let nextId = 0;
 function uid() {
@@ -117,33 +118,10 @@ function FlowEditorInner() {
 
   const { saveSnapshot, undo, redo } = useUndoRedo(nodes, edges, setNodes, setEdges);
 
-  // ─── Connect ───
-  const onConnect = useCallback((params: Connection) => {
-    saveSnapshot();
-    const eid = `edge_${params.source}_${params.target}_${Date.now()}`;
-    setEdges((eds) => addEdge({
-      ...params,
-      id: eid,
-      type: "colored",
-      style: { stroke: "var(--text-muted)", strokeWidth: 2 },
-    }, eds));
-    store.addEdge({
-      id: eid,
-      source: params.source!, target: params.target!,
-      sourceHandle: params.sourceHandle || undefined,
-      targetHandle: params.targetHandle || undefined,
-    } as any);
-  }, [setEdges, store]);
-
-  // ─── Connection validation ───
-  const isValidConnection = useCallback((conn: Connection | Edge) => {
-    if (conn.source === conn.target) return false;
-    const sourceNode = nodes.find((n) => n.id === conn.source);
-    if (sourceNode?.type === "end") return false;
-    const targetNode = nodes.find((n) => n.id === conn.target);
-    if (targetNode?.type === "start") return false;
-    return true;
-  }, [nodes]);
+  // B1: Connection logic extracted to hook
+  const { onConnect, isValidConnection, onReconnect, handleEdgesChange } = useConnection(
+    nodes as any, setEdges, onEdgesChange, saveSnapshot
+  );
 
   // ─── Drop from toolbar ───
   const onDragOver = useCallback((event: DragEvent) => {
@@ -199,12 +177,7 @@ function FlowEditorInner() {
     deletedEdges.forEach((e) => store.removeEdge(e.id));
   }, [store]);
 
-  const handleEdgesChange = useCallback((changes: any[]) => {
-    onEdgesChange(changes);
-    for (const change of changes) {
-      if (change.type === "remove") store.removeEdge(change.id);
-    }
-  }, [onEdgesChange, store]);
+  // handleEdgesChange comes from useConnection hook
 
   // ─── Drag stop → persist position ───
   const onNodeDragStop = useCallback((_event: React.MouseEvent, node: RFNode) => {
@@ -313,29 +286,6 @@ function FlowEditorInner() {
         store.updateNode(edge.id, {});
       }
     }
-  }, [setEdges, store]);
-
-  // ─── Edge reconnect → update store ───
-  const onReconnect = useCallback((oldEdge: Edge, newConnection: Connection) => {
-    saveSnapshot();
-    setEdges((eds) => eds.map((e) => {
-      if (e.id !== oldEdge.id) return e;
-      return {
-        ...e,
-        source: newConnection.source || e.source,
-        target: newConnection.target || e.target,
-        sourceHandle: newConnection.sourceHandle || undefined,
-        targetHandle: newConnection.targetHandle || undefined,
-      };
-    }));
-    store.removeEdge(oldEdge.id);
-    store.addEdge({
-      id: oldEdge.id,
-      source: newConnection.source || oldEdge.source,
-      target: newConnection.target || oldEdge.target,
-      sourceHandle: newConnection.sourceHandle || undefined,
-      targetHandle: newConnection.targetHandle || undefined,
-    } as any);
   }, [setEdges, store]);
 
   // ─── Validation ───

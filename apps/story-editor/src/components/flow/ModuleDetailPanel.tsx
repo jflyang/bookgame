@@ -3,6 +3,7 @@ import type { StoryModule } from "@story-game/shared";
 import { useFlowStore } from "../../store/flowStore.js";
 import { useEditorStore } from "../../store/editorStore.js";
 import { TYPE_LABELS, TYPE_COLORS } from "../../lib/typeLabels.js";
+import { mediaUrl } from "../../lib/api.js";
 
 interface Props {
   moduleId: string;
@@ -148,6 +149,10 @@ export function ModuleDetailPanel({ moduleId, edges, onEdgesChange, onClose }: P
         <label className="field mt3"><span>进入条件</span><input className="input" value={draft.enterWhen||""} onChange={(e)=>update("enterWhen",e.target.value)} /></label>
         <label className="field mt3"><span>退出条件</span><input className="input" value={draft.exitCondition||""} onChange={(e)=>update("exitCondition",e.target.value)} /></label>
         <label className="field mt3"><span>AI 引导语 (guidance)</span><textarea className="input mono" rows={8} value={draft.guidance||""} onChange={(e)=>update("guidance",e.target.value)} placeholder={"氛围：xxx\n\n角色A：**动作**（描述）\n角色B：**动作**（描述）\n→ 推进条件：xxx"} /></label>
+        <label className="field mt3"><span>阶段指令 (directive)</span><textarea className="input mono" rows={4} value={(draft as any).directive||""} onChange={(e)=>update("directive" as any,e.target.value)} placeholder={"必须发生的具体事件，LLM 不可跳过。如：虚竹必须击中丁春秋右肩"} /></label>
+
+        {/* ── 绑定演出 ── */}
+        <PerformanceBindings moduleId={moduleId} sourceStage={draft.sourceStage} />
       </div>
       <div style={{ padding:"var(--s3) var(--s4)",borderTop:"1px solid var(--border)",display:"flex",gap:"var(--s2)" }}>
         <button className="btn btn-primary" style={{ flex:1 }} onClick={()=>{if(draft){updateModule(moduleId,draft);onClose()}}}>保存并关闭</button>
@@ -179,6 +184,103 @@ function ChoiceBranches({ outgoingEdges, nodeId, newBranchLabel, onNewBranchLabe
           <option value="">添加分支...</option>{moduleOptions.map((o:any)=><option key={o.id} value={o.id}>{o.label}</option>)}
         </select>
       </div>
+    </div>
+  );
+}
+
+/** Sub-component: show performances bound to this module's sourceStage */
+function PerformanceBindings({ moduleId, sourceStage }: { moduleId: string; sourceStage?: string }) {
+  const { manifest, updateManifest } = useEditorStore();
+  const [bindKey, setBindKey] = useState("");
+
+  const perfs = (manifest?.performances || {}) as Record<string, any>;
+  const allKeys = Object.keys(perfs);
+
+  // Find performances bound to this module's sourceStage
+  const boundKeys = allKeys.filter((k) => {
+    const p = perfs[k];
+    return p.trigger?.type === "stageEnter" && p.trigger?.stageId === sourceStage;
+  });
+
+  // Available (unbound to this stage) performances for binding
+  const availableKeys = allKeys.filter((k) => !boundKeys.includes(k));
+
+  function bindPerformance(key: string) {
+    if (!key || !sourceStage) return;
+    const p = perfs[key];
+    const updated = { ...p, trigger: { ...p.trigger, type: "stageEnter", stageId: sourceStage } };
+    updateManifest({ ...(manifest || {}), performances: { ...perfs, [key]: updated } });
+  }
+
+  function unbindPerformance(key: string) {
+    const p = perfs[key];
+    const updated = { ...p, trigger: { ...p.trigger, stageId: undefined } };
+    updateManifest({ ...(manifest || {}), performances: { ...perfs, [key]: updated } });
+  }
+
+  function getIcon(p: any): string {
+    if (p.renderer === "audio") return "🔊";
+    if (p.renderer === "video") return "🎬";
+    if (p.renderer === "layeredCss" || p.renderer === "image") return "🖼️";
+    return "🎭";
+  }
+
+  function getPreviewPath(p: any): string | null {
+    if (p.renderer === "audio" && p.audio?.main) return p.audio.main;
+    if (p.renderer === "image" && p.layers) {
+      const first = Object.values(p.layers)[0];
+      return typeof first === "string" ? first : null;
+    }
+    return null;
+  }
+
+  if (!manifest?.performances) return null;
+
+  return (
+    <div className="card mt3" style={{ padding: "var(--s3)" }}>
+      <div className="card-section-title" style={{ marginTop: 0 }}>绑定演出</div>
+      {!sourceStage && (
+        <p className="faint" style={{ fontSize: "var(--fs-xs)", margin: 0 }}>
+          需要先设置"来源阶段"才能绑定演出
+        </p>
+      )}
+      {sourceStage && boundKeys.length === 0 && (
+        <p className="faint" style={{ fontSize: "var(--fs-xs)", margin: 0 }}>暂无绑定的演出</p>
+      )}
+      {boundKeys.map((key) => {
+        const p = perfs[key];
+        const preview = getPreviewPath(p);
+        return (
+          <div key={key} style={{
+            display: "flex", alignItems: "center", gap: "var(--s2)",
+            padding: "var(--s1) var(--s2)", background: "var(--bg)",
+            borderRadius: "var(--r-sm)", marginBottom: 4,
+          }}>
+            <span style={{ fontSize: 14 }}>{getIcon(p)}</span>
+            <span style={{ flex: 1, fontSize: "var(--fs-sm)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {p.name || key}
+            </span>
+            {preview && p.renderer === "audio" && (
+              <audio src={mediaUrl(`media/${preview}`)} controls style={{ height: 24, maxWidth: 100 }} />
+            )}
+            <button className="btn btn-ghost btn-xs" style={{ color: "var(--danger)", fontSize: 10 }}
+              onClick={() => unbindPerformance(key)}>解绑</button>
+          </div>
+        );
+      })}
+      {sourceStage && (
+        <div style={{ display: "flex", gap: "var(--s1)", marginTop: "var(--s2)" }}>
+          <select className="input" style={{ flex: 1, fontSize: "var(--fs-xs)", padding: "2px 6px" }}
+            value={bindKey} onChange={(e) => setBindKey(e.target.value)}>
+            <option value="">+ 绑定演出...</option>
+            {availableKeys.map((k) => (
+              <option key={k} value={k}>{getIcon(perfs[k])} {perfs[k].name || k}</option>
+            ))}
+          </select>
+          <button className="btn btn-xs" disabled={!bindKey}
+            onClick={() => { bindPerformance(bindKey); setBindKey(""); }}>绑定</button>
+        </div>
+      )}
     </div>
   );
 }
