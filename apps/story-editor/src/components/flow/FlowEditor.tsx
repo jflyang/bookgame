@@ -15,6 +15,7 @@ import { NodeEditModal } from "./NodeEditModal.js";
 import { GameConsole } from "./GameConsole.js";
 import { runStep, type ConsoleEntry, type ChoiceOption, type RunStatus } from "../../lib/flowRunner.js";
 import type { FlowNodeData } from "../../lib/flowTypes.js";
+import { useUndoRedo } from "./FlowEditor/hooks/useUndoRedo.js";
 
 let nextId = 0;
 function uid() {
@@ -79,10 +80,6 @@ function validateFlow(nodes: RFNode[], edges: Edge[]): ValidationIssue[] {
   return issues;
 }
 
-// ─── History for undo/redo ───
-interface Snapshot { nodes: RFNode[]; edges: Edge[]; }
-const MAX_HISTORY = 60;
-
 function FlowEditorInner() {
   const store = useFlowStore();
   const [nodes, setNodes, onNodesChange] = useNodesState<RFNode>([]);
@@ -110,11 +107,6 @@ function FlowEditorInner() {
   const [visitedNodeIds, setVisitedNodeIds] = useState<Set<string>>(new Set());
   const [consoleVisible, setConsoleVisible] = useState(false);
 
-  // Undo/Redo
-  const [history, setHistory] = useState<Snapshot[]>([]);
-  const [historyIdx, setHistoryIdx] = useState(-1);
-  const snapshotRef = useRef<{ nodes: RFNode[]; edges: Edge[] }>({ nodes: [], edges: [] });
-
   // Sync store → ReactFlow state
   useEffect(() => {
     if (store.initialized) {
@@ -123,61 +115,7 @@ function FlowEditorInner() {
     }
   }, [store.initialized]);
 
-  // ─── Undo/Redo helpers ───
-  function saveSnapshot() {
-    const snap: Snapshot = { nodes: [...snapshotRef.current.nodes], edges: [...snapshotRef.current.edges] };
-    setHistory((h) => {
-      const trimmed = h.slice(0, historyIdx + 1);
-      if (trimmed.length >= MAX_HISTORY) trimmed.shift();
-      return [...trimmed, snap];
-    });
-    setHistoryIdx((i) => Math.min(i + 1, MAX_HISTORY - 1));
-  }
-
-  function undo() {
-    if (historyIdx < 0) return;
-    // Save current state for redo before restoring
-    const current: Snapshot = { nodes: [...nodes], edges: [...edges] };
-    const target = history[historyIdx];
-    setHistory((h) => {
-      const copy = [...h];
-      copy[historyIdx] = current;
-      return copy;
-    });
-    setHistoryIdx((i) => i - 1);
-    setNodes(target.nodes);
-    setEdges(target.edges);
-    store.updateNodes(target.nodes as any);
-    store.updateEdges(target.edges as any);
-    snapshotRef.current = { nodes: target.nodes, edges: target.edges };
-  }
-
-  function redo() {
-    if (historyIdx >= history.length - 1) return;
-    const targetIdx = historyIdx + 1;
-    const target = history[targetIdx];
-    setHistoryIdx(targetIdx);
-    setNodes(target.nodes);
-    setEdges(target.edges);
-    store.updateNodes(target.nodes as any);
-    store.updateEdges(target.edges as any);
-    snapshotRef.current = { nodes: target.nodes, edges: target.edges };
-  }
-
-  // Track state for snapshot
-  useEffect(() => {
-    snapshotRef.current = { nodes, edges };
-  }, [nodes, edges]);
-
-  // Keyboard handlers
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.ctrlKey && e.key === "z") { e.preventDefault(); undo(); }
-      if (e.ctrlKey && e.key === "y") { e.preventDefault(); redo(); }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [historyIdx, history, nodes, edges]);
+  const { saveSnapshot, undo, redo } = useUndoRedo(nodes, edges, setNodes, setEdges);
 
   // ─── Connect ───
   const onConnect = useCallback((params: Connection) => {
