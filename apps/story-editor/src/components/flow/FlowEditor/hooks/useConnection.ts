@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { addEdge, type Connection, type Edge } from "@xyflow/react";
 import { useFlowStore } from "../../../../store/flowStore.js";
 import type { FlowNodeData } from "../../../../lib/flowTypes.js";
@@ -19,6 +19,9 @@ export function useConnection(
   saveSnapshot: () => void,
 ) {
   const store = useFlowStore();
+
+  // Track whether a reconnect successfully connected to a new target
+  const reconnectSuccessful = useRef(false);
 
   /**
    * When a connection is made between two sibling nodes in the same phaseGroup,
@@ -95,6 +98,7 @@ export function useConnection(
   }, [nodes]);
 
   const onReconnect = useCallback((oldEdge: Edge, newConnection: Connection) => {
+    reconnectSuccessful.current = true;
     saveSnapshot();
     setEdges((eds) => eds.map((e) => {
       if (e.id !== oldEdge.id) return e;
@@ -130,5 +134,18 @@ export function useConnection(
     }
   }, [onEdgesChange, store]);
 
-  return { onConnect, isValidConnection, onReconnect, handleEdgesChange };
+  const onReconnectStart = useCallback(() => {
+    reconnectSuccessful.current = false;
+  }, []);
+
+  const onReconnectEnd = useCallback((_event: MouseEvent | TouchEvent, edge: Edge) => {
+    if (!reconnectSuccessful.current) {
+      // Dragged to empty space — delete the edge
+      saveSnapshot();
+      setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+      store.removeEdge(edge.id);
+    }
+  }, [setEdges, store, saveSnapshot]);
+
+  return { onConnect, isValidConnection, onReconnect, onReconnectStart, onReconnectEnd, handleEdgesChange };
 }

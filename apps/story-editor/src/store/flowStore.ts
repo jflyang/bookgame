@@ -135,37 +135,66 @@ export const useFlowStore = create<FlowStore>((set, get) => ({
   },
 
   relayout() {
-    const { modules, nodes } = get();
-    // Rebuild state from current nodes
-    const acts: Record<string, string[]> = {};
-    const groupNodes = nodes.filter((n) => n.type === "phaseGroup");
-    groupNodes.forEach((g) => {
-      const children = nodes.filter((n) => n.parentId === g.id && (n.type === "module" || n.type === "choice"));
-      children.sort((a, b) => a.position.x - b.position.x);
-      const actKey = g.data.actKey || g.id;
-      if (actKey !== "finale") {
-        acts[actKey] = children.map((c) => c.data.moduleRef || c.id).filter(Boolean);
+    const { nodes } = get();
+
+    const NODE_W = 200;
+    const NODE_H = 80;
+    const H_GAP = 60;
+    const V_GAP = 100;
+    const ACT_PAD = 50;
+
+    const groupIds = nodes.filter((n) => n.type === "phaseGroup" || n.type === "loop").map((n) => n.id);
+    const updatedNodes = [...nodes];
+
+    if (groupIds.length > 0) {
+      // Has groups: evenly space children within each group
+      for (const gid of groupIds) {
+        const children = updatedNodes
+          .filter((n) => n.parentId === gid && (n.type === "module" || n.type === "choice" || n.type === "judgment" || n.type === "eventTrigger" || n.type === "randomEvent"))
+          .sort((a, b) => a.position.x - b.position.x);
+
+        if (children.length === 0) continue;
+
+        const startX = ACT_PAD;
+        const y = children[0].position.y;
+        children.forEach((child, i) => {
+          const idx = updatedNodes.findIndex((n) => n.id === child.id);
+          if (idx >= 0) {
+            updatedNodes[idx] = { ...updatedNodes[idx], position: { x: startX + i * (NODE_W + H_GAP), y } };
+          }
+        });
+
+        const groupIdx = updatedNodes.findIndex((n) => n.id === gid);
+        if (groupIdx >= 0) {
+          const totalW = children.length * NODE_W + (children.length - 1) * H_GAP + ACT_PAD * 2;
+          const currentStyle = updatedNodes[groupIdx].style || {};
+          updatedNodes[groupIdx] = { ...updatedNodes[groupIdx], style: { ...currentStyle, width: totalW } };
+        }
       }
-    });
+    } else {
+      // Flat structure (no groups): arrange all module/choice nodes vertically
+      const contentNodes = updatedNodes
+        .filter((n) => n.type === "module" || n.type === "choice")
+        .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
 
-    const loopNode = nodes.find((n) => n.type === "loop");
-    const finaleChildren = nodes.filter((n) => n.parentId && nodes.find((p) => p.id === n.parentId)?.data.actKey === "finale");
-    finaleChildren.sort((a, b) => a.position.x - b.position.x);
+      let y = 100;
+      contentNodes.forEach((node) => {
+        const idx = updatedNodes.findIndex((n) => n.id === node.id);
+        if (idx >= 0) {
+          updatedNodes[idx] = { ...updatedNodes[idx], position: { x: 340, y } };
+          y += NODE_H + V_GAP;
+        }
+      });
 
-    // Extract daily triggers from current nodes
-    const dailyTriggers = nodes
-      .filter((n) => n.type === "dailyTrigger" && n.data.moduleRef)
-      .map((n) => ({ module: n.data.moduleRef!, trigger: n.data.triggerRule || "" }));
+      // Position start node at top
+      const startIdx = updatedNodes.findIndex((n) => n.type === "start");
+      if (startIdx >= 0) updatedNodes[startIdx] = { ...updatedNodes[startIdx], position: { x: 400, y: 10 } };
 
-    const state = {
-      modules,
-      acts,
-      servingLoop: loopNode?.data.loopData || null,
-      finaleSequence: finaleChildren.map((c) => c.data.moduleRef || "").filter(Boolean),
-      dailyTriggers,
-    };
+      // Position end node at bottom
+      const endIdx = updatedNodes.findIndex((n) => n.type === "end");
+      if (endIdx >= 0) updatedNodes[endIdx] = { ...updatedNodes[endIdx], position: { x: 400, y } };
+    }
 
-    const layout = autoLayout(state);
-    set({ nodes: layout.nodes as any, edges: layout.edges as any });
+    set({ nodes: updatedNodes as any });
   },
 }));

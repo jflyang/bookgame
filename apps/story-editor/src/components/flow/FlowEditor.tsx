@@ -119,7 +119,7 @@ function FlowEditorInner() {
   const { saveSnapshot, undo, redo } = useUndoRedo(nodes, edges, setNodes, setEdges);
 
   // B1: Connection logic extracted to hook
-  const { onConnect, isValidConnection, onReconnect, handleEdgesChange } = useConnection(
+  const { onConnect, isValidConnection, onReconnect, onReconnectStart, onReconnectEnd, handleEdgesChange } = useConnection(
     nodes as any, setEdges, onEdgesChange, saveSnapshot
   );
 
@@ -442,6 +442,8 @@ function FlowEditorInner() {
           onEdgeDoubleClick={onEdgeDoubleClick}
           onEdgeContextMenu={onEdgeContextMenu}
           onReconnect={onReconnect}
+          onReconnectStart={onReconnectStart}
+          onReconnectEnd={onReconnectEnd}
           isValidConnection={isValidConnection}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
@@ -450,7 +452,8 @@ function FlowEditorInner() {
           snapGrid={[20, 20]}
           deleteKeyCode={["Delete", "Backspace"]}
           edgesReconnectable
-          defaultEdgeOptions={{ type: "colored", interactionWidth: 12 }}
+          reconnectRadius={30}
+          defaultEdgeOptions={{ type: "colored", interactionWidth: 20 }}
           style={{ background: "var(--bg)" }}
         >
           <Background color="var(--border)" gap={20} />

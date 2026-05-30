@@ -30,6 +30,7 @@ export function ColoredEdge(props: EdgeProps) {
         path={edgePath}
         style={{ stroke: color, strokeWidth: 2.5, strokeDasharray: dash }}
         markerEnd={props.markerEnd}
+        interactionWidth={20}
       />
       {label && (
         <EdgeLabelRenderer>

@@ -785,6 +785,27 @@ input[type="checkbox"] {
   outline-offset: 1px;
 }
 
+/* Edge reconnect handles — show on hover */
+.react-flow__edge:hover .react-flow__edge-interaction {
+  stroke: var(--accent) !important;
+  stroke-opacity: 0.6 !important;
+}
+
+.react-flow__reconnect-handle {
+  width: 12px !important;
+  height: 12px !important;
+  background: var(--accent) !important;
+  border: 2px solid #fff !important;
+  border-radius: 50% !important;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.react-flow__edge:hover .react-flow__reconnect-handle,
+.react-flow__reconnect-handle:hover {
+  opacity: 1 !important;
+}
+
 /* ===== Game Console Panel ===== */
 .console-panel {
   display: flex;
